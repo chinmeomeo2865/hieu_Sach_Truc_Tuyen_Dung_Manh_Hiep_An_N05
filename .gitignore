@@ -1,0 +1,17 @@
+# Dependencies
+node_modules/
+backend/node_modules/
+
+# Environment variables (KHÔNG commit lên GitHub)
+.env
+.env.local
+backend/.env
+
+# Build output
+dist/
+
+# macOS
+.DS_Store
+
+# Logs
+*.log
