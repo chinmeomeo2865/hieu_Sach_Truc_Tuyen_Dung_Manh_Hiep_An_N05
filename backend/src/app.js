@@ -13,6 +13,7 @@ const ALLOWED_ORIGINS = [
   process.env.CLIENT_URL || 'http://localhost:5173',
   'http://localhost:5173',
   'http://localhost:5174',
+  'https://hieu-sach-truc-tuyen-dung-manh-hiep-ten.vercel.app',
 ]
 app.use(cors({
   origin:      (origin, cb) => cb(null, !origin || ALLOWED_ORIGINS.includes(origin)),
