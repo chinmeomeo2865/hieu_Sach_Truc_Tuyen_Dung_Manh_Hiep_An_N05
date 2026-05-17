@@ -9,14 +9,17 @@ const app = express()
 
 /* ── Security ───────────────────────────────────────────── */
 app.use(helmet())
-const ALLOWED_ORIGINS = [
-  process.env.CLIENT_URL || 'http://localhost:5173',
-  'http://localhost:5173',
-  'http://localhost:5174',
-  'https://hieu-sach-truc-tuyen-dung-manh-hiep-ten.vercel.app',
-]
 app.use(cors({
-  origin:      (origin, cb) => cb(null, !origin || ALLOWED_ORIGINS.includes(origin)),
+  origin: (origin, cb) => {
+    if (!origin) return cb(null, true)
+    if (
+      origin === (process.env.CLIENT_URL || '') ||
+      origin.endsWith('.vercel.app') ||
+      origin === 'http://localhost:5173' ||
+      origin === 'http://localhost:5174'
+    ) return cb(null, true)
+    cb(new Error('Not allowed by CORS'))
+  },
   credentials: true,
 }))
 
