@@ -25,8 +25,10 @@ app.use(cors({
 
 /* ── Rate limiting ──────────────────────────────────────── */
 app.use('/api/', rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max:      100,
+  windowMs: 15 * 60 * 1000,
+  max:      500,
+  standardHeaders: true,
+  legacyHeaders:   false,
   message:  { success: false, message: 'Quá nhiều yêu cầu, vui lòng thử lại sau' },
 }))
 
