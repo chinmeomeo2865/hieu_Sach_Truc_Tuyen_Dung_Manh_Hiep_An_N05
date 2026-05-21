@@ -101,6 +101,14 @@ export function Navbar({ links = [], categories = [] }) {
 
               {user ? (
                 <div className="hidden md:flex items-center gap-2 ml-1">
+                  {user.role === 'admin' && (
+                    <Link
+                      to="/admin/orders"
+                      className="px-2.5 py-1 border border-ink/25 rounded-sm text-[10px] font-semibold tracking-label uppercase text-ink-60 hover:border-ink hover:text-ink transition-colors"
+                    >
+                      Admin
+                    </Link>
+                  )}
                   <Link
                     to="/account/orders"
                     className="text-[11px] font-medium text-ink-60 max-w-[100px] truncate hover:text-ink transition-colors"
@@ -137,7 +145,7 @@ export function Navbar({ links = [], categories = [] }) {
         </div>
       </nav>
 
-      <MobileMenu isOpen={menuOpen} onClose={() => setMenuOpen(false)} links={links} categories={categories} />
+      <MobileMenu isOpen={menuOpen} onClose={() => setMenuOpen(false)} links={links} categories={categories} user={user} onLogout={handleLogout} />
 
       {/* Back to top */}
       <button

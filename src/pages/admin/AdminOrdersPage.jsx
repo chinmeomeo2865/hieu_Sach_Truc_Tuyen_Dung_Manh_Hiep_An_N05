@@ -78,27 +78,27 @@ export default function AdminOrdersPage() {
     } finally {
       setLoading(false)
     }
+  }, [showToast])
+
+  const fetchStats = useCallback(async () => {
+    try {
+      const res = await api.get('/api/orders/admin/all?limit=1000')
+      const all = res.data
+      const today = new Date().toDateString()
+      setStats({
+        total:     all.length,
+        pending:   all.filter(o => o.status === 'PENDING').length,
+        shipping:  all.filter(o => o.status === 'SHIPPING').length,
+        delivered: all.filter(o => o.status === 'DELIVERED' && new Date(o.updatedAt).toDateString() === today).length,
+      })
+    } catch {}
   }, [])
 
-  // Fetch stats (all statuses once)
-  useEffect(() => {
-    api.get('/api/orders/admin/all?limit=1000')
-      .then(res => {
-        const all = res.data
-        const today = new Date().toDateString()
-        setStats({
-          total:     all.length,
-          pending:   all.filter(o => o.status === 'PENDING').length,
-          shipping:  all.filter(o => o.status === 'SHIPPING').length,
-          delivered: all.filter(o => o.status === 'DELIVERED' && new Date(o.updatedAt).toDateString() === today).length,
-        })
-      })
-      .catch(() => {})
-  }, [orders]) // re-calc whenever orders change
+  useEffect(() => { fetchStats() }, [fetchStats])
 
   useEffect(() => {
     fetchOrders(statusFilter, page)
-  }, [statusFilter, page])
+  }, [statusFilter, page, fetchOrders])
 
   function handleFilterChange(val) {
     setFilter(val)
@@ -112,6 +112,7 @@ export default function AdminOrdersPage() {
       await api.put(`/api/orders/${orderId}/status`, { status: nextStatus })
       setOrders(prev => prev.map(o => o._id === orderId ? { ...o, status: nextStatus } : o))
       showToast({ message: `Đã cập nhật trạng thái: ${STATUS_LABEL[nextStatus]?.text}`, type: 'success' })
+      fetchStats()
     } catch (err) {
       showToast({ message: err.message, type: 'error' })
     } finally {
@@ -126,6 +127,7 @@ export default function AdminOrdersPage() {
       await api.put(`/api/orders/${orderId}/cancel`)
       setOrders(prev => prev.map(o => o._id === orderId ? { ...o, status: 'CANCELLED' } : o))
       showToast({ message: 'Đã hủy đơn hàng', type: 'info' })
+      fetchStats()
     } catch (err) {
       showToast({ message: err.message, type: 'error' })
     } finally {

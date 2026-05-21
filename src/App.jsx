@@ -18,6 +18,7 @@ import PlaceholderPage      from './pages/PlaceholderPage'
 import AdminLoginPage       from './pages/admin/AdminLoginPage'
 import AdminOrdersPage      from './pages/admin/AdminOrdersPage'
 import AdminUsersPage       from './pages/admin/AdminUsersPage'
+import AdminProductsPage    from './pages/admin/AdminProductsPage'
 import AdminRoute           from './components/admin/AdminRoute'
 import {
   NAV_LINKS,
@@ -63,8 +64,9 @@ export default function App() {
 
         {/* Admin */}
         <Route path="/admin/login"  element={<AdminLoginPage />} />
-        <Route path="/admin/orders" element={<AdminRoute><AdminOrdersPage /></AdminRoute>} />
-        <Route path="/admin/users"  element={<AdminRoute><AdminUsersPage /></AdminRoute>} />
+        <Route path="/admin/orders"    element={<AdminRoute><AdminOrdersPage /></AdminRoute>} />
+        <Route path="/admin/products"  element={<AdminRoute><AdminProductsPage /></AdminRoute>} />
+        <Route path="/admin/users"     element={<AdminRoute><AdminUsersPage /></AdminRoute>} />
       </Routes>
     </BrowserRouter>
   )

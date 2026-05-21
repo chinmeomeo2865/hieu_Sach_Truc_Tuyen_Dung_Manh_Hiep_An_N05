@@ -1,7 +1,8 @@
 import { useEffect } from 'react'
+import { Link }       from 'react-router-dom'
 import { CloseIcon }  from '../ui/icons'
 
-export function MobileMenu({ isOpen, onClose, links = [], categories = [] }) {
+export function MobileMenu({ isOpen, onClose, links = [], categories = [], user = null, onLogout }) {
   useEffect(() => {
     document.body.style.overflow = isOpen ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
@@ -50,13 +51,55 @@ export function MobileMenu({ isOpen, onClose, links = [], categories = [] }) {
           )}
         </nav>
 
-        <div className="px-6 py-5 border-t border-divider-lt flex gap-3">
-          <a href="#" className="flex-1 text-center py-2.5 border border-divider-lt rounded text-[11px] font-semibold tracking-label uppercase text-muted hover:border-ink hover:text-ink transition-colors">
-            Đăng nhập
-          </a>
-          <a href="#" className="flex-1 text-center py-2.5 bg-ink rounded text-[11px] font-semibold tracking-label uppercase text-white hover:bg-ink-80 transition-colors">
-            Đăng ký
-          </a>
+        <div className="px-6 py-5 border-t border-divider-lt">
+          {user ? (
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-ink truncate">{user.name}</p>
+              {user.role === 'admin' && (
+                <Link
+                  to="/admin/orders"
+                  onClick={onClose}
+                  className="flex items-center gap-1.5 text-[11px] font-semibold tracking-label uppercase text-ink-60 hover:text-ink transition-colors"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  Admin Panel
+                </Link>
+              )}
+              <Link
+                to="/account/orders"
+                onClick={onClose}
+                className="block text-[11px] font-medium text-ink-60 hover:text-ink transition-colors"
+              >
+                Đơn hàng của tôi
+              </Link>
+              <button
+                onClick={() => { onLogout?.(); onClose() }}
+                className="w-full text-left text-[11px] font-semibold tracking-label uppercase text-muted hover:text-ink transition-colors"
+              >
+                Đăng xuất
+              </button>
+            </div>
+          ) : (
+            <div className="flex gap-3">
+              <Link
+                to="/auth/login"
+                onClick={onClose}
+                className="flex-1 text-center py-2.5 border border-divider-lt rounded text-[11px] font-semibold tracking-label uppercase text-muted hover:border-ink hover:text-ink transition-colors"
+              >
+                Đăng nhập
+              </Link>
+              <Link
+                to="/auth/register"
+                onClick={onClose}
+                className="flex-1 text-center py-2.5 bg-ink rounded text-[11px] font-semibold tracking-label uppercase text-white hover:bg-ink-80 transition-colors"
+              >
+                Đăng ký
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </>

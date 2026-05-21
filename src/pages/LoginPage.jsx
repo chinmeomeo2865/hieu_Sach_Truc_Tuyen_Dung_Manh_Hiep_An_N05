@@ -17,7 +17,7 @@ export default function LoginPage() {
     setLoading(true)
     try {
       const user = await login(email, password)
-      navigate(user.role === 'admin' ? '/admin/orders' : '/')
+      navigate('/')
     } catch (err) {
       showToast({ message: err.message || 'Email hoặc mật khẩu không đúng', type: 'error' })
     } finally {

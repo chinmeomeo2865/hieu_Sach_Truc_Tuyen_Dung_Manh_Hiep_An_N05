@@ -4,6 +4,7 @@ const { protect, authorize } = require('../middleware/auth')
 const {
   getProducts, getProduct,
   createProduct, updateProduct, deleteProduct, updateStock,
+  getAdminProducts,
 } = require('../controllers/productController')
 
 const productRules = [
@@ -15,7 +16,15 @@ const productRules = [
 ]
 
 /* Public */
-router.get('/',    getProducts)
+router.get('/', getProducts)
+
+/* Admin / product_manager — must be before /:id */
+router.get(
+  '/admin/all',
+  protect, authorize('product_manager', 'admin'),
+  getAdminProducts
+)
+
 router.get('/:id', getProduct)
 
 /* Protected — product_manager or admin */

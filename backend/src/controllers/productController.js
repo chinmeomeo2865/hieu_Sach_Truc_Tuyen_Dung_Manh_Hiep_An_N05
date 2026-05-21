@@ -107,4 +107,49 @@ const updateStock = async (req, res, next) => {
   } catch (err) { next(err) }
 }
 
-module.exports = { getProducts, getProduct, createProduct, updateProduct, deleteProduct, updateStock }
+/* GET /api/products/admin/all  — admin / product_manager */
+const getAdminProducts = async (req, res, next) => {
+  try {
+    const {
+      search, category, badge,
+      visible,
+      sort = 'newest',
+      page = 1, limit = 20,
+    } = req.query
+
+    const filter = {}
+    if (search)              filter.$text        = { $search: search }
+    if (category)            filter.categorySlug = category
+    if (badge)               filter.badge        = badge
+    if (visible === 'true')  filter.visible      = true
+    if (visible === 'false') filter.visible      = false
+
+    const sortMap = {
+      newest:     { createdAt: -1 },
+      oldest:     { createdAt:  1 },
+      price_asc:  { price:  1 },
+      price_desc: { price: -1 },
+    }
+    const sortOption = sortMap[sort] ?? sortMap.newest
+    const skip  = (Number(page) - 1) * Number(limit)
+    const total = await Product.countDocuments(filter)
+
+    const products = await Product.find(filter)
+      .sort(sortOption)
+      .skip(skip)
+      .limit(Number(limit))
+
+    res.json({
+      success: true,
+      data: products,
+      pagination: {
+        page:       Number(page),
+        limit:      Number(limit),
+        total,
+        totalPages: Math.ceil(total / Number(limit)),
+      },
+    })
+  } catch (err) { next(err) }
+}
+
+module.exports = { getProducts, getProduct, createProduct, updateProduct, deleteProduct, updateStock, getAdminProducts }
