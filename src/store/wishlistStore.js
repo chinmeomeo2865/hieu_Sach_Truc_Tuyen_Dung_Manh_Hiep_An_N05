@@ -10,6 +10,8 @@ export const useWishlistStore = create(
         const { ids } = get()
         set({ ids: ids.includes(id) ? ids.filter(i => i !== id) : [...ids, id] })
       },
+
+      clearAll() { set({ ids: [] }) },
     }),
     { name: 'chin-wishlist' },
   ),
