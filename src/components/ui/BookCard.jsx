@@ -10,7 +10,8 @@ import { formatPrice }      from '../../utils/format'
 export function BookCard({ book }) {
   const addItem      = useCartStore(s => s.addItem)
   const toggle       = useWishlistStore(s => s.toggle)
-  const wishlisted   = useWishlistStore(s => s.ids.includes(book.id))
+  const bookId       = book._id || book.id
+  const wishlisted   = useWishlistStore(s => s.ids.includes(bookId))
   const showToast    = useToastStore(s => s.show)
   const openQuickView = useUIStore(s => s.openQuickView)
 
@@ -23,7 +24,7 @@ export function BookCard({ book }) {
   const handleWishlist = (e) => {
     e.stopPropagation()
     const was = wishlisted
-    toggle(book.id)
+    toggle(bookId)
     showToast({
       type:    was ? 'info' : 'success',
       message: was ? 'Đã xóa khỏi yêu thích' : 'Đã thêm vào yêu thích',

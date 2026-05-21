@@ -13,7 +13,8 @@ export function QuickViewModal() {
   const close        = useUIStore(s => s.closeQuickView)
   const addItem      = useCartStore(s => s.addItem)
   const toggle       = useWishlistStore(s => s.toggle)
-  const wishlisted   = useWishlistStore(s => book ? s.ids.includes(book.id) : false)
+  const bookId       = book ? (book._id || book.id) : null
+  const wishlisted   = useWishlistStore(s => bookId ? s.ids.includes(bookId) : false)
   const showToast    = useToastStore(s => s.show)
 
   /* Lock scroll + Escape key */
@@ -38,7 +39,7 @@ export function QuickViewModal() {
 
   const handleWishlist = () => {
     const was = wishlisted
-    toggle(book.id)
+    toggle(bookId)
     showToast({
       type:    was ? 'info' : 'success',
       message: was ? 'Đã xóa khỏi yêu thích' : `Đã thêm "${book.title}" vào yêu thích`,
