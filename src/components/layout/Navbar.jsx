@@ -81,9 +81,14 @@ export function Navbar({ links = [], categories = [] }) {
                 <SearchIcon className="w-[18px] h-[18px]" />
               </IconBtn>
 
-              <IconBtn label={`Yêu thích (${wishlistCount})`} badge={wishlistCount}>
+              <Link to="/account/wishlist" aria-label={`Yêu thích (${wishlistCount})`} className="relative w-9 h-9 rounded-lg flex items-center justify-center text-muted hover:text-ink hover:bg-surface-subtle transition-colors">
                 <HeartIcon className="w-[17px] h-[17px]" />
-              </IconBtn>
+                {wishlistCount > 0 && (
+                  <span className="absolute top-0.5 right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-accent text-white text-[9px] font-bold flex items-center justify-center leading-none">
+                    {wishlistCount}
+                  </span>
+                )}
+              </Link>
 
               <Link to="/cart" aria-label={`Giỏ hàng (${cartCount})`} className="relative w-9 h-9 rounded-lg flex items-center justify-center text-muted hover:text-ink hover:bg-surface-subtle transition-colors">
                 <CartIcon className="w-[18px] h-[18px]" />
