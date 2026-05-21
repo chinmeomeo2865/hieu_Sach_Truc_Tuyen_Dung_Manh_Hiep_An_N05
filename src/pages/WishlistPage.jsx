@@ -13,21 +13,29 @@ export default function WishlistPage() {
   const [books, setBooks]     = useState([])
   const [loading, setLoading] = useState(false)
 
-  // Fetch lần đầu khi ids có dữ liệu
   useEffect(() => {
     if (ids.length === 0) { setBooks([]); return }
+
+    // Chỉ fetch những id chưa có data
+    const missing = ids.filter(id => !books.find(b => (b._id || b.id) === id))
+    if (missing.length === 0) {
+      // Không có id mới, chỉ lọc bỏ id đã xóa
+      setBooks(prev => prev.filter(b => ids.includes(b._id || b.id)))
+      return
+    }
+
     setLoading(true)
     Promise.all(
-      ids.map(id => api.get(`/api/products/${id}`).then(r => r.data).catch(() => null))
+      ids.map(id => {
+        const cached = books.find(b => (b._id || b.id) === id)
+        return cached
+          ? Promise.resolve(cached)
+          : api.get(`/api/products/${id}`).then(r => r.data).catch(() => null)
+      })
     )
       .then(results => setBooks(results.filter(Boolean)))
       .finally(() => setLoading(false))
-  }, []) // chỉ fetch lần đầu
-
-  // Khi ids thay đổi (xóa khỏi wishlist) → lọc local, không refetch
-  useEffect(() => {
-    setBooks(prev => prev.filter(b => ids.includes(b._id || b.id)))
-  }, [ids])
+  }, [ids.join(',')])
 
   function handleClearAll() {
     if (!confirm('Xóa tất cả sách khỏi danh sách yêu thích?')) return
