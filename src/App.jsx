@@ -17,6 +17,7 @@ import WishlistPage         from './pages/WishlistPage'
 import PlaceholderPage      from './pages/PlaceholderPage'
 import AdminLoginPage       from './pages/admin/AdminLoginPage'
 import AdminOrdersPage      from './pages/admin/AdminOrdersPage'
+import AdminUsersPage       from './pages/admin/AdminUsersPage'
 import AdminRoute           from './components/admin/AdminRoute'
 import {
   NAV_LINKS,
@@ -63,6 +64,7 @@ export default function App() {
         {/* Admin */}
         <Route path="/admin/login"  element={<AdminLoginPage />} />
         <Route path="/admin/orders" element={<AdminRoute><AdminOrdersPage /></AdminRoute>} />
+        <Route path="/admin/users"  element={<AdminRoute><AdminUsersPage /></AdminRoute>} />
       </Routes>
     </BrowserRouter>
   )
