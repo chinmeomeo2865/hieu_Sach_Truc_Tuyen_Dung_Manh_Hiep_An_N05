@@ -56,7 +56,7 @@ export function FeaturedBooks({
           {featured.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-[1.5px] border border-divider-lt rounded-xl overflow-hidden bg-divider-lt mb-5">
               {featured.map(book => (
-                <FeaturedCard key={book.id} book={book} />
+                <FeaturedCard key={book._id || book.id} book={book} />
               ))}
             </div>
           )}
@@ -65,7 +65,7 @@ export function FeaturedBooks({
           {grid.length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">
               {grid.map(book => (
-                <BookCard key={book.id} book={book} />
+                <BookCard key={book._id || book.id} book={book} />
               ))}
             </div>
           ) : featured.length === 0 && (

@@ -1,16 +1,19 @@
-import { useState }       from 'react'
+import { useState }        from 'react'
+import { Link }            from 'react-router-dom'
 import { useScrollReveal } from '../../hooks/useScrollReveal'
 import { SectionHeader }   from '../ui/SectionHeader'
 import { FeaturedCard }    from '../ui/FeaturedCard'
 import { BookCard }        from '../ui/BookCard'
 import { BESTSELLERS, FILTER_TABS } from '../../data/books'
 
-export function Bestsellers() {
+export function Bestsellers({ books }) {
   const { ref, visible } = useScrollReveal()
   const [active, setActive] = useState('all')
 
-  const featured = BESTSELLERS.filter((b) => b.featured)
-  const grid     = BESTSELLERS.filter((b) => !b.featured)
+  const source   = books?.length ? books : BESTSELLERS
+  const filtered = active === 'all' ? source : source.filter(b => b.categorySlug === active)
+  const featured = filtered.filter(b => b.featured).slice(0, 2)
+  const grid     = filtered.filter(b => !b.featured).slice(0, 8)
 
   return (
     <section
@@ -50,24 +53,24 @@ export function Bestsellers() {
           {/* Featured 2-up */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-[1.5px] border border-divider-lt rounded-xl overflow-hidden bg-divider-lt mb-5">
             {featured.map((book) => (
-              <FeaturedCard key={book.id} book={book} />
+              <FeaturedCard key={book._id || book.id} book={book} />
             ))}
           </div>
 
           {/* Grid */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">
             {grid.map((book) => (
-              <BookCard key={book.id} book={book} />
+              <BookCard key={book._id || book.id} book={book} />
             ))}
           </div>
 
           <div className="text-center mt-8">
-            <a
-              href="#"
+            <Link
+              to="/books"
               className="inline-flex items-center gap-2 border border-divider text-ink-60 text-[11px] font-semibold tracking-label uppercase px-6 py-3 rounded-sm hover:border-ink hover:text-ink hover:-translate-y-px transition-all"
             >
               Xem tất cả bestsellers
-            </a>
+            </Link>
           </div>
         </div>
       </div>
