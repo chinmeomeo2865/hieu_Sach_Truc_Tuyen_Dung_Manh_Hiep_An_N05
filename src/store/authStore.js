@@ -33,6 +33,16 @@ export const useAuthStore = create(
         }
       },
 
+      async updateProfile(data) {
+        const res = await api.put('/api/auth/me', data)
+        set({ user: res.data })
+        return res.data
+      },
+
+      async changePassword(currentPassword, newPassword) {
+        await api.put('/api/auth/password', { currentPassword, newPassword })
+      },
+
       logout() {
         localStorage.removeItem('chin-token')
         set({ user: null, token: null })

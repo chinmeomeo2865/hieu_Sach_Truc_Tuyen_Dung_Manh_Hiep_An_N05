@@ -61,7 +61,9 @@ export function FeaturedCard({ book }) {
           <p className="text-xs text-muted mt-1">{book.author}</p>
         </div>
 
-        <StarRating rating={book.rating} reviewCount={book.reviewCount} />
+        {book.reviewCount > 0 && (
+          <StarRating rating={book.rating} reviewCount={book.reviewCount} />
+        )}
 
         {book.description && (
           <p className="text-xs text-ink-60 leading-relaxed line-clamp-2 md:line-clamp-3">{book.description}</p>

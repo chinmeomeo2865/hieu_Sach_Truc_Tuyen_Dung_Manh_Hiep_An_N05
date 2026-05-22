@@ -10,11 +10,21 @@ const addressSchema = new mongoose.Schema({
   isDefault: { type: Boolean, default: false },
 }, { _id: true })
 
+function normalizeVietnamese(str = '') {
+  return str
+    .toLowerCase()
+    .replace(/[đĐ]/g, 'd')
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .trim()
+}
+
 const userSchema = new mongoose.Schema({
-  name:      { type: String, required: [true, 'Tên là bắt buộc'], trim: true },
-  email:     { type: String, required: [true, 'Email là bắt buộc'], unique: true, lowercase: true },
-  password:  { type: String, required: [true, 'Mật khẩu là bắt buộc'], minlength: 6, select: false },
-  role:      {
+  name:           { type: String, required: [true, 'Tên là bắt buộc'], trim: true },
+  nameNormalized: { type: String, index: true },
+  email:          { type: String, required: [true, 'Email là bắt buộc'], unique: true, lowercase: true },
+  password:       { type: String, required: [true, 'Mật khẩu là bắt buộc'], minlength: 6, select: false },
+  role:           {
     type:    String,
     enum:    ['customer', 'admin', 'product_manager', 'warehouse'],
     default: 'customer',
@@ -24,8 +34,11 @@ const userSchema = new mongoose.Schema({
   active:    { type: Boolean, default: true },
 }, { timestamps: true })
 
-/* Hash password before save */
+/* Hash password + normalize name before save */
 userSchema.pre('save', async function (next) {
+  if (this.isModified('name')) {
+    this.nameNormalized = normalizeVietnamese(this.name)
+  }
   if (!this.isModified('password')) return next()
   this.password = await bcrypt.hash(this.password, 12)
   next()

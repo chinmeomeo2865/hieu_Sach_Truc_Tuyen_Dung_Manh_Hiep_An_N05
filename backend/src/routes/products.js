@@ -6,6 +6,7 @@ const {
   createProduct, updateProduct, deleteProduct, updateStock,
   getAdminProducts,
 } = require('../controllers/productController')
+const { getProductReviews } = require('../controllers/reviewController')
 
 const productRules = [
   body('title').trim().notEmpty().withMessage('Tên sách là bắt buộc'),
@@ -26,6 +27,7 @@ router.get(
 )
 
 router.get('/:id', getProduct)
+router.get('/:id/reviews', getProductReviews)
 
 /* Protected — product_manager or admin */
 router.post(

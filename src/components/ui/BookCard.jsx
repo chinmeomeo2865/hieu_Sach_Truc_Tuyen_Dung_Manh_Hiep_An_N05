@@ -81,9 +81,11 @@ export function BookCard({ book }) {
         <p className="text-[9px] font-semibold tracking-label-lg uppercase text-accent mb-1.5">{book.category}</p>
         <h3 className="font-display font-semibold text-[0.92rem] leading-snug text-ink mb-1 line-clamp-2">{book.title}</h3>
         <p className="text-[11px] text-muted mb-2.5">{book.author}</p>
-        <StarRating rating={book.rating} reviewCount={book.reviewCount} className="mb-auto pb-3" />
+        {book.reviewCount > 0 && (
+          <StarRating rating={book.rating} reviewCount={book.reviewCount} className="pb-3" />
+        )}
 
-        <div className="flex items-center justify-between gap-2 pt-3 border-t border-divider-lt mt-1">
+        <div className="flex items-center justify-between gap-2 pt-3 border-t border-divider-lt mt-auto">
           <div>
             <span className="block text-sm font-bold text-ink">{formatPrice(book.price)}</span>
             {book.originalPrice && (

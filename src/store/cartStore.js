@@ -8,18 +8,20 @@ export const useCartStore = create(
 
       addItem(book) {
         const id    = book._id || book.id
+        const stock = book.stock ?? 999
         const items = get().items
         const idx   = items.findIndex(i => i.id === id)
         if (idx >= 0) {
-          const next = [...items]
-          next[idx] = { ...next[idx], qty: next[idx].qty + 1 }
+          const next    = [...items]
+          const newQty  = Math.min(next[idx].qty + 1, stock)
+          next[idx] = { ...next[idx], qty: newQty, stock }
           set({ items: next })
         } else {
           set({
             items: [...items, {
               id, title: book.title, author: book.author,
               price: book.price, image: book.image,
-              qty: 1,
+              stock, qty: 1,
             }],
           })
         }
@@ -29,7 +31,13 @@ export const useCartStore = create(
         if (qty <= 0) {
           set({ items: get().items.filter(i => i.id !== id) })
         } else {
-          set({ items: get().items.map(i => i.id === id ? { ...i, qty } : i) })
+          set({
+            items: get().items.map(i => {
+              if (i.id !== id) return i
+              const max = i.stock ?? 999
+              return { ...i, qty: Math.min(qty, max) }
+            }),
+          })
         }
       },
 

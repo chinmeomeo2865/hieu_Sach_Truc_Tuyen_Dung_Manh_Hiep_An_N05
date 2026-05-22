@@ -40,11 +40,17 @@ app.use(express.urlencoded({ extended: false }))
 if (process.env.NODE_ENV !== 'production') app.use(morgan('dev'))
 
 /* ── Routes ─────────────────────────────────────────────── */
-app.use('/api/auth',     require('./routes/auth'))
-app.use('/api/products', require('./routes/products'))
-app.use('/api/cart',     require('./routes/cart'))
-app.use('/api/orders',   require('./routes/orders'))
-app.use('/api/users',    require('./routes/users'))
+app.use('/api/auth',      require('./routes/auth'))
+app.use('/api/products',  require('./routes/products'))
+app.use('/api/cart',      require('./routes/cart'))
+app.use('/api/orders',    require('./routes/orders'))
+app.use('/api/users',     require('./routes/users'))
+app.use('/api/reviews',   require('./routes/reviews'))
+app.use('/api/analytics', require('./routes/analytics'))
+app.use('/api/settings',  require('./routes/settings'))
+app.use('/api/warehouse', require('./routes/warehouse'))
+app.use('/api/pm',        require('./routes/pm'))
+app.use('/api/coupons',   require('./routes/coupons'))
 
 app.get('/api/health', (_req, res) =>
   res.json({ success: true, message: 'Hiệu Sách Chin API is running' })

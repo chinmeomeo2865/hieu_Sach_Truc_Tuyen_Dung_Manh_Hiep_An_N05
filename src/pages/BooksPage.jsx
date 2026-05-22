@@ -3,7 +3,7 @@ import { useSearchParams }   from 'react-router-dom'
 import { BookCard }          from '../components/ui/BookCard'
 import { SectionHeader }     from '../components/ui/SectionHeader'
 import { useProducts }       from '../hooks/useProducts'
-import { FILTER_TABS }       from '../data/books'
+import { FILTER_TABS, ALL_BOOKS } from '../data/books'
 
 const SORT_OPTIONS = [
   { value: 'rating',     label: 'Đánh giá cao nhất' },
@@ -13,6 +13,38 @@ const SORT_OPTIONS = [
 ]
 
 const LIMIT = 12
+
+function EmptyState({ search }) {
+  const suggestions = useMemo(() => {
+    const pool = [...ALL_BOOKS].sort(() => Math.random() - 0.5)
+    return pool.slice(0, 4)
+  }, [])
+
+  if (!search) {
+    return (
+      <div className="py-20 text-center">
+        <p className="text-muted text-sm">Không có sách trong danh mục này</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="py-10">
+      <p className="text-sm text-muted text-center mb-10">
+        Không tìm thấy kết quả cho <span className="font-semibold text-ink">«{search}»</span>
+      </p>
+      <div className="border-t border-divider-lt pt-10">
+        <p className="text-2xs font-semibold tracking-label-2xl uppercase text-accent mb-1">Gợi ý cho bạn</p>
+        <p className="font-display font-semibold text-xl text-ink mb-6">Có thể bạn sẽ thích</p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-5">
+          {suggestions.map(book => (
+            <BookCard key={book._id || book.id} book={{ ...book, id: book._id || book.id }} />
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
 
 export default function BooksPage() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -106,9 +138,7 @@ export default function BooksPage() {
             ))}
           </div>
         ) : products.length === 0 ? (
-          <div className="py-20 text-center">
-            <p className="text-muted text-sm">Không tìm thấy sách phù hợp</p>
-          </div>
+          <EmptyState search={search} />
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">
             {products.map(book => (

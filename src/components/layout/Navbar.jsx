@@ -109,8 +109,24 @@ export function Navbar({ links = [], categories = [] }) {
                       Admin
                     </Link>
                   )}
+                  {user.role === 'product_manager' && (
+                    <Link
+                      to="/pm"
+                      className="px-2.5 py-1 border border-ink/25 rounded-sm text-[10px] font-semibold tracking-label uppercase text-ink-60 hover:border-ink hover:text-ink transition-colors"
+                    >
+                      PM Panel
+                    </Link>
+                  )}
+                  {user.role === 'warehouse' && (
+                    <Link
+                      to="/warehouse"
+                      className="px-2.5 py-1 border border-ink/25 rounded-sm text-[10px] font-semibold tracking-label uppercase text-ink-60 hover:border-ink hover:text-ink transition-colors"
+                    >
+                      Kho
+                    </Link>
+                  )}
                   <Link
-                    to="/account/orders"
+                    to="/account"
                     className="text-[11px] font-medium text-ink-60 max-w-[100px] truncate hover:text-ink transition-colors"
                   >
                     {user.name}

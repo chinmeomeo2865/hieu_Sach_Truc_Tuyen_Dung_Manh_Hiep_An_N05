@@ -1,6 +1,8 @@
 const Order   = require('../models/Order')
 const Cart    = require('../models/Cart')
 const Product = require('../models/Product')
+const Coupon  = require('../models/Coupon')
+const { calcDiscount } = require('./couponController')
 
 const CANCELLABLE = ['PENDING', 'CONFIRMED']
 
@@ -82,7 +84,28 @@ const createOrder = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Một số sách vừa hết hàng, vui lòng kiểm tra lại giỏ' })
     }
 
-    const total = cart.items.reduce((sum, i) => sum + i.price * i.qty, 0)
+    const subtotal = cart.items.reduce((sum, i) => sum + i.price * i.qty, 0)
+
+    /* Validate coupon nếu có */
+    let discount = 0
+    let appliedCoupon = null
+    if (couponCode) {
+      const coupon = await Coupon.findOne({ code: couponCode.trim().toUpperCase() })
+      const now = new Date()
+      if (!coupon || !coupon.active || now < coupon.startDate || now > coupon.endDate) {
+        return res.status(400).json({ success: false, message: 'Mã giảm giá không hợp lệ hoặc đã hết hạn' })
+      }
+      if (coupon.maxUses > 0 && coupon.usedCount >= coupon.maxUses) {
+        return res.status(400).json({ success: false, message: 'Mã giảm giá đã được sử dụng hết' })
+      }
+      if (subtotal < coupon.minOrderAmount) {
+        return res.status(400).json({ success: false, message: `Đơn tối thiểu ${coupon.minOrderAmount.toLocaleString('vi-VN')}₫ để dùng mã này` })
+      }
+      discount = calcDiscount(coupon, subtotal)
+      appliedCoupon = coupon
+    }
+
+    const total = subtotal - discount
 
     /* Create order */
     const order = await Order.create({
@@ -98,10 +121,16 @@ const createOrder = async (req, res, next) => {
       payment,
       address,
       total,
-      couponCode,
+      discount,
+      couponCode: appliedCoupon?.code,
       note,
       statusHistory: [{ status: 'PENDING', changedBy: req.user._id }],
     })
+
+    /* Tăng usedCount của coupon */
+    if (appliedCoupon) {
+      await Coupon.findByIdAndUpdate(appliedCoupon._id, { $inc: { usedCount: 1 } })
+    }
 
     /* Clear cart */
     cart.items = []

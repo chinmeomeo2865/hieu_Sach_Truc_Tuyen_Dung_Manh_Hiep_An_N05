@@ -1,4 +1,5 @@
 import { useEffect }        from 'react'
+import { Link }             from 'react-router-dom'
 import { useUIStore }       from '../../store/uiStore'
 import { useCartStore }     from '../../store/cartStore'
 import { useWishlistStore } from '../../store/wishlistStore'
@@ -92,7 +93,9 @@ export function QuickViewModal() {
               <p className="text-sm text-muted mt-1">{book.author}</p>
             </div>
 
-            <StarRating rating={book.rating} reviewCount={book.reviewCount} />
+            {book.reviewCount > 0 && (
+              <StarRating rating={book.rating} reviewCount={book.reviewCount} />
+            )}
 
             <div className="flex items-baseline gap-2">
               <span className="font-display text-2xl font-semibold text-ink">{formatPrice(book.price)}</span>
@@ -122,6 +125,14 @@ export function QuickViewModal() {
                 <HeartIcon className="w-4 h-4" filled={wishlisted} />
               </button>
             </div>
+
+            <Link
+              to={`/books/${bookId}`}
+              onClick={close}
+              className="text-center text-xs text-muted hover:text-ink underline underline-offset-2 transition-colors"
+            >
+              Xem chi tiết & đánh giá →
+            </Link>
           </div>
         </div>
       </div>

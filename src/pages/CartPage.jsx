@@ -4,7 +4,8 @@ import { useAuthStore }  from '../store/authStore'
 import { useToastStore } from '../store/toastStore'
 import { formatPrice }   from '../utils/format'
 
-function QtyControl({ qty, onDecrease, onIncrease }) {
+function QtyControl({ qty, stock, onDecrease, onIncrease }) {
+  const atMax = stock != null && qty >= stock
   return (
     <div className="flex items-center border border-divider rounded-sm">
       <button
@@ -14,7 +15,8 @@ function QtyControl({ qty, onDecrease, onIncrease }) {
       <span className="w-8 text-center text-sm font-medium text-ink">{qty}</span>
       <button
         onClick={onIncrease}
-        className="w-8 h-8 flex items-center justify-center text-muted hover:text-ink transition-colors"
+        disabled={atMax}
+        className="w-8 h-8 flex items-center justify-center text-muted hover:text-ink disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
       >+</button>
     </div>
   )
@@ -29,8 +31,9 @@ export default function CartPage() {
   const showToast  = useToastStore(s => s.show)
   const navigate   = useNavigate()
 
-  const subtotal = items.reduce((sum, i) => sum + i.price * i.qty, 0)
-  const totalQty = items.reduce((sum, i) => sum + i.qty, 0)
+  const subtotal    = items.reduce((sum, i) => sum + i.price * i.qty, 0)
+  const totalQty    = items.reduce((sum, i) => sum + i.qty, 0)
+  const hasOutOfStock = items.some(i => (i.stock ?? 999) === 0)
 
   function handleCheckout() {
     if (!isAuth) {
@@ -81,8 +84,10 @@ export default function CartPage() {
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-8">
         {/* Items */}
         <div className="space-y-4">
-          {items.map(item => (
-            <div key={item.id} className="flex gap-4 p-4 bg-white border border-divider-lt rounded-sm">
+          {items.map(item => {
+            const outOfStock = (item.stock ?? 999) === 0
+            return (
+            <div key={item.id} className={`flex gap-4 p-4 bg-white border border-divider-lt rounded-sm transition-opacity ${outOfStock ? 'opacity-50' : ''}`}>
               <Link to={`/books/${item.id}`} className="flex-shrink-0">
                 <img
                   src={item.image}
@@ -92,15 +97,21 @@ export default function CartPage() {
               </Link>
 
               <div className="flex-1 min-w-0">
-                <Link to={`/books/${item.id}`} className="font-display font-semibold text-ink hover:text-ink-60 transition-colors line-clamp-2 leading-snug">
-                  {item.title}
-                </Link>
+                <div className="flex items-start gap-2 flex-wrap">
+                  <Link to={`/books/${item.id}`} className="font-display font-semibold text-ink hover:text-ink-60 transition-colors line-clamp-2 leading-snug">
+                    {item.title}
+                  </Link>
+                  {outOfStock && (
+                    <span className="flex-shrink-0 text-2xs font-semibold bg-red-100 text-red-600 px-2 py-0.5 rounded-sm">Đã hết hàng</span>
+                  )}
+                </div>
                 {item.author && (
                   <p className="mt-0.5 text-xs text-muted">{item.author}</p>
                 )}
                 <div className="mt-3 flex items-center justify-between flex-wrap gap-3">
                   <QtyControl
                     qty={item.qty}
+                    stock={item.stock}
                     onDecrease={() => updateQty(item.id, item.qty - 1)}
                     onIncrease={() => updateQty(item.id, item.qty + 1)}
                   />
@@ -119,7 +130,8 @@ export default function CartPage() {
                 </div>
               </div>
             </div>
-          ))}
+          )
+          })}
         </div>
 
         {/* Summary */}
@@ -143,9 +155,13 @@ export default function CartPage() {
               <span className="font-display text-lg">{formatPrice(subtotal)}</span>
             </div>
 
+            {hasOutOfStock && (
+              <p className="text-xs text-red-600 text-center">Một số sản phẩm đã hết hàng. Vui lòng xóa trước khi tiếp tục.</p>
+            )}
             <button
               onClick={handleCheckout}
-              className="w-full bg-ink text-white text-2xs font-semibold tracking-label-lg uppercase py-3.5 rounded-sm hover:bg-ink-80 transition-colors"
+              disabled={hasOutOfStock}
+              className="w-full bg-ink text-white text-2xs font-semibold tracking-label-lg uppercase py-3.5 rounded-sm hover:bg-ink-80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               Tiến hành đặt hàng
             </button>

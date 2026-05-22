@@ -4,7 +4,8 @@ import { FeaturedBooks } from '../components/sections/FeaturedBooks'
 import { NewArrivals }   from '../components/sections/NewArrivals'
 import { Categories }    from '../components/sections/Categories'
 import { Blog }          from '../components/sections/Blog'
-import { Quote }         from '../components/sections/Quote'
+import { Quote }            from '../components/sections/Quote'
+import { CustomerReviews }  from '../components/sections/CustomerReviews'
 import { About }         from '../components/sections/About'
 import { Newsletter }    from '../components/sections/Newsletter'
 
@@ -68,6 +69,8 @@ export default function Home() {
         subtitle="Cảm nhận, gợi ý và câu chuyện từ đội ngũ Chin"
         linkText="Xem tất cả"
       />
+
+      <CustomerReviews />
 
       <Quote />
 
