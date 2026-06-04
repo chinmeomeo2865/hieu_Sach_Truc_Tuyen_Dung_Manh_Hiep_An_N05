@@ -86,6 +86,61 @@ exports.getMyReviews = async (req, res, next) => {
   }
 }
 
+/* GET /api/reviews/admin/all  [admin] */
+exports.getAllReviewsAdmin = async (req, res, next) => {
+  try {
+    const page    = parseInt(req.query.page  || '1', 10)
+    const limit   = parseInt(req.query.limit || '20', 10)
+    const skip    = (page - 1) * limit
+    const rating  = req.query.rating ? parseInt(req.query.rating, 10) : null
+    const filter  = rating ? { rating } : {}
+
+    const [reviews, total] = await Promise.all([
+      Review.find(filter)
+        .populate('user',    'name email')
+        .populate('product', 'title author image')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      Review.countDocuments(filter),
+    ])
+
+    res.json({
+      success: true,
+      data: reviews,
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    })
+  } catch (err) {
+    next(err)
+  }
+}
+
+/* DELETE /api/reviews/:id  [admin] */
+exports.deleteReview = async (req, res, next) => {
+  try {
+    const review = await Review.findByIdAndDelete(req.params.id)
+    if (!review) return res.status(404).json({ success: false, message: 'Không tìm thấy đánh giá' })
+
+    // Cập nhật lại rating trên Product
+    const stats = await Review.aggregate([
+      { $match: { product: review.product } },
+      { $group: { _id: '$product', avgRating: { $avg: '$rating' }, count: { $sum: 1 } } },
+    ])
+    if (stats.length) {
+      await Product.findByIdAndUpdate(review.product, {
+        rating:      Math.round(stats[0].avgRating * 10) / 10,
+        reviewCount: stats[0].count,
+      })
+    } else {
+      await Product.findByIdAndUpdate(review.product, { rating: 0, reviewCount: 0 })
+    }
+
+    res.json({ success: true, message: 'Đã xóa đánh giá' })
+  } catch (err) {
+    next(err)
+  }
+}
+
 /* GET /api/reviews/recent  [public] — hiển thị trên trang chủ */
 exports.getRecentReviews = async (req, res, next) => {
   try {

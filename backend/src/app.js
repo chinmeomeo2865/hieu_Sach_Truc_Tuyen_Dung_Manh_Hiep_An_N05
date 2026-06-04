@@ -51,6 +51,11 @@ app.use('/api/settings',  require('./routes/settings'))
 app.use('/api/warehouse', require('./routes/warehouse'))
 app.use('/api/pm',        require('./routes/pm'))
 app.use('/api/coupons',   require('./routes/coupons'))
+app.use('/api/upload',   require('./routes/upload'))
+app.use('/api/articles',      require('./routes/articles'))
+app.use('/api/notifications', require('./routes/notifications'))
+app.use('/api/payments',      require('./routes/payments'))
+app.use('/uploads',      require('express').static(require('path').join(__dirname, '../uploads')))
 
 app.get('/api/health', (_req, res) =>
   res.json({ success: true, message: 'Hiệu Sách Chin API is running' })
