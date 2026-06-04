@@ -1,4 +1,4 @@
-import { useState }          from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useNavbar }         from '../../hooks/useNavbar'
 import { useCartStore }      from '../../store/cartStore'
@@ -7,6 +7,7 @@ import { useUIStore }        from '../../store/uiStore'
 import { useAuthStore }      from '../../store/authStore'
 import { MobileMenu }        from './MobileMenu'
 import { SearchIcon, HeartIcon, CartIcon, UserIcon, MenuIcon, ArrowUpIcon } from '../ui/icons'
+import { api }               from '../../services/api'
 
 function NavLink({ href, children }) {
   const cls = "relative text-[11px] font-medium tracking-label uppercase text-muted pb-0.5 transition-colors hover:text-ink group"
@@ -43,9 +44,18 @@ export function Navbar({ links = [], categories = [] }) {
   const wishlistCount  = useWishlistStore(s => s.ids.length)
   const openSearch     = useUIStore(s => s.openSearch)
   const user           = useAuthStore(s => s.user)
+  const token          = useAuthStore(s => s.token)
   const logout         = useAuthStore(s => s.logout)
   const clearCart      = useCartStore(s => s.clear)
   const navigate       = useNavigate()
+
+  const [unreadCount, setUnreadCount] = useState(0)
+  useEffect(() => {
+    if (!token) { setUnreadCount(0); return }
+    api.get('/api/notifications')
+      .then(r => setUnreadCount(r.unreadCount || 0))
+      .catch(() => {})
+  }, [token])
 
   function handleLogout() {
     logout()
@@ -80,6 +90,20 @@ export function Navbar({ links = [], categories = [] }) {
               <IconBtn label="Tìm kiếm" onClick={openSearch}>
                 <SearchIcon className="w-[18px] h-[18px]" />
               </IconBtn>
+
+              {token && (
+                <Link to="/notifications" aria-label={`Thông báo${unreadCount > 0 ? ` (${unreadCount})` : ''}`}
+                  className="relative w-9 h-9 rounded-lg flex items-center justify-center text-muted hover:text-ink hover:bg-surface-subtle transition-colors">
+                  <svg className="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                  </svg>
+                  {unreadCount > 0 && (
+                    <span className="absolute top-0.5 right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-accent text-white text-[9px] font-bold flex items-center justify-center leading-none">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
+                </Link>
+              )}
 
               <Link to="/account/wishlist" aria-label={`Yêu thích (${wishlistCount})`} className="relative w-9 h-9 rounded-lg flex items-center justify-center text-muted hover:text-ink hover:bg-surface-subtle transition-colors">
                 <HeartIcon className="w-[17px] h-[17px]" />

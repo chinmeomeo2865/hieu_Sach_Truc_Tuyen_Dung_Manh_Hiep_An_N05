@@ -16,6 +16,7 @@ import OrdersPage           from './pages/OrdersPage'
 import WishlistPage         from './pages/WishlistPage'
 import AccountProfilePage   from './pages/AccountProfilePage'
 import AccountPage          from './pages/AccountPage'
+import AddressesPage        from './pages/account/AddressesPage'
 import PlaceholderPage      from './pages/PlaceholderPage'
 import AdminLoginPage       from './pages/admin/AdminLoginPage'
 import AdminOrdersPage      from './pages/admin/AdminOrdersPage'
@@ -26,6 +27,12 @@ import AdminAnalyticsPage   from './pages/admin/AdminAnalyticsPage'
 import AdminSettingsPage    from './pages/admin/AdminSettingsPage'
 import AdminRoute           from './components/admin/AdminRoute'
 import AdminCouponsPage     from './pages/admin/AdminCouponsPage'
+import AdminReviewsPage    from './pages/admin/AdminReviewsPage'
+import AdminArticlesPage   from './pages/admin/AdminArticlesPage'
+import BlogPage            from './pages/BlogPage'
+import BlogDetailPage      from './pages/BlogDetailPage'
+import NotificationsPage   from './pages/NotificationsPage'
+import PaymentResultPage   from './pages/PaymentResultPage'
 import WarehouseRoute        from './components/warehouse/WarehouseRoute'
 import PMRoute              from './components/pm/PMRoute'
 import PMLoginPage          from './pages/pm/PMLoginPage'
@@ -77,12 +84,16 @@ export default function App() {
         <Route path="/account/orders"    element={<MainLayout><OrdersPage /></MainLayout>} />
         <Route path="/account/wishlist"  element={<MainLayout><WishlistPage /></MainLayout>} />
         <Route path="/account/profile"   element={<MainLayout><AccountProfilePage /></MainLayout>} />
-        <Route path="/account/addresses" element={<MainLayout><PlaceholderPage title="Địa chỉ giao hàng" description="Quản lý địa chỉ nhận hàng của bạn. Tính năng đang được phát triển." /></MainLayout>} />
+        <Route path="/account/addresses" element={<MainLayout><AddressesPage /></MainLayout>} />
         <Route path="/support/how-to-order" element={<MainLayout><PlaceholderPage title="Cách đặt hàng" description="Hướng dẫn đặt hàng trực tuyến tại Hiệu Sách Chin." /></MainLayout>} />
         <Route path="/support/returns"   element={<MainLayout><PlaceholderPage title="Đổi trả hàng" description="Chính sách đổi trả trong 30 ngày, không cần lý do." /></MainLayout>} />
         <Route path="/support/payment"   element={<MainLayout><PlaceholderPage title="Thanh toán" description="Hỗ trợ COD, VNPay và các ví điện tử phổ biến." /></MainLayout>} />
         <Route path="/support/faq"       element={<MainLayout><PlaceholderPage title="Câu hỏi thường gặp" description="Giải đáp các thắc mắc phổ biến về đơn hàng và dịch vụ." /></MainLayout>} />
         <Route path="/contact"           element={<MainLayout><PlaceholderPage title="Liên hệ" description="Liên hệ với chúng tôi qua hotline 0383 687 670 hoặc email 23011987@st.phenikaa-uni.edu.vn." /></MainLayout>} />
+        <Route path="/blog"              element={<MainLayout><BlogPage /></MainLayout>} />
+        <Route path="/blog/:id"          element={<MainLayout><BlogDetailPage /></MainLayout>} />
+        <Route path="/notifications"     element={<MainLayout><NotificationsPage /></MainLayout>} />
+        <Route path="/payment-result"    element={<MainLayout><PaymentResultPage /></MainLayout>} />
         <Route path="/auth/login"     element={<LoginPage />} />
         <Route path="/auth/register"  element={<RegisterPage />} />
 
@@ -113,6 +124,8 @@ export default function App() {
         <Route path="/admin/accounts"   element={<AdminRoute><AdminAccountsPage /></AdminRoute>} />
         <Route path="/admin/settings"   element={<AdminRoute><AdminSettingsPage /></AdminRoute>} />
         <Route path="/admin/coupons"    element={<AdminRoute><AdminCouponsPage /></AdminRoute>} />
+        <Route path="/admin/reviews"    element={<AdminRoute><AdminReviewsPage /></AdminRoute>} />
+        <Route path="/admin/articles"   element={<AdminRoute><AdminArticlesPage /></AdminRoute>} />
       </Routes>
     </BrowserRouter>
   )

@@ -9,6 +9,7 @@ import { CustomerReviews }  from '../components/sections/CustomerReviews'
 import { About }         from '../components/sections/About'
 import { Newsletter }    from '../components/sections/Newsletter'
 
+import { useState, useEffect } from 'react'
 import { FILTER_TABS }   from '../data/books'
 import { CATEGORIES }    from '../data/categories'
 import { BLOG_POSTS }    from '../data/blog'
@@ -19,11 +20,19 @@ import {
   ABOUT_HOURS,
 } from '../data/site'
 import { useProducts }   from '../hooks/useProducts'
+import { api }           from '../services/api'
 
 export default function Home() {
   // limit cao để FeaturedBooks có đủ sách từ mọi thể loại khi lọc cục bộ
   const { products: bestsellers, loading: loadingBest } = useProducts({ sort: 'rating',  limit: 48 })
   const { products: newArrivals, loading: loadingNew  } = useProducts({ sort: 'newest',  limit: 8  })
+
+  const [blogPosts, setBlogPosts] = useState(BLOG_POSTS)
+  useEffect(() => {
+    api.get('/api/articles/recent?limit=3')
+      .then(r => { if (r.data?.length) setBlogPosts(r.data) })
+      .catch(() => {})
+  }, [])
 
   return (
     <>
@@ -63,11 +72,12 @@ export default function Home() {
       />
 
       <Blog
-        posts={BLOG_POSTS}
+        posts={blogPosts}
         eyebrow="Góc đọc sách"
         title="Bài viết nổi bật"
         subtitle="Cảm nhận, gợi ý và câu chuyện từ đội ngũ Chin"
         linkText="Xem tất cả"
+        linkHref="/blog"
       />
 
       <CustomerReviews />

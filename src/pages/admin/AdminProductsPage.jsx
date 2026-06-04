@@ -78,9 +78,33 @@ function ProductModal({ book, onClose, onSaved, showToast }) {
     visible:       book.visible       ?? true,
   } : { ...EMPTY_FORM })
 
-  const [saving, setSaving] = useState(false)
+  const [saving,       setSaving]       = useState(false)
+  const [uploadMode,   setUploadMode]   = useState('url') // 'url' | 'file'
+  const [uploading,    setUploading]    = useState(false)
 
   function set(key, val) { setForm(f => ({ ...f, [key]: val })) }
+
+  async function handleFileUpload(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploading(true)
+    try {
+      const fd = new FormData()
+      fd.append('image', file)
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/upload/cover`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${localStorage.getItem('chin-token')}` },
+        body: fd,
+      })
+      const data = await res.json()
+      if (!data.success) throw new Error(data.message)
+      set('image', data.data.url)
+    } catch (err) {
+      showToast({ message: err.message, type: 'error' })
+    } finally {
+      setUploading(false)
+    }
+  }
 
   function handleCat(e) {
     const cat = CATS.find(c => c.name === e.target.value)
@@ -188,11 +212,29 @@ function ProductModal({ book, onClose, onSaved, showToast }) {
               placeholder="van-hoc" />
           </Field>
 
-          {/* Image URL + preview */}
-          <Field label="URL ảnh bìa">
-            <input value={form.image}
-              onChange={e => set('image', e.target.value)}
-              className={INPUT_CLS} placeholder="https://..." />
+          {/* Image — URL hoặc upload */}
+          <Field label="Ảnh bìa">
+            <div className="flex gap-1 mb-2">
+              {['url','file'].map(m => (
+                <button key={m} type="button" onClick={() => setUploadMode(m)}
+                  className={`px-3 py-1 text-[11px] font-semibold rounded-sm border transition-colors ${uploadMode === m ? 'bg-ink text-white border-ink' : 'border-divider text-muted hover:border-ink'}`}>
+                  {m === 'url' ? 'Nhập URL' : 'Upload file'}
+                </button>
+              ))}
+            </div>
+            {uploadMode === 'url' ? (
+              <input value={form.image}
+                onChange={e => set('image', e.target.value)}
+                className={INPUT_CLS} placeholder="https://covers.openlibrary.org/…" />
+            ) : (
+              <label className={`flex items-center gap-2 cursor-pointer ${INPUT_CLS} ${uploading ? 'opacity-50' : ''}`}>
+                <svg className="w-4 h-4 text-muted shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                </svg>
+                <span className="text-muted text-xs">{uploading ? 'Đang upload…' : 'Chọn file JPG/PNG/WebP (tối đa 5MB)'}</span>
+                <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleFileUpload} disabled={uploading} />
+              </label>
+            )}
             {form.image && (
               <img src={form.image} alt="preview"
                 className="mt-2 h-28 w-20 object-cover rounded-sm border border-divider-lt" />

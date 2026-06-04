@@ -27,6 +27,7 @@ export default function CheckoutPage() {
     note:   '',
   })
   const [loading,       setLoading]       = useState(false)
+  const [paymentMethod, setPaymentMethod] = useState('COD')
   const [couponInput,   setCouponInput]   = useState('')
   const [couponResult,  setCouponResult]  = useState(null)  // { code, description, discount }
   const [couponLoading, setCouponLoading] = useState(false)
@@ -95,7 +96,7 @@ export default function CheckoutPage() {
 
       // 2. Tạo đơn hàng
       const res = await api.post('/api/orders', {
-        payment: 'COD',
+        payment: paymentMethod,
         address: {
           name:   form.name.trim(),
           phone:  form.phone.trim(),
@@ -106,7 +107,22 @@ export default function CheckoutPage() {
         couponCode: couponResult?.code || undefined,
       })
 
-      // 3. Clear local cart + redirect
+      const order = res.data
+
+      // 3a. PayOS — redirect sang trang thanh toán
+      if (paymentMethod === 'ONLINE') {
+        try {
+          const payRes = await api.post('/api/payments/payos/create', { orderId: order._id })
+          window.location.href = payRes.data.checkoutUrl
+          return
+        } catch {
+          showToast({ message: 'Không tạo được link thanh toán. Vui lòng thử lại.', type: 'error' })
+          navigate('/account/orders')
+          return
+        }
+      }
+
+      // 3b. COD — clear cart + redirect
       clearCart()
       showToast({ message: 'Đặt hàng thành công! Cảm ơn bạn 🎉', type: 'success' })
       navigate('/account/orders')
@@ -171,14 +187,29 @@ export default function CheckoutPage() {
 
             {/* Payment */}
             <div className="bg-white border border-divider-lt rounded-sm p-6">
-              <h2 className="font-display font-semibold text-ink mb-4">Thanh toán</h2>
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input type="radio" defaultChecked readOnly className="accent-ink" />
-                <div>
-                  <p className="text-sm font-medium text-ink">Thanh toán khi nhận hàng (COD)</p>
-                  <p className="text-xs text-muted mt-0.5">Kiểm tra hàng trước khi thanh toán</p>
-                </div>
-              </label>
+              <h2 className="font-display font-semibold text-ink mb-4">Phương thức thanh toán</h2>
+              <div className="space-y-3">
+                <label className={`flex items-center gap-3 cursor-pointer border rounded-sm px-4 py-3 transition-colors ${paymentMethod === 'COD' ? 'border-ink bg-[#faf8f5]' : 'border-divider-lt hover:border-divider'}`}>
+                  <input type="radio" name="payment" value="COD"
+                    checked={paymentMethod === 'COD'}
+                    onChange={() => setPaymentMethod('COD')}
+                    className="accent-ink" />
+                  <div>
+                    <p className="text-sm font-medium text-ink">Tiền mặt khi nhận hàng (COD)</p>
+                    <p className="text-xs text-muted mt-0.5">Kiểm tra hàng trước khi thanh toán</p>
+                  </div>
+                </label>
+                <label className={`flex items-center gap-3 cursor-pointer border rounded-sm px-4 py-3 transition-colors ${paymentMethod === 'ONLINE' ? 'border-ink bg-[#faf8f5]' : 'border-divider-lt hover:border-divider'}`}>
+                  <input type="radio" name="payment" value="ONLINE"
+                    checked={paymentMethod === 'ONLINE'}
+                    onChange={() => setPaymentMethod('ONLINE')}
+                    className="accent-ink" />
+                  <div>
+                    <p className="text-sm font-medium text-ink">PayOS / VietQR</p>
+                    <p className="text-xs text-muted mt-0.5">Quét mã QR qua app ngân hàng — xác nhận ngay lập tức</p>
+                  </div>
+                </label>
+              </div>
             </div>
           </div>
 
