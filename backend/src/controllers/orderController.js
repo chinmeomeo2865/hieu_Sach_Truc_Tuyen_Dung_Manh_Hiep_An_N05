@@ -3,6 +3,8 @@ const Cart    = require('../models/Cart')
 const Product = require('../models/Product')
 const Coupon  = require('../models/Coupon')
 const { calcDiscount } = require('./couponController')
+const { createNotification } = require('./notificationController')
+const emailService = require('../services/emailService')
 
 const CANCELLABLE = ['PENDING', 'CONFIRMED']
 
@@ -136,6 +138,10 @@ const createOrder = async (req, res, next) => {
     cart.items = []
     await cart.save()
 
+    /* Email xác nhận */
+    const buyer = await require('../models/User').findById(req.user._id).select('email')
+    if (buyer?.email) emailService.sendOrderConfirmation(order, buyer.email)
+
     res.status(201).json({ success: true, data: order })
   } catch (err) { next(err) }
 }
@@ -203,6 +209,22 @@ const updateStatus = async (req, res, next) => {
     order.status = status
     order.statusHistory.push({ status, changedBy: req.user._id })
     await order.save()
+
+    const STATUS_LABELS = {
+      CONFIRMED: 'Đã xác nhận', PACKING: 'Đang đóng gói',
+      SHIPPING: 'Đang giao hàng', DELIVERED: 'Giao thành công', RETURNED: 'Đã hoàn trả',
+    }
+    createNotification({
+      userId: order.user,
+      type:  'ORDER_STATUS',
+      title: `Đơn hàng ${STATUS_LABELS[status] || status}`,
+      message: `Đơn hàng #${order._id.toString().slice(-6).toUpperCase()} của bạn đã được cập nhật: ${STATUS_LABELS[status] || status}.`,
+      link: `/account/orders`,
+    })
+
+    /* Email thông báo */
+    const orderUser = await require('../models/User').findById(order.user).select('email')
+    if (orderUser?.email) emailService.sendStatusUpdate(order, status, orderUser.email)
 
     res.json({ success: true, data: order })
   } catch (err) { next(err) }

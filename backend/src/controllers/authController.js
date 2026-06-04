@@ -81,4 +81,62 @@ const changePassword = async (req, res, next) => {
   } catch (err) { next(err) }
 }
 
-module.exports = { register, login, getMe, updateMe, changePassword }
+/* GET /api/auth/addresses */
+const getAddresses = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user._id).select('addresses')
+    res.json({ success: true, data: user.addresses })
+  } catch (err) { next(err) }
+}
+
+/* POST /api/auth/addresses */
+const addAddress = async (req, res, next) => {
+  try {
+    const { label, name, phone, street, city, isDefault } = req.body
+    const user = await User.findById(req.user._id)
+
+    if (isDefault) user.addresses.forEach(a => { a.isDefault = false })
+    user.addresses.push({ label, name, phone, street, city, isDefault: !!isDefault })
+    await user.save()
+
+    res.status(201).json({ success: true, data: user.addresses })
+  } catch (err) { next(err) }
+}
+
+/* PUT /api/auth/addresses/:addrId */
+const updateAddress = async (req, res, next) => {
+  try {
+    const { label, name, phone, street, city, isDefault } = req.body
+    const user = await User.findById(req.user._id)
+    const addr = user.addresses.id(req.params.addrId)
+    if (!addr) return res.status(404).json({ success: false, message: 'Không tìm thấy địa chỉ' })
+
+    if (isDefault) user.addresses.forEach(a => { a.isDefault = false })
+    Object.assign(addr, { label, name, phone, street, city, isDefault: !!isDefault })
+    await user.save()
+
+    res.json({ success: true, data: user.addresses })
+  } catch (err) { next(err) }
+}
+
+/* DELETE /api/auth/addresses/:addrId */
+const deleteAddress = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user._id)
+    user.addresses = user.addresses.filter(a => a._id.toString() !== req.params.addrId)
+    await user.save()
+    res.json({ success: true, data: user.addresses })
+  } catch (err) { next(err) }
+}
+
+/* PUT /api/auth/addresses/:addrId/default */
+const setDefaultAddress = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user._id)
+    user.addresses.forEach(a => { a.isDefault = a._id.toString() === req.params.addrId })
+    await user.save()
+    res.json({ success: true, data: user.addresses })
+  } catch (err) { next(err) }
+}
+
+module.exports = { register, login, getMe, updateMe, changePassword, getAddresses, addAddress, updateAddress, deleteAddress, setDefaultAddress }

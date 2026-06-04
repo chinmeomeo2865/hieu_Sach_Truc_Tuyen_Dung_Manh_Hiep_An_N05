@@ -14,6 +14,6 @@ const couponSchema = new mongoose.Schema({
   active:         { type: Boolean, default: true },
 }, { timestamps: true })
 
-couponSchema.index({ code: 1 })
+// code index provided by unique:true on field
 
 module.exports = mongoose.model('Coupon', couponSchema)

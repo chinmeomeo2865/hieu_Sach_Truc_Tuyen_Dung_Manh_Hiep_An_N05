@@ -7,6 +7,6 @@ const categorySchema = new mongoose.Schema({
   image:       { type: String, default: '' },
 }, { timestamps: true })
 
-categorySchema.index({ slug: 1 })
+// slug index provided by unique:true on field
 
 module.exports = mongoose.model('Category', categorySchema)
