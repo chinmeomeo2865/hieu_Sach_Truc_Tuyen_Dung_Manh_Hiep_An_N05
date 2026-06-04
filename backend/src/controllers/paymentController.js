@@ -3,9 +3,14 @@ const Order  = require('../models/Order')
 const { createNotification } = require('./notificationController')
 const emailService = require('../services/emailService')
 
-const payos = process.env.PAYOS_CLIENT_ID
-  ? new PayOS(process.env.PAYOS_CLIENT_ID, process.env.PAYOS_API_KEY, process.env.PAYOS_CHECKSUM_KEY)
-  : null
+let payos = null
+try {
+  if (process.env.PAYOS_CLIENT_ID) {
+    payos = new PayOS(process.env.PAYOS_CLIENT_ID, process.env.PAYOS_API_KEY, process.env.PAYOS_CHECKSUM_KEY)
+  }
+} catch (e) {
+  console.error('[PayOS] Init failed:', e.message)
+}
 
 /* POST /api/payments/payos/create  [auth] */
 exports.createPayOSLink = async (req, res, next) => {
