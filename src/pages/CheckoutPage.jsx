@@ -115,8 +115,9 @@ export default function CheckoutPage() {
           const payRes = await api.post('/api/payments/payos/create', { orderId: order._id })
           window.location.href = payRes.data.checkoutUrl
           return
-        } catch {
-          showToast({ message: 'Không tạo được link thanh toán. Vui lòng thử lại.', type: 'error' })
+        } catch (payErr) {
+          const msg = payErr?.response?.data?.message || 'Không tạo được link thanh toán. Vui lòng thử lại.'
+          showToast({ message: msg, type: 'error' })
           navigate('/account/orders')
           return
         }
