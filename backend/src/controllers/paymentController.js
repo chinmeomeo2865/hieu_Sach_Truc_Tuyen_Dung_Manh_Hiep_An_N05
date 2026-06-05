@@ -1,4 +1,4 @@
-const PayOS  = require('@payos/node')
+const PayOS  = require('@payos/node').default || require('@payos/node')
 const Order  = require('../models/Order')
 const { createNotification } = require('./notificationController')
 const emailService = require('../services/emailService')
