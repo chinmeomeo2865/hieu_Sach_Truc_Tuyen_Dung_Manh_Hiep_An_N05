@@ -35,14 +35,17 @@ exports.createPayOSLink = async (req, res, next) => {
     const paymentData = {
       orderCode,
       amount: Math.round(order.total),
-      description: `HSC-${order._id.toString().slice(-6).toUpperCase()}`,
+      description: `HSC ${order._id.toString().slice(-6).toUpperCase()}`,
       returnUrl,
       cancelUrl,
     }
 
+    console.log('[PayOS] Creating payment:', JSON.stringify({ orderCode, amount: paymentData.amount, description: paymentData.description, returnUrl }))
     const paymentLink = await payos.createPaymentLink(paymentData)
+    console.log('[PayOS] Created:', paymentLink.checkoutUrl)
     res.json({ success: true, data: { checkoutUrl: paymentLink.checkoutUrl } })
   } catch (err) {
+    console.error('[PayOS] createPaymentLink error:', err?.response?.data || err.message)
     next(err)
   }
 }
