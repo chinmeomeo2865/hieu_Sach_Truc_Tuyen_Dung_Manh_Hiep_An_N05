@@ -48,12 +48,12 @@ function ProgressTimeline({ order }) {
   
   if (order.status === 'CANCELLED') {
     return (
-      <div className="flex flex-col items-center">
-        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-red-50 text-red-600 border border-red-200/50 uppercase tracking-wide">
+      <div className="flex flex-col items-center font-sans">
+        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#FEF2F2] text-[#DC2626] border border-[#FEE2E2] uppercase tracking-wide">
           ✕ Đã hủy
         </span>
         {order.note && (
-          <span className="text-[10px] text-muted italic mt-0.5 line-clamp-1 max-w-[150px]" title={order.note}>
+          <span className="text-[10px] text-[#8E877F] italic mt-0.5 line-clamp-1 max-w-[150px]" title={order.note}>
             Lý do: "{order.note}"
           </span>
         )}
@@ -63,8 +63,8 @@ function ProgressTimeline({ order }) {
   
   if (order.status === 'RETURNED') {
     return (
-      <div className="flex flex-col items-center">
-        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-gray-50 text-gray-600 border border-gray-200 uppercase tracking-wide">
+      <div className="flex flex-col items-center font-sans">
+        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#F4F4F5] text-[#71717A] border border-[#E4E4E7] uppercase tracking-wide">
           ✕ Đã hoàn trả
         </span>
       </div>
@@ -72,25 +72,25 @@ function ProgressTimeline({ order }) {
   }
 
   return (
-    <div className="flex items-center justify-center gap-1">
+    <div className="flex items-center justify-center gap-1 font-sans">
       {steps.map((step, idx) => {
         const isDone = idx <= statusIdx
         const isActive = idx === statusIdx
         
         let dotColor = 'bg-[#FAF8F5] border-[#EAE6DF] text-[#9B9389]'
         if (isDone) {
-          if (step.key === 'PENDING') dotColor = 'bg-yellow-500 border-yellow-600 text-white font-bold'
-          else if (step.key === 'CONFIRMED') dotColor = 'bg-blue-500 border-blue-600 text-white font-bold'
-          else if (step.key === 'PACKING') dotColor = 'bg-purple-500 border-purple-600 text-white font-bold'
-          else if (step.key === 'SHIPPING') dotColor = 'bg-orange-500 border-orange-600 text-white font-bold'
-          else if (step.key === 'DELIVERED') dotColor = 'bg-green-600 border-green-700 text-white font-bold'
+          if (step.key === 'PENDING') dotColor = 'bg-[#C6923B] border-[#B5812E] text-white font-bold'
+          else if (step.key === 'CONFIRMED') dotColor = 'bg-[#4B79A1] border-[#3A6890] text-white font-bold'
+          else if (step.key === 'PACKING') dotColor = 'bg-[#8E6CA6] border-[#7B5993] text-white font-bold'
+          else if (step.key === 'SHIPPING') dotColor = 'bg-[#D2694E] border-[#BF563B] text-white font-bold'
+          else if (step.key === 'DELIVERED') dotColor = 'bg-[#4A8561] border-[#38724E] text-white font-bold'
 
           if (isActive) {
-            if (step.key === 'PENDING') dotColor += ' ring-4 ring-yellow-500/15'
-            else if (step.key === 'CONFIRMED') dotColor += ' ring-4 ring-blue-500/15'
-            else if (step.key === 'PACKING') dotColor += ' ring-4 ring-purple-500/15'
-            else if (step.key === 'SHIPPING') dotColor += ' ring-4 ring-orange-500/15'
-            else if (step.key === 'DELIVERED') dotColor += ' ring-4 ring-green-600/15'
+            if (step.key === 'PENDING') dotColor += ' ring-2 ring-offset-2 ring-[#C6923B]'
+            else if (step.key === 'CONFIRMED') dotColor += ' ring-2 ring-offset-2 ring-[#4B79A1]'
+            else if (step.key === 'PACKING') dotColor += ' ring-2 ring-offset-2 ring-[#8E6CA6]'
+            else if (step.key === 'SHIPPING') dotColor += ' ring-2 ring-offset-2 ring-[#D2694E]'
+            else if (step.key === 'DELIVERED') dotColor += ' ring-2 ring-offset-2 ring-[#4A8561]'
           }
         }
         
@@ -102,7 +102,7 @@ function ProgressTimeline({ order }) {
 
             {idx < steps.length - 1 && (
               <div className="w-4 h-[2px] bg-[#EAE6DF] z-0">
-                <div className={`h-full bg-[#1A1A1A] transition-all duration-300 ${idx < statusIdx ? 'w-full' : 'w-0'}`} />
+                <div className={`h-full bg-[#D1C7BD] transition-all duration-300 ${idx < statusIdx ? 'w-full' : 'w-0'}`} />
               </div>
             )}
 
@@ -566,7 +566,7 @@ export default function AdminOrdersPage() {
       ) : (
         <div className="bg-white border border-[#EAE6DF] rounded-md shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-[11px] min-w-[1050px]">
+            <table className="w-full text-left border-collapse text-xs min-w-[1050px] font-sans">
               <thead>
                 <tr className="border-b border-[#EAE6DF] text-[#615C56] bg-[#FAF8F5] select-none">
                   <th className="py-3 px-4 w-[4%] text-center">
@@ -577,12 +577,12 @@ export default function AdminOrdersPage() {
                       className="cursor-pointer"
                     />
                   </th>
-                  <th className="py-3 px-2 font-bold w-[10%] text-left">MÃ ĐH</th>
-                  <th className="py-3 px-2 font-bold w-[22%] text-left">KHÁCH HÀNG</th>
-                  <th className="py-3 px-2 font-bold w-[10%] text-left">TỔNG TIỀN</th>
-                  <th className="py-3 px-2 font-bold w-[12%] text-left">NGÀY ĐẶT</th>
-                  <th className="py-3 px-2 font-bold w-[20%] text-center">TIẾN ĐỘ GIAO HÀNG</th>
-                  <th className="py-3 px-4 font-bold w-[22%] text-right">HÀNH ĐỘNG</th>
+                  <th className="py-3 px-2 font-semibold text-[#8E877F] uppercase tracking-wider text-[10px] w-[10%] text-left">MÃ ĐH</th>
+                  <th className="py-3 px-2 font-semibold text-[#8E877F] uppercase tracking-wider text-[10px] w-[22%] text-left">KHÁCH HÀNG</th>
+                  <th className="py-3 px-2 font-semibold text-[#8E877F] uppercase tracking-wider text-[10px] w-[10%] text-left">TỔNG TIỀN</th>
+                  <th className="py-3 px-2 font-semibold text-[#8E877F] uppercase tracking-wider text-[10px] w-[12%] text-left">NGÀY ĐẶT</th>
+                  <th className="py-3 px-2 font-semibold text-[#8E877F] uppercase tracking-wider text-[10px] w-[20%] text-center">TIẾN ĐỘ GIAO HÀNG</th>
+                  <th className="py-3 px-4 font-semibold text-[#8E877F] uppercase tracking-wider text-[10px] w-[22%] text-right">HÀNH ĐỘNG</th>
                 </tr>
               </thead>
               <tbody>
@@ -657,13 +657,13 @@ export default function AdminOrdersPage() {
                         <div className="flex flex-col gap-1 items-stretch justify-center w-36 ml-auto">
                           <button
                             onClick={() => setExpanded(isExpanded ? null : order._id)}
-                            className="px-2.5 py-1.5 bg-white border border-[#EAE6DF] text-[#615C56] hover:text-[#1A1A1A] hover:border-[#1A1A1A] rounded text-[10px] font-medium transition-colors whitespace-nowrap text-center"
+                            className="px-2.5 py-1.5 font-sans bg-white border border-[#EAE6DF] text-[#615C56] hover:text-[#1A1A1A] hover:bg-[#FAF8F5] hover:border-[#9B9389] rounded-md text-[10px] font-medium tracking-wide transition-all duration-200 whitespace-nowrap text-center shadow-sm"
                           >
                             CHI TIẾT
                           </button>
                           <button
                             onClick={() => handlePrintInvoice(order)}
-                            className="px-2.5 py-1.5 bg-white border border-[#EAE6DF] text-[#615C56] hover:text-[#1A1A1A] hover:border-[#1A1A1A] rounded text-[10px] font-medium transition-colors whitespace-nowrap text-center"
+                            className="px-2.5 py-1.5 font-sans bg-white border border-[#EAE6DF] text-[#615C56] hover:text-[#1A1A1A] hover:bg-[#FAF8F5] hover:border-[#9B9389] rounded-md text-[10px] font-medium tracking-wide transition-all duration-200 whitespace-nowrap text-center shadow-sm"
                           >
                             IN HÓA ĐƠN
                           </button>
@@ -671,7 +671,7 @@ export default function AdminOrdersPage() {
                             <button
                               disabled={busy}
                               onClick={() => handleNextStatus(order._id, action.next)}
-                              className="px-2.5 py-1.5 bg-[#2E4A3F] text-white hover:bg-[#1E3029] disabled:opacity-50 text-[10px] font-bold rounded tracking-wide transition-colors whitespace-nowrap text-center"
+                              className="px-2.5 py-1.5 font-sans bg-[#2E4A3F] text-white hover:bg-[#1E3029] active:bg-[#15221D] disabled:opacity-50 text-[10px] font-semibold tracking-wider rounded-md transition-all duration-200 whitespace-nowrap text-center shadow-sm uppercase"
                             >
                               {busy ? '…' : action.label}
                             </button>
@@ -680,23 +680,23 @@ export default function AdminOrdersPage() {
                             <button
                               disabled={busy}
                               onClick={() => handleCancel(order._id)}
-                              className="px-2.5 py-1.5 text-[10px] font-semibold text-red-500 border border-red-200 rounded hover:bg-red-50 disabled:opacity-50 transition-colors whitespace-nowrap text-center"
+                              className="px-2.5 py-1.5 font-sans text-[10px] font-semibold text-red-600 border border-red-200 rounded-md hover:bg-red-50 hover:border-red-300 disabled:opacity-50 transition-all duration-200 whitespace-nowrap text-center shadow-sm uppercase"
                             >
                               HỦY ĐƠN
                             </button>
                           )}
                           {order.status === 'DELIVERED' && (
-                            <span className="px-2.5 py-1.5 bg-green-50 text-green-700 border border-green-200 rounded text-[10px] font-bold tracking-wide uppercase whitespace-nowrap text-center">
+                            <span className="px-2.5 py-1.5 font-sans bg-[#F0FDF4] text-[#16A34A] border border-[#DCFCE7] rounded-md text-[10px] font-bold tracking-wider whitespace-nowrap text-center shadow-sm">
                               ✓ HOÀN THÀNH
                             </span>
                           )}
                           {order.status === 'CANCELLED' && (
-                            <span className="px-2.5 py-1.5 bg-red-50 text-red-700 border border-red-200 rounded text-[10px] font-bold tracking-wide uppercase whitespace-nowrap text-center">
+                            <span className="px-2.5 py-1.5 font-sans bg-[#FEF2F2] text-[#DC2626] border border-[#FEE2E2] rounded-md text-[10px] font-bold tracking-wider whitespace-nowrap text-center shadow-sm">
                               ✕ ĐÃ HỦY
                             </span>
                           )}
                           {order.status === 'RETURNED' && (
-                            <span className="px-2.5 py-1.5 bg-gray-50 text-gray-600 border border-gray-200 rounded text-[10px] font-bold tracking-wide uppercase whitespace-nowrap text-center">
+                            <span className="px-2.5 py-1.5 font-sans bg-[#F4F4F5] text-[#71717A] border border-[#E4E4E7] rounded-md text-[10px] font-bold tracking-wider whitespace-nowrap text-center shadow-sm">
                               ✕ HOÀN TRẢ
                             </span>
                           )}
