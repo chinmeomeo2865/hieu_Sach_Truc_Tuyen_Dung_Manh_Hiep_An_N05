@@ -650,45 +650,36 @@ export default function AdminOrdersPage() {
 
                       {/* Actions */}
                       <td className="py-3.5 px-4 text-right">
-                        <div className="flex flex-col gap-1 items-end justify-center">
-                          {/* Top row actions */}
-                          <div className="flex gap-1.5">
+                        <div className="flex flex-col gap-1 items-stretch justify-center w-36 ml-auto">
+                          <button
+                            onClick={() => setExpanded(isExpanded ? null : order._id)}
+                            className="px-2.5 py-1.5 bg-white border border-[#EAE6DF] text-[#615C56] hover:text-[#1A1A1A] hover:border-[#1A1A1A] rounded text-[10px] font-medium transition-colors whitespace-nowrap text-center"
+                          >
+                            CHI TIẾT
+                          </button>
+                          <button
+                            onClick={() => handlePrintInvoice(order)}
+                            className="px-2.5 py-1.5 bg-white border border-[#EAE6DF] text-[#615C56] hover:text-[#1A1A1A] hover:border-[#1A1A1A] rounded text-[10px] font-medium transition-colors whitespace-nowrap text-center"
+                          >
+                            IN HÓA ĐƠN
+                          </button>
+                          {action && (
                             <button
-                              onClick={() => setExpanded(isExpanded ? null : order._id)}
-                              className="px-2.5 py-1 bg-white border border-[#EAE6DF] text-[#615C56] hover:text-[#1A1A1A] hover:border-[#1A1A1A] rounded text-[10px] font-medium transition-colors whitespace-nowrap"
+                              disabled={busy}
+                              onClick={() => handleNextStatus(order._id, action.next)}
+                              className="px-2.5 py-1.5 bg-[#2E4A3F] text-white hover:bg-[#1E3029] disabled:opacity-50 text-[10px] font-bold rounded tracking-wide transition-colors whitespace-nowrap text-center"
                             >
-                              CHI TIẾT
+                              {busy ? '…' : action.label}
                             </button>
+                          )}
+                          {canCancel && (
                             <button
-                              onClick={() => handlePrintInvoice(order)}
-                              className="px-2.5 py-1 bg-white border border-[#EAE6DF] text-[#615C56] hover:text-[#1A1A1A] hover:border-[#1A1A1A] rounded text-[10px] font-medium transition-colors whitespace-nowrap"
+                              disabled={busy}
+                              onClick={() => handleCancel(order._id)}
+                              className="px-2.5 py-1.5 text-[10px] font-semibold text-red-500 border border-red-200 rounded hover:bg-red-50 disabled:opacity-50 transition-colors whitespace-nowrap text-center"
                             >
-                              IN HÓA ĐƠN
+                              HỦY ĐƠN
                             </button>
-                          </div>
-
-                          {/* Quick transitions and cancels */}
-                          {(action || canCancel) && (
-                            <div className="flex gap-1.5 justify-end mt-1">
-                              {action && (
-                                <button
-                                  disabled={busy}
-                                  onClick={() => handleNextStatus(order._id, action.next)}
-                                  className="px-2.5 py-1 bg-[#2E4A3F] text-white hover:bg-[#1E3029] disabled:opacity-50 text-[10px] font-bold rounded tracking-wide transition-colors whitespace-nowrap text-center"
-                                >
-                                  {busy ? '…' : action.label}
-                                </button>
-                              )}
-                              {canCancel && (
-                                <button
-                                  disabled={busy}
-                                  onClick={() => handleCancel(order._id)}
-                                  className="px-2.5 py-1 text-[10px] font-semibold text-red-500 border border-red-200 rounded hover:bg-red-50 disabled:opacity-50 transition-colors whitespace-nowrap"
-                                >
-                                  HỦY ĐƠN
-                                </button>
-                              )}
-                            </div>
                           )}
                         </div>
                       </td>
