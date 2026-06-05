@@ -28,18 +28,14 @@ exports.createPayOSLink = async (req, res, next) => {
     }
 
     const orderCode = parseInt(order._id.toString().slice(-8), 16) % 9007199254740991
-    const returnUrl = `${process.env.CLIENT_URL}/payment-result?orderId=${order._id}`
-    const cancelUrl = `${process.env.CLIENT_URL}/account/orders`
+    const backendUrl = process.env.BACKEND_URL || `${req.protocol}://${req.get('host')}`
+    const returnUrl = `${backendUrl}/api/payments/payos/return?orderId=${order._id}`
+    const cancelUrl = `${process.env.CLIENT_URL}/payment-result?status=cancelled&orderId=${order._id}`
 
     const paymentData = {
       orderCode,
       amount: Math.round(order.total),
       description: `HSC-${order._id.toString().slice(-6).toUpperCase()}`,
-      items: order.items.map(i => ({
-        name: i.title.slice(0, 50),
-        quantity: i.qty,
-        price: Math.round(i.price),
-      })),
       returnUrl,
       cancelUrl,
     }
