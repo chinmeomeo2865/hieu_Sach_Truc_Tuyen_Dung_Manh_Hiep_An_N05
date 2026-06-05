@@ -6,7 +6,12 @@ const emailService = require('../services/emailService')
 let payos = null
 try {
   if (process.env.PAYOS_CLIENT_ID) {
-    payos = new PayOS(process.env.PAYOS_CLIENT_ID, process.env.PAYOS_API_KEY, process.env.PAYOS_CHECKSUM_KEY)
+    payos = new PayOS({
+      clientId:    process.env.PAYOS_CLIENT_ID,
+      apiKey:      process.env.PAYOS_API_KEY,
+      checksumKey: process.env.PAYOS_CHECKSUM_KEY,
+    })
+    console.log('[PayOS] Initialized OK')
   }
 } catch (e) {
   console.error('[PayOS] Init failed:', e.message)
@@ -28,7 +33,7 @@ exports.createPayOSLink = async (req, res, next) => {
     }
 
     const orderCode = parseInt(order._id.toString().slice(-8), 16) % 9007199254740991
-    const backendUrl = process.env.BACKEND_URL || `${req.protocol}://${req.get('host')}`
+    const backendUrl = (process.env.BACKEND_URL || `${req.protocol}://${req.get('host')}`).trim()
     const returnUrl = `${backendUrl}/api/payments/payos/return?orderId=${order._id}`
     const cancelUrl = `${process.env.CLIENT_URL}/payment-result?status=cancelled&orderId=${order._id}`
 
@@ -41,7 +46,7 @@ exports.createPayOSLink = async (req, res, next) => {
     }
 
     console.log('[PayOS] Creating payment:', JSON.stringify({ orderCode, amount: paymentData.amount, description: paymentData.description, returnUrl }))
-    const paymentLink = await payos.createPaymentLink(paymentData)
+    const paymentLink = await payos.paymentRequests.create(paymentData)
     console.log('[PayOS] Created:', paymentLink.checkoutUrl)
     res.json({ success: true, data: { checkoutUrl: paymentLink.checkoutUrl } })
   } catch (err) {
