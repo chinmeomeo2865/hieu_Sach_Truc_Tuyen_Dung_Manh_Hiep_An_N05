@@ -172,6 +172,33 @@ export default function AdminAnalyticsPage() {
   const [filterDate, setFilterDate] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
 
+  // Inline stock edit states
+  const [editingProductId, setEditingProductId] = useState(null)
+  const [editingStockValue, setEditingStockValue] = useState(0)
+
+  const handleUpdateStock = (productId, newStock) => {
+    if (newStock < 0) {
+      showToast({ message: 'Số lượng tồn kho không thể âm!', type: 'error' })
+      return
+    }
+    api.put(`/api/products/${productId}/stock`, { stock: newStock })
+      .then(() => {
+        showToast({ message: 'Cập nhật số lượng tồn kho thành công!', type: 'success' })
+        setEditingProductId(null)
+        // Refresh data
+        setLoading(true)
+        let url = `/api/analytics?period=${period}`
+        if (period === 'custom') {
+          url = `/api/analytics?startDate=${startDate}&endDate=${endDate}`
+        }
+        api.get(url)
+          .then(r => setData(r.data))
+          .catch(err => showToast({ message: err.message, type: 'error' }))
+          .finally(() => setLoading(false))
+      })
+      .catch(err => showToast({ message: err.message || 'Lỗi cập nhật tồn kho', type: 'error' }))
+  }
+
   useEffect(() => {
     if (period === 'custom' && (!startDate || !endDate)) {
       return
@@ -528,6 +555,7 @@ export default function AdminAnalyticsPage() {
             <div className="space-y-3.5">
               {data.lowStockProducts.map((p) => {
                 const isUrgent = p.stock <= 3
+                const isEditing = editingProductId === p._id
                 return (
                   <div key={p._id} className="flex items-center justify-between gap-3 p-2 rounded-lg border border-[#FAF8F5] hover:bg-[#FAF8F5]/50 transition-colors">
                     <div className="flex items-center gap-3">
@@ -541,10 +569,59 @@ export default function AdminAnalyticsPage() {
                         <p className="text-[10px] text-[#8E877F]">{p.author}</p>
                       </div>
                     </div>
-                    <div className="text-right flex-shrink-0">
-                      <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold ${isUrgent ? 'bg-red-50 text-red-600 border border-red-200/50' : 'bg-amber-50 text-amber-700 border border-amber-200/50'}`}>
-                        Còn {p.stock} cuốn
-                      </span>
+                    
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {isEditing ? (
+                        <div className="flex items-center gap-1">
+                          <input
+                            type="number"
+                            min="0"
+                            value={editingStockValue}
+                            onChange={e => setEditingStockValue(Number(e.target.value))}
+                            className="w-16 px-1.5 py-0.5 border border-[#EAE6DF] rounded text-[10px] focus:outline-none focus:border-[#1a1a1a] bg-white text-[#1a1a1a] font-semibold"
+                            onClick={e => e.stopPropagation()}
+                          />
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleUpdateStock(p._id, editingStockValue)
+                            }}
+                            className="p-1 text-[#059669] hover:bg-emerald-50 rounded text-xs font-bold transition-colors"
+                            title="Lưu"
+                          >
+                            ✓
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setEditingProductId(null)
+                            }}
+                            className="p-1 text-red-600 hover:bg-red-50 rounded text-xs font-bold transition-colors"
+                            title="Hủy"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1.5 group/badge">
+                          <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold ${isUrgent ? 'bg-red-50 text-red-600 border border-red-200/50' : 'bg-amber-50 text-amber-700 border border-amber-200/50'}`}>
+                            Còn {p.stock} cuốn
+                          </span>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setEditingProductId(p._id)
+                              setEditingStockValue(p.stock)
+                            }}
+                            className="opacity-0 group-hover/badge:opacity-100 p-1 hover:bg-[#FAF8F5] rounded transition-all text-[#615C56] hover:text-[#1A1A1A]"
+                            title="Nhập thêm hàng nhanh"
+                          >
+                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                            </svg>
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )
