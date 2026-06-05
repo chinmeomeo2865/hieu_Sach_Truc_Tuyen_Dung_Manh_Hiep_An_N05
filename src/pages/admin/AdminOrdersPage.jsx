@@ -562,7 +562,7 @@ export default function AdminOrdersPage() {
       ) : (
         <div className="bg-white border border-[#EAE6DF] rounded-md shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-[11px] min-w-[900px]">
+            <table className="w-full text-left border-collapse text-[11px] min-w-[1050px]">
               <thead>
                 <tr className="border-b border-[#EAE6DF] text-[#615C56] bg-[#FAF8F5] select-none">
                   <th className="py-3 px-4 w-[4%] text-center">
@@ -573,12 +573,12 @@ export default function AdminOrdersPage() {
                       className="cursor-pointer"
                     />
                   </th>
-                  <th className="py-3 px-2 font-bold w-[12%] text-left">MÃ ĐH</th>
-                  <th className="py-3 px-2 font-bold w-[23%] text-left">KHÁCH HÀNG</th>
-                  <th className="py-3 px-2 font-bold w-[12%] text-left">TỔNG TIỀN</th>
-                  <th className="py-3 px-2 font-bold w-[13%] text-left">NGÀY ĐẶT</th>
-                  <th className="py-3 px-2 font-bold w-[21%] text-center">TIẾN ĐỘ GIAO HÀNG</th>
-                  <th className="py-3 px-4 font-bold w-[15%] text-right">HÀNH ĐỘNG</th>
+                  <th className="py-3 px-2 font-bold w-[10%] text-left">MÃ ĐH</th>
+                  <th className="py-3 px-2 font-bold w-[22%] text-left">KHÁCH HÀNG</th>
+                  <th className="py-3 px-2 font-bold w-[10%] text-left">TỔNG TIỀN</th>
+                  <th className="py-3 px-2 font-bold w-[12%] text-left">NGÀY ĐẶT</th>
+                  <th className="py-3 px-2 font-bold w-[20%] text-center">TIẾN ĐỘ GIAO HÀNG</th>
+                  <th className="py-3 px-4 font-bold w-[22%] text-right">HÀNH ĐỘNG</th>
                 </tr>
               </thead>
               <tbody>
@@ -655,13 +655,13 @@ export default function AdminOrdersPage() {
                           <div className="flex gap-1.5">
                             <button
                               onClick={() => setExpanded(isExpanded ? null : order._id)}
-                              className="px-2.5 py-1 bg-white border border-[#EAE6DF] text-[#615C56] hover:text-[#1A1A1A] hover:border-[#1A1A1A] rounded text-[10px] font-medium transition-colors"
+                              className="px-2.5 py-1 bg-white border border-[#EAE6DF] text-[#615C56] hover:text-[#1A1A1A] hover:border-[#1A1A1A] rounded text-[10px] font-medium transition-colors whitespace-nowrap"
                             >
                               CHI TIẾT
                             </button>
                             <button
                               onClick={() => handlePrintInvoice(order)}
-                              className="px-2.5 py-1 bg-white border border-[#EAE6DF] text-[#615C56] hover:text-[#1A1A1A] hover:border-[#1A1A1A] rounded text-[10px] font-medium transition-colors"
+                              className="px-2.5 py-1 bg-white border border-[#EAE6DF] text-[#615C56] hover:text-[#1A1A1A] hover:border-[#1A1A1A] rounded text-[10px] font-medium transition-colors whitespace-nowrap"
                             >
                               IN HÓA ĐƠN
                             </button>
@@ -669,12 +669,12 @@ export default function AdminOrdersPage() {
 
                           {/* Quick transitions and cancels */}
                           {(action || canCancel) && (
-                            <div className="flex gap-1.5 w-full justify-end mt-1">
+                            <div className="flex gap-1.5 justify-end mt-1">
                               {action && (
                                 <button
                                   disabled={busy}
                                   onClick={() => handleNextStatus(order._id, action.next)}
-                                  className="w-full px-2.5 py-1 bg-[#2E4A3F] text-white hover:bg-[#1E3029] disabled:opacity-50 text-[10px] font-bold rounded tracking-wide transition-colors whitespace-nowrap text-center"
+                                  className="px-2.5 py-1 bg-[#2E4A3F] text-white hover:bg-[#1E3029] disabled:opacity-50 text-[10px] font-bold rounded tracking-wide transition-colors whitespace-nowrap text-center"
                                 >
                                   {busy ? '…' : action.label}
                                 </button>
@@ -683,7 +683,7 @@ export default function AdminOrdersPage() {
                                 <button
                                   disabled={busy}
                                   onClick={() => handleCancel(order._id)}
-                                  className="px-2.5 py-1 text-[10px] font-semibold text-red-500 border border-red-200 rounded hover:bg-red-50 disabled:opacity-50 transition-colors"
+                                  className="px-2.5 py-1 text-[10px] font-semibold text-red-500 border border-red-200 rounded hover:bg-red-50 disabled:opacity-50 transition-colors whitespace-nowrap"
                                 >
                                   HỦY ĐƠN
                                 </button>
