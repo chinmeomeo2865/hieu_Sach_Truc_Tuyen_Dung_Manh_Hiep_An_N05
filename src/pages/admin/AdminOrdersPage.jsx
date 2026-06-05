@@ -79,14 +79,18 @@ function ProgressTimeline({ order }) {
         
         let dotColor = 'bg-[#FAF8F5] border-[#EAE6DF] text-[#9B9389]'
         if (isDone) {
+          if (step.key === 'PENDING') dotColor = 'bg-yellow-500 border-yellow-600 text-white font-bold'
+          else if (step.key === 'CONFIRMED') dotColor = 'bg-blue-500 border-blue-600 text-white font-bold'
+          else if (step.key === 'PACKING') dotColor = 'bg-purple-500 border-purple-600 text-white font-bold'
+          else if (step.key === 'SHIPPING') dotColor = 'bg-orange-500 border-orange-600 text-white font-bold'
+          else if (step.key === 'DELIVERED') dotColor = 'bg-green-600 border-green-700 text-white font-bold'
+
           if (isActive) {
-            if (step.key === 'PENDING') dotColor = 'bg-yellow-500 border-yellow-600 text-white font-bold ring-4 ring-yellow-500/10'
-            else if (step.key === 'CONFIRMED') dotColor = 'bg-blue-500 border-blue-600 text-white font-bold ring-4 ring-blue-500/10'
-            else if (step.key === 'PACKING') dotColor = 'bg-purple-500 border-purple-600 text-white font-bold ring-4 ring-purple-500/10'
-            else if (step.key === 'SHIPPING') dotColor = 'bg-orange-500 border-orange-600 text-white font-bold ring-4 ring-orange-500/10'
-            else if (step.key === 'DELIVERED') dotColor = 'bg-green-600 border-green-700 text-white font-bold ring-4 ring-green-600/10'
-          } else {
-            dotColor = 'bg-[#1A1A1A] border-[#1A1A1A] text-white font-medium'
+            if (step.key === 'PENDING') dotColor += ' ring-4 ring-yellow-500/15'
+            else if (step.key === 'CONFIRMED') dotColor += ' ring-4 ring-blue-500/15'
+            else if (step.key === 'PACKING') dotColor += ' ring-4 ring-purple-500/15'
+            else if (step.key === 'SHIPPING') dotColor += ' ring-4 ring-orange-500/15'
+            else if (step.key === 'DELIVERED') dotColor += ' ring-4 ring-green-600/15'
           }
         }
         
@@ -680,6 +684,21 @@ export default function AdminOrdersPage() {
                             >
                               HỦY ĐƠN
                             </button>
+                          )}
+                          {order.status === 'DELIVERED' && (
+                            <span className="px-2.5 py-1.5 bg-green-50 text-green-700 border border-green-200 rounded text-[10px] font-bold tracking-wide uppercase whitespace-nowrap text-center">
+                              ✓ HOÀN THÀNH
+                            </span>
+                          )}
+                          {order.status === 'CANCELLED' && (
+                            <span className="px-2.5 py-1.5 bg-red-50 text-red-700 border border-red-200 rounded text-[10px] font-bold tracking-wide uppercase whitespace-nowrap text-center">
+                              ✕ ĐÃ HỦY
+                            </span>
+                          )}
+                          {order.status === 'RETURNED' && (
+                            <span className="px-2.5 py-1.5 bg-gray-50 text-gray-600 border border-gray-200 rounded text-[10px] font-bold tracking-wide uppercase whitespace-nowrap text-center">
+                              ✕ HOÀN TRẢ
+                            </span>
                           )}
                         </div>
                       </td>
