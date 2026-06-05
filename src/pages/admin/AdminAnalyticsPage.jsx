@@ -174,7 +174,7 @@ export default function AdminAnalyticsPage() {
 
   // Inline stock edit states
   const [editingProductId, setEditingProductId] = useState(null)
-  const [editingStockValue, setEditingStockValue] = useState(0)
+  const [editingStockValue, setEditingStockValue] = useState('')
 
   const handleUpdateStock = (productId, newStock) => {
     if (newStock < 0) {
@@ -574,11 +574,17 @@ export default function AdminAnalyticsPage() {
                       {isEditing ? (
                         <div className="flex items-center gap-1">
                           <input
-                            type="number"
-                            min="0"
+                            type="text"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
                             value={editingStockValue}
-                            onChange={e => setEditingStockValue(Number(e.target.value))}
-                            className="w-16 px-1.5 py-0.5 border border-[#EAE6DF] rounded text-[10px] focus:outline-none focus:border-[#1a1a1a] bg-white text-[#1a1a1a] font-semibold"
+                            onChange={e => {
+                              const val = e.target.value
+                              if (/^\d*$/.test(val)) {
+                                setEditingStockValue(val)
+                              }
+                            }}
+                            className="w-16 px-1.5 py-0.5 border border-[#EAE6DF] rounded text-[10px] focus:outline-none focus:border-[#1a1a1a] bg-white text-[#1a1a1a] font-semibold text-center"
                             onClick={e => e.stopPropagation()}
                           />
                           <button
@@ -611,7 +617,7 @@ export default function AdminAnalyticsPage() {
                             onClick={(e) => {
                               e.stopPropagation()
                               setEditingProductId(p._id)
-                              setEditingStockValue(p.stock)
+                              setEditingStockValue(p.stock.toString())
                             }}
                             className="opacity-0 group-hover/badge:opacity-100 p-1 hover:bg-[#FAF8F5] rounded transition-all text-[#615C56] hover:text-[#1A1A1A]"
                             title="Nhập thêm hàng nhanh"
