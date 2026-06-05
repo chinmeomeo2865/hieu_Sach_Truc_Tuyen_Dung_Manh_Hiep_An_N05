@@ -21,6 +21,13 @@ export default {
         },
         accent: '#b45309',
         star: '#d97706',
+        sand: {
+          50:  '#fdf8f2',
+          100: '#f5ede0',
+          200: '#e8d8c4',
+          800: '#6b4a2e',
+          900: '#4a2e1a',
+        },
       },
       fontFamily: {
         display: ['"Playfair Display"', 'Georgia', 'serif'],

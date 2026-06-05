@@ -1,8 +1,8 @@
 import { useMemo }          from 'react'
+import { Link }             from 'react-router-dom'
 import { useScrollReveal }  from '../../hooks/useScrollReveal'
 import { useUIStore }       from '../../store/uiStore'
 import { SectionHeader }    from '../ui/SectionHeader'
-import { FeaturedCard }     from '../ui/FeaturedCard'
 import { BookCard }         from '../ui/BookCard'
 
 export function FeaturedBooks({
@@ -12,7 +12,7 @@ export function FeaturedBooks({
   title    = '',
   subtitle = '',
   linkText = 'Xem tất cả',
-  linkHref = '#',
+  linkHref = '/books',
 }) {
   const { ref, visible }  = useScrollReveal()
   const active            = useUIStore(s => s.activeCategory)
@@ -23,8 +23,8 @@ export function FeaturedBooks({
     [books, active],
   )
 
-  const featured = useMemo(() => filtered.filter(b => b.featured), [filtered])
-  const grid     = useMemo(() => filtered.filter(b => !b.featured), [filtered])
+  // Lưới đều tối đa 8 sách (4 trên · 4 dưới trên desktop/tablet)
+  const grid = useMemo(() => filtered.slice(0, 8), [filtered])
 
   return (
     <section id="books" aria-label={title} className="border-t border-divider-lt py-16 md:py-24">
@@ -52,35 +52,26 @@ export function FeaturedBooks({
             </div>
           )}
 
-          {/* Featured 2-up */}
-          {featured.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-[1.5px] border border-divider-lt rounded-xl overflow-hidden bg-divider-lt mb-5">
-              {featured.map(book => (
-                <FeaturedCard key={book._id || book.id} book={book} />
-              ))}
-            </div>
-          )}
-
-          {/* Grid */}
+          {/* Grid đều — 4 trên · 4 dưới */}
           {grid.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-5">
               {grid.map(book => (
                 <BookCard key={book._id || book.id} book={book} />
               ))}
             </div>
-          ) : featured.length === 0 && (
+          ) : (
             <p className="text-center text-sm text-muted py-16">
               Không có sách nào trong danh mục này.
             </p>
           )}
 
           <div className="text-center mt-8">
-            <a
-              href={linkHref}
+            <Link
+              to={linkHref}
               className="inline-flex items-center gap-2 border border-divider text-ink-60 text-[11px] font-semibold tracking-label uppercase px-6 py-3 rounded-sm hover:border-ink hover:text-ink hover:-translate-y-px transition-all"
             >
               {linkText}
-            </a>
+            </Link>
           </div>
         </div>
       </div>

@@ -5,6 +5,8 @@ import { Footer }           from './components/layout/Footer'
 import { ToastContainer }   from './components/ui/ToastContainer'
 import { QuickViewModal }   from './components/ui/QuickViewModal'
 import { SearchModal }      from './components/ui/SearchModal'
+import { AuthPromptModal }  from './components/ui/AuthPromptModal'
+import { SupportModal }     from './components/ui/SupportModal'
 import Home                 from './pages/Home'
 import LoginPage            from './pages/LoginPage'
 import RegisterPage         from './pages/RegisterPage'
@@ -18,6 +20,7 @@ import AccountProfilePage   from './pages/AccountProfilePage'
 import AccountPage          from './pages/AccountPage'
 import AddressesPage        from './pages/account/AddressesPage'
 import PlaceholderPage      from './pages/PlaceholderPage'
+import SupportPage          from './pages/SupportPage'
 import AdminLoginPage       from './pages/admin/AdminLoginPage'
 import AdminOrdersPage      from './pages/admin/AdminOrdersPage'
 import AdminUsersPage       from './pages/admin/AdminUsersPage'
@@ -59,8 +62,11 @@ import {
 function MainLayout({ children }) {
   return (
     <>
-      <AnnouncementBar message={ANNOUNCEMENT_MESSAGE} />
-      <Navbar links={NAV_LINKS} categories={NAV_CATEGORIES} />
+      <div className="fixed top-0 left-0 right-0 z-[100]">
+        <AnnouncementBar message={ANNOUNCEMENT_MESSAGE} />
+        <Navbar links={NAV_LINKS} categories={NAV_CATEGORIES} />
+      </div>
+      <div className="h-[104px]" />
       <main>{children}</main>
       <Footer columns={FOOTER_COLUMNS} />
     </>
@@ -72,6 +78,8 @@ export default function App() {
     <BrowserRouter>
       <SearchModal />
       <QuickViewModal />
+      <AuthPromptModal />
+      <SupportModal />
       <ToastContainer />
 
       <Routes>
@@ -85,11 +93,7 @@ export default function App() {
         <Route path="/account/wishlist"  element={<MainLayout><WishlistPage /></MainLayout>} />
         <Route path="/account/profile"   element={<MainLayout><AccountProfilePage /></MainLayout>} />
         <Route path="/account/addresses" element={<MainLayout><AddressesPage /></MainLayout>} />
-        <Route path="/support/how-to-order" element={<MainLayout><PlaceholderPage title="Cách đặt hàng" description="Hướng dẫn đặt hàng trực tuyến tại Hiệu Sách Chin." /></MainLayout>} />
-        <Route path="/support/returns"   element={<MainLayout><PlaceholderPage title="Đổi trả hàng" description="Chính sách đổi trả trong 30 ngày, không cần lý do." /></MainLayout>} />
-        <Route path="/support/payment"   element={<MainLayout><PlaceholderPage title="Thanh toán" description="Hỗ trợ COD, VNPay và các ví điện tử phổ biến." /></MainLayout>} />
-        <Route path="/support/faq"       element={<MainLayout><PlaceholderPage title="Câu hỏi thường gặp" description="Giải đáp các thắc mắc phổ biến về đơn hàng và dịch vụ." /></MainLayout>} />
-        <Route path="/contact"           element={<MainLayout><PlaceholderPage title="Liên hệ" description="Liên hệ với chúng tôi qua hotline 0383 687 670 hoặc email 23011987@st.phenikaa-uni.edu.vn." /></MainLayout>} />
+        <Route path="/support"           element={<MainLayout><SupportPage /></MainLayout>} />
         <Route path="/blog"              element={<MainLayout><BlogPage /></MainLayout>} />
         <Route path="/blog/:id"          element={<MainLayout><BlogDetailPage /></MainLayout>} />
         <Route path="/notifications"     element={<MainLayout><NotificationsPage /></MainLayout>} />

@@ -2,6 +2,7 @@ import { useCartStore }     from '../../store/cartStore'
 import { useWishlistStore } from '../../store/wishlistStore'
 import { useToastStore }    from '../../store/toastStore'
 import { useUIStore }       from '../../store/uiStore'
+import { useAuthStore }     from '../../store/authStore'
 import { Badge }            from './Badge'
 import { StarRating }       from './StarRating'
 import { HeartIcon, PlusIcon } from './icons'
@@ -14,15 +15,25 @@ export function FeaturedCard({ book }) {
   const wishlisted   = useWishlistStore(s => s.ids.includes(bookId))
   const showToast    = useToastStore(s => s.show)
   const openQuickView = useUIStore(s => s.openQuickView)
+  const openAuthPrompt = useUIStore(s => s.openAuthPrompt)
+  const isAuthed     = useAuthStore(s => !!s.token)
 
   const handleAddCart = (e) => {
     e.stopPropagation()
+    if (!isAuthed) {
+      openAuthPrompt({ message: 'Đăng nhập để thêm sách vào giỏ hàng.' })
+      return
+    }
     addItem({ ...book, id: bookId })
     showToast({ message: `Đã thêm "${book.title}" vào giỏ hàng` })
   }
 
   const handleWishlist = (e) => {
     e.stopPropagation()
+    if (!isAuthed) {
+      openAuthPrompt({ message: 'Đăng nhập để lưu sách vào danh sách yêu thích.' })
+      return
+    }
     const was = wishlisted
     toggle(bookId)
     showToast({

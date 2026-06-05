@@ -43,9 +43,14 @@ export function MobileMenu({ isOpen, onClose, links = [], categories = [], user 
               <div className="h-px bg-divider-lt mx-6 my-2" />
               <p className="px-6 py-2 text-[9px] font-semibold tracking-label-xl uppercase text-subtle">Danh mục sách</p>
               {categories.map((cat) => (
-                <a key={cat} href="#" onClick={onClose} className="flex items-center px-6 py-2.5 text-sm text-ink-60 hover:text-ink hover:bg-surface-warm transition-colors">
-                  {cat}
-                </a>
+                <Link
+                  key={cat.slug}
+                  to={`/books?category=${cat.slug}`}
+                  onClick={onClose}
+                  className="flex items-center px-6 py-2.5 text-sm text-ink-60 hover:text-ink hover:bg-surface-warm transition-colors"
+                >
+                  {cat.name}
+                </Link>
               ))}
             </>
           )}

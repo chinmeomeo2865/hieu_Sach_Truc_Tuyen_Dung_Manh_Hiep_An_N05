@@ -169,6 +169,7 @@ export const FILTER_TABS = [
   { value: 'van-hoc',   label: 'Văn học' },
   { value: 'ky-nang',   label: 'Kỹ năng sống' },
   { value: 'thieu-nhi', label: 'Thiếu nhi' },
+  { value: 'kien-thuc', label: 'Kiến thức' },
   { value: 'triet-hoc', label: 'Triết học' },
   { value: 'lich-su',   label: 'Lịch sử' },
 ]

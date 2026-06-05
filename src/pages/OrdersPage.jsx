@@ -40,7 +40,7 @@ export default function OrdersPage() {
   useEffect(() => {
     if (!isAuth) {
       showToast({ message: 'Vui lòng đăng nhập để xem đơn hàng', type: 'error' })
-      navigate('/auth/login')
+      navigate('/auth/login', { replace: true, state: { from: '/account/orders' } })
       return
     }
     Promise.all([

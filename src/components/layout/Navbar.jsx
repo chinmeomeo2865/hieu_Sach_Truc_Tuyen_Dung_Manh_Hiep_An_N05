@@ -43,6 +43,7 @@ export function Navbar({ links = [], categories = [] }) {
   const cartCount      = useCartStore(s => s.items.reduce((n, i) => n + i.qty, 0))
   const wishlistCount  = useWishlistStore(s => s.ids.length)
   const openSearch     = useUIStore(s => s.openSearch)
+  const openAuthPrompt = useUIStore(s => s.openAuthPrompt)
   const user           = useAuthStore(s => s.user)
   const token          = useAuthStore(s => s.token)
   const logout         = useAuthStore(s => s.logout)
@@ -68,7 +69,7 @@ export function Navbar({ links = [], categories = [] }) {
       <nav
         role="navigation"
         aria-label="Thanh điều hướng chính"
-        className={`sticky top-0 z-[100] bg-white/96 backdrop-blur-xl border-b border-divider-lt transition-shadow duration-300 ${scrolled ? 'shadow-nav' : ''}`}
+        className={`bg-white/96 backdrop-blur-xl border-b border-divider-lt transition-shadow duration-300 ${scrolled ? 'shadow-nav' : ''}`}
       >
         <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-10">
           <div className="h-16 grid grid-cols-[1fr_auto_1fr] items-center gap-6">
@@ -105,14 +106,24 @@ export function Navbar({ links = [], categories = [] }) {
                 </Link>
               )}
 
-              <Link to="/account/wishlist" aria-label={`Yêu thích (${wishlistCount})`} className="relative w-9 h-9 rounded-lg flex items-center justify-center text-muted hover:text-ink hover:bg-surface-subtle transition-colors">
-                <HeartIcon className="w-[17px] h-[17px]" />
-                {wishlistCount > 0 && (
-                  <span className="absolute top-0.5 right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-accent text-white text-[9px] font-bold flex items-center justify-center leading-none">
-                    {wishlistCount}
-                  </span>
-                )}
-              </Link>
+              {token ? (
+                <Link to="/account/wishlist" aria-label={`Yêu thích (${wishlistCount})`} className="relative w-9 h-9 rounded-lg flex items-center justify-center text-muted hover:text-ink hover:bg-surface-subtle transition-colors">
+                  <HeartIcon className="w-[17px] h-[17px]" />
+                  {wishlistCount > 0 && (
+                    <span className="absolute top-0.5 right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-accent text-white text-[9px] font-bold flex items-center justify-center leading-none">
+                      {wishlistCount}
+                    </span>
+                  )}
+                </Link>
+              ) : (
+                <button
+                  onClick={() => openAuthPrompt({ message: 'Đăng nhập để xem và lưu sách yêu thích.' })}
+                  aria-label="Yêu thích"
+                  className="relative w-9 h-9 rounded-lg flex items-center justify-center text-muted hover:text-ink hover:bg-surface-subtle transition-colors"
+                >
+                  <HeartIcon className="w-[17px] h-[17px]" />
+                </button>
+              )}
 
               <Link to="/cart" aria-label={`Giỏ hàng (${cartCount})`} className="relative w-9 h-9 rounded-lg flex items-center justify-center text-muted hover:text-ink hover:bg-surface-subtle transition-colors">
                 <CartIcon className="w-[18px] h-[18px]" />

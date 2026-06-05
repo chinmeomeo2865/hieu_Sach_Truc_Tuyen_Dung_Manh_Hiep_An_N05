@@ -14,7 +14,7 @@ export default function AccountProfilePage() {
   const navigate       = useNavigate()
 
   if (!isAuth) {
-    navigate('/auth/login')
+    navigate('/auth/login', { replace: true, state: { from: '/account/profile' } })
     return null
   }
 

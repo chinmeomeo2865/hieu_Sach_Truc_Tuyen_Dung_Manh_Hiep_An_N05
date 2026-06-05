@@ -1,20 +1,11 @@
-import { useUIStore } from '../../store/uiStore'
+import { Link } from 'react-router-dom'
 
 export function CategoryCard({ category }) {
   const { name, count, image, slug } = category
-  const setCategory = useUIStore(s => s.setCategory)
-
-  const handleClick = () => {
-    setCategory(slug)
-    // Scroll to books section after state update
-    setTimeout(() => {
-      document.getElementById('books')?.scrollIntoView({ behavior: 'smooth' })
-    }, 50)
-  }
 
   return (
-    <button
-      onClick={handleClick}
+    <Link
+      to={`/books?category=${slug}`}
       aria-label={`Xem danh mục ${name}`}
       className="relative block w-full aspect-card rounded-lg overflow-hidden bg-surface-subtle cursor-pointer group text-left"
     >
@@ -30,6 +21,6 @@ export function CategoryCard({ category }) {
         </p>
         <p className="font-display font-semibold text-[1.05rem] text-white leading-tight">{name}</p>
       </div>
-    </button>
+    </Link>
   )
 }

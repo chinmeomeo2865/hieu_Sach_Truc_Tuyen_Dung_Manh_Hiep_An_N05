@@ -1,14 +1,19 @@
 /* All site-wide static content — single source of truth */
 
 export const NAV_LINKS = [
-  { href: '/books',  label: 'Sách' },
+  { href: '/',       label: 'Trang chủ' },
   { href: '/books',  label: 'Danh mục' },
-  { href: '/#blog',  label: 'Bài viết' },
+  { href: '/blog',   label: 'Bài viết' },
   { href: '/#about', label: 'Về chúng tôi' },
 ]
 
 export const NAV_CATEGORIES = [
-  'Văn học', 'Kỹ năng sống', 'Thiếu nhi', 'Triết học', 'Lịch sử', 'Kiến thức',
+  { slug: 'van-hoc',   name: 'Văn học' },
+  { slug: 'ky-nang',   name: 'Kỹ năng sống' },
+  { slug: 'thieu-nhi', name: 'Thiếu nhi' },
+  { slug: 'kien-thuc', name: 'Kiến thức' },
+  { slug: 'triet-hoc', name: 'Triết học' },
+  { slug: 'lich-su',   name: 'Lịch sử' },
 ]
 
 export const HERO_EYEBROW       = 'Hà Đông · Hà Nội · Est. 2024'
@@ -53,12 +58,12 @@ export const FOOTER_COLUMNS = [
   {
     label: 'Hỗ trợ',
     links: [
-      { label: 'Cách đặt hàng', href: '/support/how-to-order' },
-      { label: 'Đổi trả hàng',  href: '/support/returns' },
-      { label: 'Thanh toán',    href: '/support/payment' },
-      { label: 'Theo dõi đơn',  href: '/account/orders' },
-      { label: 'FAQ',           href: '/support/faq' },
-      { label: 'Liên hệ',       href: '/contact' },
+      { label: 'Cách đặt hàng', href: '#', modal: 'how-to-order' },
+      { label: 'Đổi trả hàng',  href: '#', modal: 'returns' },
+      { label: 'Thanh toán',    href: '#', modal: 'payment' },
+      { label: 'Theo dõi đơn',  href: '#', modal: 'tracking' },
+      { label: 'FAQ',           href: '#', modal: 'faq' },
+      { label: 'Liên hệ',       href: '#', modal: 'contact' },
     ],
   },
   {
@@ -68,7 +73,6 @@ export const FOOTER_COLUMNS = [
       { label: 'Đăng ký',             href: '/auth/register' },
       { label: 'Đơn hàng của tôi',    href: '/account/orders' },
       { label: 'Danh sách yêu thích', href: '/account/wishlist' },
-      { label: 'Địa chỉ giao hàng',   href: '/account/addresses' },
     ],
   },
 ]

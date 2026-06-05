@@ -4,6 +4,8 @@ import { api }                 from '../services/api'
 import { useCartStore }        from '../store/cartStore'
 import { useWishlistStore }    from '../store/wishlistStore'
 import { useToastStore }       from '../store/toastStore'
+import { useUIStore }          from '../store/uiStore'
+import { useAuthStore }        from '../store/authStore'
 import { StarRating }          from '../components/ui/StarRating'
 import { Badge }               from '../components/ui/Badge'
 import { formatPrice }         from '../utils/format'
@@ -37,6 +39,8 @@ export default function BookDetailPage() {
   const toggle     = useWishlistStore(s => s.toggle)
   const wishlisted = useWishlistStore(s => s.ids.includes(id))
   const showToast  = useToastStore(s => s.show)
+  const openAuthPrompt = useUIStore(s => s.openAuthPrompt)
+  const isAuthed   = useAuthStore(s => !!s.token)
 
   useEffect(() => {
     setLoading(true)
@@ -69,6 +73,10 @@ export default function BookDetailPage() {
 
   function handleAddCart() {
     if (!book) return
+    if (!isAuthed) {
+      openAuthPrompt({ message: 'Đăng nhập để thêm sách vào giỏ hàng.' })
+      return
+    }
     for (let i = 0; i < qty; i++) addItem({ ...book, id: book._id })
     showToast({ message: `Đã thêm "${book.title}" vào giỏ hàng` })
   }
@@ -172,7 +180,11 @@ export default function BookDetailPage() {
                 Thêm vào giỏ hàng
               </button>
               <button
-                onClick={() => { toggle(id); showToast({ message: wishlisted ? 'Đã xóa khỏi yêu thích' : 'Đã thêm vào yêu thích', type: wishlisted ? 'info' : 'success' }) }}
+                onClick={() => {
+                  if (!isAuthed) { openAuthPrompt({ message: 'Đăng nhập để lưu sách vào danh sách yêu thích.' }); return }
+                  toggle(id)
+                  showToast({ message: wishlisted ? 'Đã xóa khỏi yêu thích' : 'Đã thêm vào yêu thích', type: wishlisted ? 'info' : 'success' })
+                }}
                 className={`w-11 h-11 flex items-center justify-center border rounded-sm transition-colors ${wishlisted ? 'border-red-300 text-red-500' : 'border-divider text-muted hover:border-ink hover:text-ink'}`}
                 aria-label="Yêu thích"
               >

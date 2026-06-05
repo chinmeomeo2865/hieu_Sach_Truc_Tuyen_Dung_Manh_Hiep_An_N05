@@ -80,7 +80,6 @@ function ReviewCard({ review, delay = 0 }) {
 export function CustomerReviews() {
   const [reviews, setReviews] = useState([])
   const [loaded, setLoaded]   = useState(false)
-  const { ref, visible }      = useScrollReveal()
 
   useEffect(() => {
     api.get('/api/reviews/recent?limit=6')
@@ -95,21 +94,16 @@ export function CustomerReviews() {
   return (
     <section aria-label="Cảm nhận từ độc giả" className="border-t border-divider-lt py-16 md:py-24">
       <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-10">
-        <div
-          ref={ref}
-          className={`transition-all duration-700 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'}`}
-        >
-          <SectionHeader
-            eyebrow="Độc giả nói gì"
-            title="Cảm nhận thật"
-            subtitle={`${reviews.length} đánh giá từ khách hàng đã mua tại Hiệu Sách Chin`}
-          />
+        <SectionHeader
+          eyebrow="Độc giả nói gì"
+          title="Cảm nhận thật"
+          subtitle={`${reviews.length} đánh giá từ khách hàng đã mua tại Hiệu Sách Chin`}
+        />
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
-            {reviews.map((review, i) => (
-              <ReviewCard key={review._id} review={review} delay={i * 80} />
-            ))}
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
+          {reviews.map((review, i) => (
+            <ReviewCard key={review._id} review={review} delay={i * 80} />
+          ))}
         </div>
       </div>
     </section>

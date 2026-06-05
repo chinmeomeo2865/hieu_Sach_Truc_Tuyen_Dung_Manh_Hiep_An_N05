@@ -699,7 +699,7 @@ export default function AccountPage() {
   const [reviewTarget, setReviewTarget]     = useState(null) // { item, orderId }
 
   useEffect(() => {
-    if (!isAuth) { navigate('/auth/login'); return }
+    if (!isAuth) { navigate('/auth/login', { replace: true, state: { from: '/account' } }); return }
     Promise.all([
       api.get('/api/orders'),
       api.get('/api/reviews/my-reviews').catch(() => ({ data: [] })),

@@ -17,7 +17,14 @@ export function Categories({
           ref={ref}
           className={`transition-all duration-700 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'}`}
         >
-          <SectionHeader eyebrow={eyebrow} title={title} subtitle={subtitle} />
+          <SectionHeader
+            eyebrow={eyebrow}
+            title={title}
+            titleHref="/books"
+            subtitle={subtitle}
+            linkText="Xem tất cả"
+            linkHref="/books"
+          />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {categories.map((cat) => (

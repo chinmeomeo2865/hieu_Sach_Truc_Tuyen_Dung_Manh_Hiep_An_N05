@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuthStore }  from '../store/authStore'
 import { useToastStore } from '../store/toastStore'
 
@@ -11,6 +11,12 @@ export default function RegisterPage() {
   const register  = useAuthStore(s => s.register)
   const showToast = useToastStore(s => s.show)
   const navigate  = useNavigate()
+  const location  = useLocation()
+
+  function handleBack() {
+    if (location.key && location.key !== 'default') navigate(-1)
+    else navigate('/')
+  }
 
   function update(field) {
     return e => setForm(f => ({ ...f, [field]: e.target.value }))
@@ -33,7 +39,7 @@ export default function RegisterPage() {
     setLoading(true)
     try {
       await register(form.name.trim(), form.email, form.password)
-      navigate('/')
+      navigate(location.state?.from || '/', { replace: true })
     } catch (err) {
       showToast({ message: err.message || 'Đăng ký thất bại, thử lại sau', type: 'error' })
     } finally {
@@ -49,6 +55,17 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen bg-surface-warm flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
+        {/* Back */}
+        <button
+          onClick={handleBack}
+          className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-label uppercase text-muted hover:text-ink transition-colors mb-6"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+          Quay lại
+        </button>
+
         <div className="text-center mb-8">
           <Link to="/" className="font-display text-2xl font-semibold text-ink">Hiệu Sách Chin</Link>
           <p className="mt-2 text-sm text-muted">Tạo tài khoản mới</p>
@@ -92,7 +109,7 @@ export default function RegisterPage() {
 
         <p className="text-center mt-6 text-sm text-muted">
           Đã có tài khoản?{' '}
-          <Link to="/auth/login" className="text-ink font-medium hover:underline">
+          <Link to="/auth/login" state={{ from: location.state?.from }} className="text-ink font-medium hover:underline">
             Đăng nhập
           </Link>
         </p>

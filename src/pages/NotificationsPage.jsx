@@ -27,7 +27,7 @@ export default function NotificationsPage() {
   const [loading,       setLoading]       = useState(true)
 
   useEffect(() => {
-    if (!isAuth) { navigate('/auth/login'); return }
+    if (!isAuth) { navigate('/auth/login', { replace: true, state: { from: '/notifications' } }); return }
     api.get('/api/notifications')
       .then(r => { setNotifications(r.data); setUnreadCount(r.unreadCount) })
       .catch(() => showToast({ message: 'Không tải được thông báo', type: 'error' }))

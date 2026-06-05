@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { FacebookIcon, InstagramIcon, TiktokIcon } from '../ui/icons'
+import { useUIStore } from '../../store/uiStore'
 
 const SOCIAL = [
   { label: 'Facebook',  Icon: FacebookIcon },
@@ -27,6 +28,8 @@ export function Footer({
   legalLinks = LEGAL,
   copyright  = '© 2026 Hiệu Sách Chin. Bảo lưu mọi quyền.',
 }) {
+  const openSupportModal = useUIStore(s => s.openSupportModal)
+
   return (
     <footer className="bg-ink" role="contentinfo">
       <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-10 py-16 md:py-20">
@@ -54,14 +57,23 @@ export function Footer({
                 {label}
               </p>
               <ul className="space-y-2.5">
-                {links.map(({ label: text, href }) => (
+                {links.map(({ label: text, href, modal }) => (
                   <li key={text}>
-                    <Link
-                      to={href}
-                      className="text-xs text-white/70 hover:text-white transition-colors duration-200 inline-block"
-                    >
-                      {text}
-                    </Link>
+                    {modal ? (
+                      <button
+                        onClick={() => openSupportModal(modal)}
+                        className="text-xs text-white/70 hover:text-white transition-colors duration-200 inline-block text-left"
+                      >
+                        {text}
+                      </button>
+                    ) : (
+                      <Link
+                        to={href}
+                        className="text-xs text-white/70 hover:text-white transition-colors duration-200 inline-block"
+                      >
+                        {text}
+                      </Link>
+                    )}
                   </li>
                 ))}
               </ul>

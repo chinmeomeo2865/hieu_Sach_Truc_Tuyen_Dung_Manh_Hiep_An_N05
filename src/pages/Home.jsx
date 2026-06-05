@@ -24,7 +24,7 @@ import { api }           from '../services/api'
 
 export default function Home() {
   // limit cao để FeaturedBooks có đủ sách từ mọi thể loại khi lọc cục bộ
-  const { products: bestsellers, loading: loadingBest } = useProducts({ sort: 'rating',  limit: 48 })
+  const { products: bestsellers, loading: loadingBest } = useProducts({ sort: 'rating',  limit: 8 })
   const { products: newArrivals, loading: loadingNew  } = useProducts({ sort: 'newest',  limit: 8  })
 
   const [blogPosts, setBlogPosts] = useState(BLOG_POSTS)

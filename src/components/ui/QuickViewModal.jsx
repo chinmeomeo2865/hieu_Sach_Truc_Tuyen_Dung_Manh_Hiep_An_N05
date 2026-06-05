@@ -4,6 +4,7 @@ import { useUIStore }       from '../../store/uiStore'
 import { useCartStore }     from '../../store/cartStore'
 import { useWishlistStore } from '../../store/wishlistStore'
 import { useToastStore }    from '../../store/toastStore'
+import { useAuthStore }     from '../../store/authStore'
 import { StarRating }       from './StarRating'
 import { Badge }            from './Badge'
 import { HeartIcon, CloseIcon, PlusIcon } from './icons'
@@ -17,6 +18,8 @@ export function QuickViewModal() {
   const bookId       = book ? (book._id || book.id) : null
   const wishlisted   = useWishlistStore(s => bookId ? s.ids.includes(bookId) : false)
   const showToast    = useToastStore(s => s.show)
+  const openAuthPrompt = useUIStore(s => s.openAuthPrompt)
+  const isAuthed     = useAuthStore(s => !!s.token)
 
   /* Lock scroll + Escape key */
   useEffect(() => {
@@ -33,12 +36,22 @@ export function QuickViewModal() {
   if (!book) return null
 
   const handleAddCart = () => {
+    if (!isAuthed) {
+      close()
+      openAuthPrompt({ message: 'Đăng nhập để thêm sách vào giỏ hàng.' })
+      return
+    }
     addItem(book)
     showToast({ message: `Đã thêm "${book.title}" vào giỏ hàng` })
     close()
   }
 
   const handleWishlist = () => {
+    if (!isAuthed) {
+      close()
+      openAuthPrompt({ message: 'Đăng nhập để lưu sách vào danh sách yêu thích.' })
+      return
+    }
     const was = wishlisted
     toggle(bookId)
     showToast({

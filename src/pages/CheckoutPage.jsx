@@ -36,7 +36,8 @@ export default function CheckoutPage() {
   useEffect(() => {
     if (!isAuth) {
       showToast({ message: 'Vui lòng đăng nhập để đặt hàng', type: 'error' })
-      navigate('/auth/login')
+      navigate('/auth/login', { replace: true, state: { from: '/checkout' } })
+      return
     }
     if (items.length === 0) navigate('/cart')
   }, [])

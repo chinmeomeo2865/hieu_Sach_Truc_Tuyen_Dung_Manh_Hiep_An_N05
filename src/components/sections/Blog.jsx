@@ -13,7 +13,7 @@ export function Blog({
   const { ref, visible } = useScrollReveal()
 
   return (
-    <section id="blog" aria-label={title} className="border-t border-divider-lt py-16 md:py-24">
+    <section id="blog" aria-label={title} className="border-t border-divider-lt pt-16 md:pt-24 pb-4">
       <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-10">
         <div
           ref={ref}

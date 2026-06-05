@@ -94,7 +94,7 @@ export default function AddressesPage() {
   const [mode,      setMode]      = useState(null) // null | 'add' | { editing: addr }
 
   useEffect(() => {
-    if (!isAuth) { navigate('/auth/login'); return }
+    if (!isAuth) { navigate('/auth/login', { replace: true, state: { from: '/account/addresses' } }); return }
     api.get('/api/auth/addresses')
       .then(r => setAddresses(r.data))
       .catch(() => showToast({ message: 'Không tải được địa chỉ', type: 'error' }))

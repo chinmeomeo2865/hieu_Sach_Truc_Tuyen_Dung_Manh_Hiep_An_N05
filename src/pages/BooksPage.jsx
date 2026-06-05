@@ -12,7 +12,7 @@ const SORT_OPTIONS = [
   { value: 'price_desc', label: 'Giá: Cao → Thấp' },
 ]
 
-const LIMIT = 12
+const LIMIT = 8
 
 function EmptyState({ search }) {
   const suggestions = useMemo(() => {

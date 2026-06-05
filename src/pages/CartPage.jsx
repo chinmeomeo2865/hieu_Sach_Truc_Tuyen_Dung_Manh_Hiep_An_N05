@@ -38,7 +38,7 @@ export default function CartPage() {
   function handleCheckout() {
     if (!isAuth) {
       showToast({ message: 'Vui lòng đăng nhập để đặt hàng', type: 'error' })
-      navigate('/auth/login')
+      navigate('/auth/login', { state: { from: '/cart' } })
       return
     }
     navigate('/checkout')

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuthStore }  from '../store/authStore'
 import { useToastStore } from '../store/toastStore'
 
@@ -11,6 +11,13 @@ export default function LoginPage() {
   const login     = useAuthStore(s => s.login)
   const showToast = useToastStore(s => s.show)
   const navigate  = useNavigate()
+  const location  = useLocation()
+  const from      = location.state?.from
+
+  function handleBack() {
+    if (location.key && location.key !== 'default') navigate(-1)
+    else navigate('/')
+  }
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -20,7 +27,7 @@ export default function LoginPage() {
       if (user.role === 'warehouse') navigate('/warehouse', { replace: true })
       else if (user.role === 'product_manager') navigate('/pm', { replace: true })
       else if (user.role === 'admin') navigate('/admin/analytics', { replace: true })
-      else navigate('/', { replace: true })
+      else navigate(from || '/', { replace: true })
     } catch (err) {
       showToast({ message: err.message || 'Email hoặc mật khẩu không đúng', type: 'error' })
     } finally {
@@ -31,6 +38,17 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-surface-warm flex items-center justify-center px-4">
       <div className="w-full max-w-md">
+        {/* Back */}
+        <button
+          onClick={handleBack}
+          className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-label uppercase text-muted hover:text-ink transition-colors mb-6"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+          Quay lại
+        </button>
+
         {/* Logo / header */}
         <div className="text-center mb-8">
           <Link to="/" className="font-display text-2xl font-semibold text-ink">Hiệu Sách Chin</Link>
@@ -80,7 +98,7 @@ export default function LoginPage() {
 
         <p className="text-center mt-6 text-sm text-muted">
           Chưa có tài khoản?{' '}
-          <Link to="/auth/register" className="text-ink font-medium hover:underline">
+          <Link to="/auth/register" state={{ from }} className="text-ink font-medium hover:underline">
             Đăng ký ngay
           </Link>
         </p>

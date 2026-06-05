@@ -1,8 +1,10 @@
-import { useState, useMemo, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useUIStore }    from '../../store/uiStore'
 import { useCartStore }  from '../../store/cartStore'
 import { useToastStore } from '../../store/toastStore'
-import { ALL_BOOKS, FILTER_TABS } from '../../data/books'
+import { useAuthStore }  from '../../store/authStore'
+import { FILTER_TABS }   from '../../data/books'
+import { useProducts }   from '../../hooks/useProducts'
 import { CloseIcon, SearchIcon, PlusIcon } from './icons'
 import { formatPrice }   from '../../utils/format'
 
@@ -10,10 +12,13 @@ export function SearchModal() {
   const open         = useUIStore(s => s.searchOpen)
   const close        = useUIStore(s => s.closeSearch)
   const openQuickView = useUIStore(s => s.openQuickView)
+  const openAuthPrompt = useUIStore(s => s.openAuthPrompt)
   const addItem      = useCartStore(s => s.addItem)
   const showToast    = useToastStore(s => s.show)
+  const isAuthed     = useAuthStore(s => !!s.token)
 
   const [query,     setQuery]     = useState('')
+  const [debounced, setDebounced] = useState('')
   const [activeTab, setActiveTab] = useState('all')
   const inputRef = useRef(null)
 
@@ -21,6 +26,7 @@ export function SearchModal() {
   useEffect(() => {
     if (open) {
       setQuery('')
+      setDebounced('')
       setActiveTab('all')
       setTimeout(() => inputRef.current?.focus(), 60)
       document.body.style.overflow = 'hidden'
@@ -30,6 +36,12 @@ export function SearchModal() {
     return () => { document.body.style.overflow = '' }
   }, [open])
 
+  /* Debounce query → tránh gọi API mỗi lần gõ phím */
+  useEffect(() => {
+    const t = setTimeout(() => setDebounced(query.trim()), 300)
+    return () => clearTimeout(t)
+  }, [query])
+
   /* Escape to close */
   useEffect(() => {
     const onKey = (e) => { if (e.key === 'Escape') close() }
@@ -37,20 +49,20 @@ export function SearchModal() {
     return () => window.removeEventListener('keydown', onKey)
   }, [close])
 
-  const results = useMemo(() => {
-    const q = query.trim().toLowerCase()
-    return ALL_BOOKS.filter(b => {
-      const matchQuery = !q
-        || b.title.toLowerCase().includes(q)
-        || b.author.toLowerCase().includes(q)
-        || b.category.toLowerCase().includes(q)
-      const matchTab = activeTab === 'all' || b.categorySlug === activeTab
-      return matchQuery && matchTab
-    })
-  }, [query, activeTab])
+  /* Data thật từ API (giống trang /books), fallback static nếu lỗi */
+  const { products: results, loading } = useProducts({
+    category: activeTab,
+    search: debounced,
+    limit: 50,
+  })
 
   const handleAddCart = (e, book) => {
     e.stopPropagation()
+    if (!isAuthed) {
+      close()
+      openAuthPrompt({ message: 'Đăng nhập để thêm sách vào giỏ hàng.' })
+      return
+    }
     addItem(book)
     showToast({ message: `Đã thêm "${book.title}" vào giỏ hàng` })
   }
@@ -114,7 +126,11 @@ export function SearchModal() {
 
         {/* Results */}
         <div className="overflow-y-auto flex-1">
-          {results.length === 0 ? (
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-16 text-center px-6">
+              <p className="font-display text-lg font-medium text-muted">Đang tìm…</p>
+            </div>
+          ) : results.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center px-6">
               <p className="font-display text-lg font-medium text-muted">Không tìm thấy kết quả</p>
               <p className="text-sm text-subtle mt-1">Thử từ khóa khác hoặc duyệt theo danh mục</p>
@@ -123,7 +139,7 @@ export function SearchModal() {
             <>
               <ul>
                 {results.map(book => (
-                  <li key={book.id} className="border-b border-divider-lt last:border-0">
+                  <li key={book._id || book.id} className="border-b border-divider-lt last:border-0">
                     <button
                       onClick={() => handleOpenBook(book)}
                       className="w-full flex items-center gap-4 px-5 py-3.5 hover:bg-surface-warm transition-colors text-left group"
