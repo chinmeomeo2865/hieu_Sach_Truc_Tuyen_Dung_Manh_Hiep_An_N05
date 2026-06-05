@@ -58,7 +58,7 @@ export default function WarehouseDashboard() {
             <StatCard icon="📋" color="bg-amber-50" label="Đơn chờ xử lý" value={stats.pendingPacking} to="/warehouse/orders?status=CONFIRMED" />
             <StatCard icon="⚠️" color="bg-red-50"   label="Sản phẩm sắp hết" value={stats.lowStock} to="/warehouse/inventory?filter=low" />
             <StatCard icon="↩️" color="bg-orange-50" label="Hoàn/hủy hôm nay" value={stats.returns} to="/warehouse/returns" />
-            <StatCard icon="📦" color="bg-emerald-50" label="Nhập kho hôm nay" value={stats.importedToday} />
+            <StatCard icon="📦" color="bg-emerald-50" label="Nhập kho hôm nay" value={stats.importedToday} to="/warehouse/inventory" />
           </>)}
         </div>
 

@@ -42,7 +42,7 @@ router.put(
 )
 router.delete(
   '/:id',
-  protect, authorize('admin'),
+  protect, authorize('product_manager', 'admin'),
   deleteProduct
 )
 router.put(

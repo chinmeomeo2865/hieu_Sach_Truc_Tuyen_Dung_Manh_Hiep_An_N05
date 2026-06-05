@@ -34,6 +34,7 @@ const orderSchema = new mongoose.Schema({
     changedAt: { type: Date, default: Date.now },
     changedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   }],
+  returnProcessed: { type: Boolean, default: false },
 }, { timestamps: true })
 
 orderSchema.index({ user: 1, createdAt: -1 })

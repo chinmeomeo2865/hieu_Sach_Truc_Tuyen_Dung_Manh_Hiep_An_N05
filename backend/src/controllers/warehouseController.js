@@ -192,7 +192,7 @@ exports.getReturns = async (req, res, next) => {
     const limit  = Math.min(50, parseInt(req.query.limit) || 20)
     const status = req.query.status
 
-    const filter = { status: { $in: ['CANCELLED', 'RETURNED'] } }
+    const filter = { status: { $in: ['CANCELLED', 'RETURNED'] }, returnProcessed: { $ne: true } }
     if (status && ['CANCELLED', 'RETURNED'].includes(status)) filter.status = status
 
     const [orders, total] = await Promise.all([
@@ -242,13 +242,12 @@ exports.processReturn = async (req, res, next) => {
       })
     }
 
-    if (order.status === 'CANCELLED') {
-      order.status = 'CANCELLED'
-    } else {
+    if (order.status !== 'CANCELLED') {
       order.status = 'RETURNED'
       order.statusHistory.push({ status: 'RETURNED', changedAt: new Date(), changedBy: req.user._id })
-      await order.save()
     }
+    order.returnProcessed = true
+    await order.save()
 
     await log('process_return',
       `Xử lý hoàn trả đơn #${order._id.toString().slice(-8).toUpperCase()}`,

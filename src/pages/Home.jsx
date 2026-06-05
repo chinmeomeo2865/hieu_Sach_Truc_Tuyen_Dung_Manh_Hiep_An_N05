@@ -54,12 +54,12 @@ export default function Home() {
 
       <div className={loadingBest ? 'opacity-60 animate-pulse' : undefined}>
         <FeaturedBooks
-          eyebrow="Bán chạy nhất"
-          title="Bestsellers"
+          eyebrow="Tuyển chọn"
+          title="Danh sách sách"
           subtitle="Những cuốn sách được hàng nghìn độc giả tin yêu"
           books={bestsellers}
           filters={FILTER_TABS}
-          linkText="Xem tất cả bestsellers"
+          linkText="Khám phá toàn bộ sách"
         />
       </div>
 

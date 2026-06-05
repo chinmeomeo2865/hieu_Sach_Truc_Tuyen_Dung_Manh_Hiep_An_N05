@@ -47,7 +47,7 @@ function ProductModal({ book, cats, onClose, onSaved }) {
     if (Object.keys(errs).length) { setErrors(errs); return }
     setLoading(true)
     try {
-      const payload = { ...form, price: Number(form.price), originalPrice: form.originalPrice ? Number(form.originalPrice) : undefined, stock: Number(form.stock) }
+      const payload = { ...form, price: Number(form.price), originalPrice: form.originalPrice ? Number(form.originalPrice) : undefined, stock: Number(form.stock), badge: form.badge || null }
       if (isEdit) await api.put(`/api/products/${book._id}`, payload)
       else        await api.post('/api/products', payload)
       showToast({ message: isEdit ? 'Đã cập nhật sách' : 'Đã thêm sách mới', type: 'success' })
