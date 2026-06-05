@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { FacebookIcon, InstagramIcon, TiktokIcon } from '../ui/icons'
 import { useUIStore } from '../../store/uiStore'
+import { useAuthStore } from '../../store/authStore'
 
 const SOCIAL = [
   { label: 'Facebook',  Icon: FacebookIcon },
@@ -29,6 +30,7 @@ export function Footer({
   copyright  = '© 2026 Hiệu Sách Chin. Bảo lưu mọi quyền.',
 }) {
   const openSupportModal = useUIStore(s => s.openSupportModal)
+  const token = useAuthStore(s => s.token)
 
   return (
     <footer className="bg-ink" role="contentinfo">
@@ -57,7 +59,7 @@ export function Footer({
                 {label}
               </p>
               <ul className="space-y-2.5">
-                {links.map(({ label: text, href, modal }) => (
+                {links.map(({ label: text, href, modal, auth }) => (
                   <li key={text}>
                     {modal ? (
                       <button
@@ -68,7 +70,7 @@ export function Footer({
                       </button>
                     ) : (
                       <Link
-                        to={href}
+                        to={auth && !token ? '/auth/login' : href}
                         className="text-xs text-white/70 hover:text-white transition-colors duration-200 inline-block"
                       >
                         {text}

@@ -36,7 +36,7 @@ export function BlogCard({ post, delay = 0 }) {
   )
 
   return href ? (
-    <Link to={href} className={`group block cursor-pointer transition-all duration-700 ${delayClass}`}>
+    <Link to={href} state={{ back: { path: '/', scrollTo: 'blog' } }} className={`group block cursor-pointer transition-all duration-700 ${delayClass}`}>
       {inner}
     </Link>
   ) : (

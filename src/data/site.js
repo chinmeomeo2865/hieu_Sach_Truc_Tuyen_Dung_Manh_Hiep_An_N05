@@ -72,7 +72,7 @@ export const FOOTER_COLUMNS = [
       { label: 'Đăng nhập',           href: '/auth/login' },
       { label: 'Đăng ký',             href: '/auth/register' },
       { label: 'Đơn hàng của tôi',    href: '/account/orders' },
-      { label: 'Danh sách yêu thích', href: '/account/wishlist' },
+      { label: 'Danh sách yêu thích', href: '/account/wishlist', auth: true },
     ],
   },
 ]

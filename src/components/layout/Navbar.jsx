@@ -69,7 +69,7 @@ export function Navbar({ links = [], categories = [] }) {
       <nav
         role="navigation"
         aria-label="Thanh điều hướng chính"
-        className={`bg-white/96 backdrop-blur-xl border-b border-divider-lt transition-shadow duration-300 ${scrolled ? 'shadow-nav' : ''}`}
+        className={`bg-white border-b border-divider-lt transition-shadow duration-300 ${scrolled ? 'shadow-nav' : ''}`}
       >
         <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-10">
           <div className="h-16 grid grid-cols-[1fr_auto_1fr] items-center gap-6">

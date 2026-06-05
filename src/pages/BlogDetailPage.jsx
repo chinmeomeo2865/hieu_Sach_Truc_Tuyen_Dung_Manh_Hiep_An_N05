@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom'
 import { api } from '../services/api'
 
 export default function BlogDetailPage() {
   const { id } = useParams()
+  const navigate = useNavigate()
+  const location = useLocation()
   const [article, setArticle] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error,   setError]   = useState(false)
@@ -34,13 +36,32 @@ export default function BlogDetailPage() {
   return (
     <article className="max-w-[720px] mx-auto px-4 sm:px-6 py-12">
       {/* Back */}
-      <Link to="/blog"
-        className="inline-flex items-center gap-1.5 text-[12px] font-medium text-muted hover:text-ink transition-colors mb-8">
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-        </svg>
-        Quay lại Góc đọc sách
-      </Link>
+      <div className="flex items-center gap-4 mb-8">
+        <button
+          onClick={() => {
+            const back = location.state?.back
+            if (back) navigate(back.path, back.scrollTo ? { state: { scrollTo: back.scrollTo } } : {})
+            else navigate(-1)
+          }}
+          className="inline-flex items-center gap-1.5 text-[12px] font-medium text-muted hover:text-ink transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+          </svg>
+          Quay lại
+        </button>
+        <span className="text-divider">|</span>
+        <button
+          onClick={() => navigate('/', { state: { scrollTo: 'blog' } })}
+          className="inline-flex items-center gap-1.5 text-[12px] font-medium text-muted hover:text-ink transition-colors"
+        >
+          Trang chủ
+        </button>
+        <span className="text-divider">|</span>
+        <Link to="/blog" className="inline-flex items-center gap-1.5 text-[12px] font-medium text-muted hover:text-ink transition-colors">
+          Góc đọc sách
+        </Link>
+      </div>
 
       {/* Meta */}
       <p className="text-[11px] font-semibold uppercase tracking-label-2xl text-accent mb-3">{article.category}</p>
