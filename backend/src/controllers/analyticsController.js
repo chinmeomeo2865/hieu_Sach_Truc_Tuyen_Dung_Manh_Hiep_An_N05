@@ -1,17 +1,31 @@
 const Order = require('../models/Order')
 const User  = require('../models/User')
+const Product = require('../models/Product')
 
 exports.getStats = async (req, res, next) => {
   try {
-    const period = req.query.period || '30days'
-    const now    = new Date()
-    let   startDate
+    const { startDate: qStart, endDate: qEnd, period } = req.query
+    const now = new Date()
+    let startDate
+    let endDate = now
 
-    if      (period === 'today')  startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-    else if (period === '7days')  startDate = new Date(now.getTime() - 7  * 86400000)
-    else                          startDate = new Date(now.getTime() - 30 * 86400000)
+    if (qStart && qEnd) {
+      startDate = new Date(qStart)
+      startDate.setHours(0, 0, 0, 0)
+      endDate = new Date(qEnd)
+      endDate.setHours(23, 59, 59, 999)
+    } else {
+      const p = period || '30days'
+      if (p === 'today') {
+        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+      } else if (p === '7days') {
+        startDate = new Date(now.getTime() - 7 * 86400000)
+      } else {
+        startDate = new Date(now.getTime() - 30 * 86400000)
+      }
+    }
 
-    const df = { createdAt: { $gte: startDate } }
+    const df = { createdAt: { $gte: startDate, $lte: endDate } }
 
     const [
       totalOrders, deliveredOrders, cancelledOrders,
@@ -19,6 +33,8 @@ exports.getStats = async (req, res, next) => {
       totalCustomers, newCustomers, byStatus,
       userRoleStats,
       totalMembers,
+      lowStockProducts,
+      paymentMethods,
     ] = await Promise.all([
       Order.countDocuments(df),
       Order.countDocuments({ ...df, status: 'DELIVERED' }),
@@ -69,6 +85,16 @@ exports.getStats = async (req, res, next) => {
       ]),
 
       User.countDocuments({}),
+
+      Product.find({ stock: { $lte: 10 } })
+        .sort({ stock: 1 })
+        .limit(5)
+        .select('title author stock image price'),
+
+      Order.aggregate([
+        { $match: df },
+        { $group: { _id: '$payment', count: { $sum: 1 }, total: { $sum: '$total' } } },
+      ]),
     ])
 
     const totalRevenue = revenueAgg.reduce((s, d) => s + d.revenue, 0)
@@ -80,7 +106,7 @@ exports.getStats = async (req, res, next) => {
     res.json({
       success: true,
       data: {
-        period,
+        period: qStart && qEnd ? 'custom' : period || '30days',
         summary: {
           totalRevenue,
           totalDiscount,
@@ -103,6 +129,8 @@ exports.getStats = async (req, res, next) => {
         topProducts,
         recentOrders,
         ordersByStatus: statusMap,
+        lowStockProducts,
+        paymentMethods,
       },
     })
   } catch (err) { next(err) }

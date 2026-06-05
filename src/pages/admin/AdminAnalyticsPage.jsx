@@ -17,6 +17,7 @@ const PERIODS = [
   { value: 'today',  label: 'Hôm nay'  },
   { value: '7days',  label: '7 ngày'   },
   { value: '30days', label: '30 ngày'  },
+  { value: 'custom', label: 'Tùy chọn' },
 ]
 
 const STATUS_LABEL = {
@@ -156,6 +157,8 @@ function SkeletonCard() {
 export default function AdminAnalyticsPage() {
   const showToast          = useToastStore(s => s.show)
   const [period, setPeriod] = useState('30days')
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
   const [data, setData]    = useState(null)
   const [loading, setLoading] = useState(true)
 
@@ -170,12 +173,48 @@ export default function AdminAnalyticsPage() {
   const [currentPage, setCurrentPage] = useState(1)
 
   useEffect(() => {
+    if (period === 'custom' && (!startDate || !endDate)) {
+      return
+    }
     setLoading(true)
-    api.get(`/api/analytics?period=${period}`)
+    let url = `/api/analytics?period=${period}`
+    if (period === 'custom') {
+      url = `/api/analytics?startDate=${startDate}&endDate=${endDate}`
+    }
+    api.get(url)
       .then(r => setData(r.data))
       .catch(err => showToast({ message: err.message, type: 'error' }))
       .finally(() => setLoading(false))
-  }, [period])
+  }, [period, startDate, endDate, showToast])
+
+  const exportToCSV = () => {
+    if (!data?.recentOrders?.length) return
+
+    const headers = ['Mã Đơn Hàng', 'Tên Khách Hàng', 'Email', 'Ngày Mua', 'Tổng Tiền (VND)', 'Trạng Thái']
+    const rows = data.recentOrders.map(o => [
+      o.orderCode || `#${o._id.slice(-8).toUpperCase()}`,
+      o.user?.name || 'Khách vãng lai',
+      o.user?.email || 'N/A',
+      new Date(o.createdAt).toLocaleDateString('vi-VN'),
+      o.total,
+      STATUS_LABEL[o.status] || o.status
+    ])
+
+    const BOM = '\uFEFF'
+    const csvContent = BOM + [headers.join(','), ...rows.map(row => row.map(val => `"${val.toString().replace(/"/g, '""')}"`).join(','))].join('\n')
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.setAttribute('href', url)
+    link.setAttribute('download', `don_hang_gan_day_${new Date().toISOString().slice(0, 10)}.csv`)
+    link.style.visibility = 'hidden'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    
+    showToast({ message: 'Xuất file Excel thành công!', type: 'success' })
+  }
 
   useEffect(() => {
     if (!selectedOrderId) {
@@ -231,18 +270,37 @@ export default function AdminAnalyticsPage() {
           <h2 className="font-display text-[14.5px] font-bold text-[#1A1A1A] uppercase tracking-wider">SỐ LIỆU PHÂN TÍCH KINH DOANH</h2>
           <p className="text-[11px] text-[#9B9389] mt-0.5">Các chỉ số được cập nhật theo khoảng thời gian lựa chọn</p>
         </div>
-        <div className="flex gap-1 p-0.5 bg-[#F2EFEA] rounded-lg self-start md:self-auto">
-          {PERIODS.map(p => (
-            <button
-              key={p.value}
-              onClick={() => setPeriod(p.value)}
-              className={`px-3 py-1 rounded-md text-[11px] font-semibold transition-all duration-150 ${
-                period === p.value ? 'bg-white text-[#1A1A1A] shadow-sm' : 'text-[#8E877F] hover:text-[#1A1A1A]'
-              }`}
-            >
-              {p.label}
-            </button>
-          ))}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 self-start md:self-auto">
+          {period === 'custom' && (
+            <div className="flex items-center gap-2">
+              <input
+                type="date"
+                value={startDate}
+                onChange={e => setStartDate(e.target.value)}
+                className="px-2.5 py-1 border border-[#EAE6DF] rounded-md text-[11px] bg-white text-[#1A1A1A] focus:outline-none focus:border-[#1A1A1A]"
+              />
+              <span className="text-[10px] text-[#8E877F]">đến</span>
+              <input
+                type="date"
+                value={endDate}
+                onChange={e => setEndDate(e.target.value)}
+                className="px-2.5 py-1 border border-[#EAE6DF] rounded-md text-[11px] bg-white text-[#1A1A1A] focus:outline-none focus:border-[#1A1A1A]"
+              />
+            </div>
+          )}
+          <div className="flex gap-1 p-0.5 bg-[#F2EFEA] rounded-lg">
+            {PERIODS.map(p => (
+              <button
+                key={p.value}
+                onClick={() => setPeriod(p.value)}
+                className={`px-3 py-1 rounded-md text-[11px] font-semibold transition-all duration-150 ${
+                  period === p.value ? 'bg-white text-[#1A1A1A] shadow-sm' : 'text-[#8E877F] hover:text-[#1A1A1A]'
+                }`}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -409,7 +467,87 @@ export default function AdminAnalyticsPage() {
         </div>
       </div>
 
-      {/* Row 4: Recent orders (At the very bottom as a clean full-width table) */}
+      {/* Row 4: Payment Distribution & Low Stock Alerts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
+        {/* Cơ cấu hình thức thanh toán */}
+        <div className="bg-white rounded-xl border border-[#EAE6DF] p-5 shadow-sm">
+          <p className="font-display text-[13px] font-bold uppercase tracking-wider text-[#1A1A1A] border-b border-[#EAE6DF] pb-2 mb-5">
+            CƠ CẤU HÌNH THỨC THANH TOÁN
+          </p>
+          {loading ? (
+            <div className="space-y-4">
+              <div className="h-10 bg-[#FAF8F5] rounded animate-pulse" />
+              <div className="h-10 bg-[#FAF8F5] rounded animate-pulse" />
+            </div>
+          ) : !data?.paymentMethods?.length ? (
+            <p className="text-[12px] text-[#9B9389] text-center py-8">Chưa có dữ liệu thanh toán</p>
+          ) : (
+            data.paymentMethods.map((pm, i) => {
+              const label = pm._id === 'ONLINE' ? 'Chuyển khoản (ONLINE)' : 'Thanh toán khi nhận hàng (COD)'
+              const color = pm._id === 'ONLINE' ? 'bg-[#2E4A3F]' : 'bg-[#B08968]'
+              const totalAmount = data.paymentMethods.reduce((acc, curr) => acc + curr.total, 0) || 1
+              const pct = Math.round((pm.total / totalAmount) * 100)
+              return (
+                <div key={pm._id || i} className="mb-4 last:mb-0">
+                  <div className="flex justify-between items-baseline mb-1">
+                    <span className="text-[11px] font-bold text-[#1A1A1A] tracking-wider">{label}</span>
+                    <span className="font-display text-[12.5px] font-bold text-[#1A1A1A]">
+                      {pm.count} đơn ({formatPrice(pm.total)})
+                    </span>
+                  </div>
+                  <div className="h-3 bg-[#F2EFEA] rounded-sm overflow-hidden flex justify-between">
+                    <div className={`h-full rounded-sm ${color}`} style={{ width: `${pct}%` }} />
+                  </div>
+                  <div className="text-[10px] text-[#8E877F] mt-1 text-right">{pct}% tổng doanh số</div>
+                </div>
+              )
+            })
+          )}
+        </div>
+
+        {/* Cảnh báo sách sắp hết hàng */}
+        <div className="bg-white rounded-xl border border-[#EAE6DF] p-5 shadow-sm">
+          <p className="font-display text-[13px] font-bold uppercase tracking-wider text-red-600 border-b border-[#EAE6DF] pb-2 mb-5 flex items-center gap-1.5">
+            <svg className="w-4 h-4 text-red-500 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            CẢNH BÁO SÁCH SẮP HẾT HÀNG (TỒN KHO ≤ 10)
+          </p>
+          {loading ? (
+            <div className="space-y-4">{Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-10 bg-[#FAF8F5] rounded animate-pulse" />)}</div>
+          ) : !data?.lowStockProducts?.length ? (
+            <p className="text-[12px] text-[#059669] text-center py-8 font-semibold">Tất cả sản phẩm đều đủ lượng tồn kho</p>
+          ) : (
+            <div className="space-y-3.5">
+              {data.lowStockProducts.map((p) => {
+                const isUrgent = p.stock <= 3
+                return (
+                  <div key={p._id} className="flex items-center justify-between gap-3 p-2 rounded-lg border border-[#FAF8F5] hover:bg-[#FAF8F5]/50 transition-colors">
+                    <div className="flex items-center gap-3">
+                      {p.image ? (
+                        <img src={p.image} alt={p.title} className="w-7 h-10 object-cover rounded-md shadow-sm flex-shrink-0" />
+                      ) : (
+                        <div className="w-7 h-10 bg-[#FAF8F5] rounded-md border border-[#EAE6DF] flex-shrink-0" />
+                      )}
+                      <div className="min-w-0">
+                        <p className="text-[12px] font-semibold text-[#1A1A1A] line-clamp-1">{p.title}</p>
+                        <p className="text-[10px] text-[#8E877F]">{p.author}</p>
+                      </div>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold ${isUrgent ? 'bg-red-50 text-red-600 border border-red-200/50' : 'bg-amber-50 text-amber-700 border border-amber-200/50'}`}>
+                        Còn {p.stock} cuốn
+                      </span>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Row 5: Recent orders (At the very bottom as a clean full-width table) */}
       <div className="bg-white rounded-xl border border-[#EAE6DF] p-5 shadow-sm">
         
         {/* Header Block with Title & Controls */}
@@ -460,6 +598,18 @@ export default function AdminAnalyticsPage() {
                 </button>
               )}
             </div>
+
+            {/* Export Excel Button */}
+            <button
+              onClick={exportToCSV}
+              disabled={!data?.recentOrders?.length}
+              className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-white border border-[#EAE6DF] hover:border-[#1A1A1A] disabled:opacity-50 text-[#615C56] hover:text-[#1A1A1A] rounded-lg text-[11px] font-semibold transition-colors shadow-sm disabled:cursor-not-allowed"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              Xuất Excel
+            </button>
           </div>
         </div>
 
