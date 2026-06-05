@@ -2,6 +2,7 @@ const Order   = require('../models/Order')
 const Cart    = require('../models/Cart')
 const Product = require('../models/Product')
 const Coupon  = require('../models/Coupon')
+const User    = require('../models/User')
 const { calcDiscount } = require('./couponController')
 const { createNotification } = require('./notificationController')
 const emailService = require('../services/emailService')
@@ -257,9 +258,42 @@ const updateStatus = async (req, res, next) => {
 /* GET /api/admin/orders  — admin only */
 const getAllOrders = async (req, res, next) => {
   try {
-    const { status, page = 1, limit = 20 } = req.query
+    const { status, search, payment, date, page = 1, limit = 20 } = req.query
     const filter = {}
-    if (status) filter.status = status
+    
+    if (status && status !== 'all') filter.status = status
+    if (payment && payment !== 'all') filter.payment = payment
+    
+    if (date) {
+      const startOfDay = new Date(date)
+      startOfDay.setHours(0, 0, 0, 0)
+      const endOfDay = new Date(date)
+      endOfDay.setHours(23, 59, 59, 999)
+      filter.createdAt = { $gte: startOfDay, $lte: endOfDay }
+    }
+    
+    if (search) {
+      const regex = new RegExp(search.trim(), 'i')
+      const matchingUsers = await User.find({
+        $or: [
+          { name: regex },
+          { email: regex },
+          { phone: regex }
+        ]
+      }).select('_id')
+      const userIds = matchingUsers.map(u => u._id)
+      
+      filter.$or = [
+        { orderCode: regex },
+        { 'address.name': regex },
+        { 'address.phone': regex },
+        { user: { $in: userIds } }
+      ]
+      
+      if (search.trim().match(/^[0-9a-fA-F]{24}$/)) {
+        filter.$or.push({ _id: search.trim() })
+      }
+    }
 
     const skip   = (Number(page) - 1) * Number(limit)
     const total  = await Order.countDocuments(filter)
