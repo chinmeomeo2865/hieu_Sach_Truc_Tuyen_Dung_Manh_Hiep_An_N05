@@ -34,6 +34,7 @@ exports.getStats = async (req, res, next) => {
       userRoleStats,
       totalMembers,
       lowStockProducts,
+      lowStockCount,
       paymentMethods,
     ] = await Promise.all([
       Order.countDocuments(df),
@@ -91,6 +92,8 @@ exports.getStats = async (req, res, next) => {
         .limit(5)
         .select('title author stock image price'),
 
+      Product.countDocuments({ stock: { $lte: 10 } }),
+
       Order.aggregate([
         { $match: df },
         { $group: { _id: '$payment', count: { $sum: 1 }, total: { $sum: '$total' } } },
@@ -130,6 +133,7 @@ exports.getStats = async (req, res, next) => {
         recentOrders,
         ordersByStatus: statusMap,
         lowStockProducts,
+        lowStockCount,
         paymentMethods,
       },
     })

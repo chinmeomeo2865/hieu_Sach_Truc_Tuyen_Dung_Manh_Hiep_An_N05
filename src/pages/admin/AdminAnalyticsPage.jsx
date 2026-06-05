@@ -507,11 +507,18 @@ export default function AdminAnalyticsPage() {
 
         {/* Cảnh báo sách sắp hết hàng */}
         <div className="bg-white rounded-xl border border-[#EAE6DF] p-5 shadow-sm">
-          <p className="font-display text-[13px] font-bold uppercase tracking-wider text-red-600 border-b border-[#EAE6DF] pb-2 mb-5 flex items-center gap-1.5">
-            <svg className="w-4 h-4 text-red-500 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-            CẢNH BÁO SÁCH SẮP HẾT HÀNG (TỒN KHO ≤ 10)
+          <p className="font-display text-[13px] font-bold uppercase tracking-wider text-red-600 border-b border-[#EAE6DF] pb-2 mb-5 flex items-center justify-between">
+            <span className="flex items-center gap-1.5">
+              <svg className="w-4 h-4 text-red-500 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              CẢNH BÁO SÁCH SẮP HẾT HÀNG (TỒN KHO ≤ 10)
+            </span>
+            {!loading && data?.lowStockCount > 0 && (
+              <span className="bg-red-50 text-red-600 border border-red-200/50 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide">
+                Tổng cộng: {data.lowStockCount} đầu sách
+              </span>
+            )}
           </p>
           {loading ? (
             <div className="space-y-4">{Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-10 bg-[#FAF8F5] rounded animate-pulse" />)}</div>
