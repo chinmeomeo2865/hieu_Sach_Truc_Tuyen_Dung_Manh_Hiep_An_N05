@@ -4,7 +4,7 @@
 
 @layer base {
   html { scroll-behavior: smooth; overflow-x: hidden; }
-  body { overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+  body { overflow-x: hidden; -webkit-font-smoothing: antialiased; font-family: "Times New Roman", Times, serif; }
   img  { display: block; max-width: 100%; height: auto; }
 }
 

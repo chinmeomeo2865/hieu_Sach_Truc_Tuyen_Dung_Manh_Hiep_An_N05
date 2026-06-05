@@ -8,6 +8,20 @@ const emailService = require('../services/emailService')
 
 const CANCELLABLE = ['PENDING', 'CONFIRMED']
 
+const generateOrderCode = () => {
+  const now = new Date()
+  const yy = String(now.getFullYear()).slice(-2)
+  const mm = String(now.getMonth() + 1).padStart(2, '0')
+  const dd = String(now.getDate()).padStart(2, '0')
+  
+  const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ'
+  let randomStr = ''
+  for (let i = 0; i < 4; i++) {
+    randomStr += chars.charAt(Math.floor(Math.random() * chars.length))
+  }
+  return `DSC-${yy}${mm}${dd}-${randomStr}`
+}
+
 /* GET /api/orders  — current user's orders */
 const getMyOrders = async (req, res, next) => {
   try {
@@ -109,8 +123,18 @@ const createOrder = async (req, res, next) => {
 
     const total = subtotal - discount
 
+    let orderCode
+    let attempts = 0
+    while (attempts < 5) {
+      orderCode = generateOrderCode()
+      const exists = await Order.findOne({ orderCode })
+      if (!exists) break
+      attempts++
+    }
+
     /* Create order */
     const order = await Order.create({
+      orderCode,
       user:    req.user._id,
       items:   cart.items.map(i => ({
         product: i.product._id,

@@ -110,7 +110,7 @@ function OrderDetail({ order, onUpdate, onClose }) {
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#f0f0f0] shrink-0">
           <div>
             <p className="text-[14px] font-semibold text-[#1c1c1a]">
-              Đơn #{order._id.slice(-8).toUpperCase()}
+              Đơn {order.orderCode || `#${order._id.slice(-8).toUpperCase()}`}
             </p>
             <p className="text-[11px] text-[#a3a3a3] mt-0.5">
               {new Date(order.createdAt).toLocaleString('vi-VN')}
@@ -268,7 +268,7 @@ export default function WarehouseOrdersPage() {
                     <tr key={o._id} onClick={() => setSelected(o)}
                       className="border-t border-[#f5f5f4] hover:bg-[#fafafa] cursor-pointer transition-colors">
                       <td className="px-4 py-3.5">
-                        <span className="text-[12px] font-mono font-bold text-[#1c1c1a]">#{o._id.slice(-8).toUpperCase()}</span>
+                        <span className="text-[12px] font-mono font-bold text-[#1c1c1a]">{o.orderCode || `#${o._id.slice(-8).toUpperCase()}`}</span>
                       </td>
                       <td className="px-4 py-3.5">
                         <p className="text-[12.5px] font-semibold text-[#1c1c1a]">{o.user?.name || o.address?.name}</p>

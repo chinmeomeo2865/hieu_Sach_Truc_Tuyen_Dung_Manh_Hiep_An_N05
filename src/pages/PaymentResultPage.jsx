@@ -28,7 +28,7 @@ export default function PaymentResultPage() {
       </div>
       <h1 className="font-display text-2xl font-semibold text-ink mb-2">Thanh toán thành công!</h1>
       <p className="text-[14px] text-muted mb-8">
-        {order ? `Đơn hàng #${order._id.slice(-6).toUpperCase()} đã được xác nhận.` : 'Đơn hàng của bạn đã được xác nhận.'}
+        {order ? `Đơn hàng ${order.orderCode || `#${order._id.slice(-8).toUpperCase()}`} đã được xác nhận.` : 'Đơn hàng của bạn đã được xác nhận.'}
       </p>
       <div className="flex gap-3 justify-center">
         <Link to="/account/orders"

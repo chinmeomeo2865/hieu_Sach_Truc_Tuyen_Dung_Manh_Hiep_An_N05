@@ -150,7 +150,7 @@ function CustomerDetail({ uid, onClose, onToggle }) {
                       return (
                         <div key={o._id} className="flex items-center justify-between p-3 border border-[#f0f0f0] rounded-xl hover:bg-[#fafafa] transition-colors">
                           <div>
-                            <p className="text-[12px] font-semibold text-[#0f0f0f]">#{o._id.slice(-8).toUpperCase()}</p>
+                            <p className="text-[12px] font-semibold text-[#0f0f0f]">{o.orderCode || `#${o._id.slice(-8).toUpperCase()}`}</p>
                             <p className="text-[11px] text-[#a3a3a3] mt-0.5">
                               {o.items?.length} sp · {new Date(o.createdAt).toLocaleDateString('vi-VN')}
                             </p>

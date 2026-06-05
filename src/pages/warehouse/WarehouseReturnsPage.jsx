@@ -46,7 +46,7 @@ function ReturnModal({ order, onClose, onSuccess }) {
       >
         <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg pointer-events-auto max-h-[90vh] flex flex-col">
           <div className="flex items-center justify-between px-6 py-4 border-b border-[#f0f0f0] shrink-0">
-            <p className="text-[14px] font-semibold text-[#1c1c1a]">Xử lý hoàn trả — #{order._id.slice(-8).toUpperCase()}</p>
+            <p className="text-[14px] font-semibold text-[#1c1c1a]">Xử lý hoàn trả — {order.orderCode || `#${order._id.slice(-8).toUpperCase()}`}</p>
             <button onClick={onClose} className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-[#f5f5f4] text-[#a3a3a3] transition-colors">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
@@ -168,7 +168,7 @@ export default function WarehouseReturnsPage() {
                   : orders.map(o => (
                     <tr key={o._id} className="border-t border-[#f5f5f4] hover:bg-[#fafafa] transition-colors">
                       <td className="px-4 py-3.5">
-                        <span className="text-[12px] font-mono font-bold text-[#1c1c1a]">#{o._id.slice(-8).toUpperCase()}</span>
+                        <span className="text-[12px] font-mono font-bold text-[#1c1c1a]">{o.orderCode || `#${o._id.slice(-8).toUpperCase()}`}</span>
                       </td>
                       <td className="px-4 py-3.5">
                         <p className="text-[12.5px] font-semibold text-[#1c1c1a]">{o.user?.name || o.address?.name}</p>

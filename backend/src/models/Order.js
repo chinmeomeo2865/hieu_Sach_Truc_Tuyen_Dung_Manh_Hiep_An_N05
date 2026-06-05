@@ -20,6 +20,7 @@ const addressSchema = new mongoose.Schema({
 }, { _id: false })
 
 const orderSchema = new mongoose.Schema({
+  orderCode:  { type: String, unique: true, sparse: true },
   user:       { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   items:      [orderItemSchema],
   status:     { type: String, enum: ORDER_STATUSES,   default: 'PENDING' },

@@ -116,7 +116,7 @@ export default function OrdersPage() {
               {/* Order header */}
               <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4 border-b border-divider-lt bg-surface-warm">
                 <div className="flex items-center gap-3 flex-wrap">
-                  <span className="text-xs text-muted font-mono">#{order._id.slice(-8).toUpperCase()}</span>
+                  <span className="text-xs text-muted font-mono">{order.orderCode || `#${order._id.slice(-8).toUpperCase()}`}</span>
                   <StatusBadge status={order.status} />
                 </div>
                 <div className="flex items-center gap-4">

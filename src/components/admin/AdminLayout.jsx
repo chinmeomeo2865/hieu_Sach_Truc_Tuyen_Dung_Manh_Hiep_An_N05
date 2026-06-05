@@ -80,22 +80,23 @@ export default function AdminLayout({ children, title }) {
   const navigate = useNavigate()
 
   return (
-    <div className="min-h-screen flex bg-[#f5f5f4]">
+    <div className="min-h-screen flex bg-[#FAF8F5]">
       {/* Sidebar */}
-      <aside className="w-56 shrink-0 bg-[#0f0f0f] flex flex-col fixed inset-y-0 left-0 z-30">
+      <aside className="w-56 shrink-0 bg-white border-r border-[#EAE6DF] flex flex-col fixed inset-y-0 left-0 z-30">
         {/* Logo */}
-        <div className="px-5 pt-5 pb-4 border-b border-white/8">
-          <p className="font-display text-[15px] font-semibold text-white leading-tight tracking-tight">
-            Hiệu Sách <em className="italic font-medium text-white/70">Chin</em>
+        <div className="px-5 pt-5 pb-4 border-b border-[#EAE6DF]">
+          <p className="font-display text-[15px] font-semibold text-[#1A1A1A] leading-tight tracking-tight">
+            Hiệu Sách <span className="italic font-display font-medium text-[#B08968]">Chin</span>
           </p>
-          <p className="text-[10px] tracking-widest uppercase text-white/30 mt-0.5">Admin Panel</p>
+          <p className="text-[9px] tracking-widest uppercase text-[#9B9389] font-bold mt-1">Admin Panel</p>
         </div>
+
 
         {/* Nav */}
         <nav className="flex-1 px-3 py-4 space-y-5 overflow-y-auto">
           {NAV_GROUPS.map(group => (
             <div key={group.label}>
-              <p className="px-3 mb-1.5 text-[9px] font-bold tracking-widest uppercase text-white/25">
+              <p className="px-3 mb-1.5 text-[9px] font-bold tracking-widest uppercase text-[#9B9389]">
                 {group.label}
               </p>
               <div className="space-y-0.5">
@@ -106,8 +107,8 @@ export default function AdminLayout({ children, title }) {
                     className={({ isActive }) =>
                       `flex items-center gap-2.5 px-3 py-2 rounded-md text-[12px] font-medium tracking-[0.01em] transition-all duration-150 ${
                         isActive
-                          ? 'bg-white text-[#0f0f0f]'
-                          : 'text-white/45 hover:bg-white/8 hover:text-white/85'
+                          ? 'bg-[#1A1A1A] text-white shadow-sm'
+                          : 'text-[#615C56] hover:bg-[#F4F1EA] hover:text-[#1A1A1A]'
                       }`
                     }
                   >
@@ -121,10 +122,10 @@ export default function AdminLayout({ children, title }) {
         </nav>
 
         {/* Bottom */}
-        <div className="px-3 py-3 border-t border-white/8 space-y-0.5">
+        <div className="px-3 py-3 border-t border-[#EAE6DF] space-y-0.5">
           <Link
             to="/"
-            className="flex items-center gap-2.5 px-3 py-2 rounded-md text-[12px] font-medium text-white/30 hover:bg-white/8 hover:text-white/70 transition-all duration-150"
+            className="flex items-center gap-2.5 px-3 py-2 rounded-md text-[12px] font-medium text-[#615C56] hover:bg-[#F4F1EA] hover:text-[#1A1A1A] transition-all duration-150"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -134,19 +135,19 @@ export default function AdminLayout({ children, title }) {
         </div>
 
         {/* User info */}
-        <div className="px-4 py-3.5 border-t border-white/8">
+        <div className="px-4 py-3.5 border-t border-[#EAE6DF] bg-[#FAF8F5]">
           <div className="flex items-center gap-2.5 mb-2.5">
-            <div className="w-7 h-7 rounded-full bg-white/15 flex items-center justify-center text-white text-[11px] font-bold flex-shrink-0">
+            <div className="w-7 h-7 rounded-full bg-[#1A1A1A] flex items-center justify-center text-white text-[11px] font-bold flex-shrink-0">
               {user?.name?.charAt(0)?.toUpperCase()}
             </div>
             <div className="min-w-0">
-              <p className="text-[12px] font-medium text-white/85 truncate leading-tight">{user?.name}</p>
-              <p className="text-[10px] text-white/30 truncate">{user?.email}</p>
+              <p className="text-[12px] font-semibold text-[#1A1A1A] truncate leading-tight">{user?.name}</p>
+              <p className="text-[10px] text-[#9B9389] truncate">{user?.email}</p>
             </div>
           </div>
           <button
             onClick={() => { logout(); navigate('/admin/login') }}
-            className="w-full flex items-center gap-2 text-[11px] text-white/35 hover:text-white/70 transition-colors duration-150"
+            className="w-full flex items-center gap-2 text-[11px] text-[#615C56] hover:text-[#1A1A1A] transition-colors duration-150"
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -158,9 +159,8 @@ export default function AdminLayout({ children, title }) {
 
       {/* Main */}
       <div className="flex-1 ml-56 flex flex-col min-h-screen">
-        <header className="h-13 bg-white border-b border-[#e5e5e5] flex items-center justify-between px-6 shrink-0 sticky top-0 z-20">
-          <h1 className="text-[14px] font-semibold text-[#0f0f0f] tracking-tight">{title}</h1>
-          <span className="text-[11px] text-[#a3a3a3] font-medium">
+        <header className="h-13 bg-white border-b border-[#EAE6DF] flex items-center justify-end px-6 shrink-0 sticky top-0 z-20">
+          <span className="text-[11px] text-[#9B9389] font-medium">
             {new Date().toLocaleDateString('vi-VN', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' })}
           </span>
         </header>

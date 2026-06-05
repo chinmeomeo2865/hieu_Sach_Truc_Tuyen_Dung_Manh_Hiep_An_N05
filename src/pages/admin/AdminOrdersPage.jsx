@@ -193,7 +193,7 @@ export default function AdminOrdersPage() {
                     <svg className={`w-3.5 h-3.5 text-muted shrink-0 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                     </svg>
-                    <span className="text-xs text-muted font-mono">#{order._id.slice(-8).toUpperCase()}</span>
+                    <span className="text-xs text-muted font-mono">{order.orderCode || `#${order._id.slice(-8).toUpperCase()}`}</span>
                     <StatusBadge status={order.status} />
                   </div>
 
