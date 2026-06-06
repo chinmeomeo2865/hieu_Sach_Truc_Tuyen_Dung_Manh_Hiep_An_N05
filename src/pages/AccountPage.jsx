@@ -833,15 +833,15 @@ export default function AccountPage() {
   if (!isAuth) return null
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-3xl mx-auto">
       {/* Title */}
-      <div>
+      <div className="text-center">
         <p className="text-2xs font-semibold tracking-label-2xl uppercase text-accent">Tài khoản</p>
         <h1 className="font-display font-semibold text-2xl md:text-3xl text-ink mt-0.5">Đơn hàng của tôi</h1>
       </div>
 
       {/* Status tabs */}
-      <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+      <div className="flex justify-center gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
         {TABS.map(tab => {
           const count   = tabCounts[tab.key]
           const isActive = activeTab === tab.key

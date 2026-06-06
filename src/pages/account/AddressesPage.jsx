@@ -79,7 +79,7 @@ function AddressForm({ initial, onSave, onCancel, loading }) {
         <input type="checkbox" checked={form.isDefault} onChange={set('isDefault')} className="w-4 h-4 accent-ink" />
         <span className="text-[13px] text-[#404040]">Đặt làm địa chỉ mặc định</span>
       </label>
-      <div className="flex gap-3 pt-2">
+      <div className="flex justify-center gap-3 pt-2">
         <button type="submit" disabled={loading}
           className="px-6 py-2.5 bg-ink text-white text-[13px] font-semibold rounded-xl hover:bg-ink-80 disabled:opacity-50 transition-colors shadow-2xs cursor-pointer">
           {loading ? 'Đang lưu…' : 'Lưu địa chỉ'}
@@ -156,9 +156,9 @@ export default function AddressesPage() {
   )
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-2xl mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-divider-lt pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-divider-lt pb-4 gap-4 text-center sm:text-left">
         <div>
           <p className="text-2xs font-semibold tracking-label-2xl uppercase text-accent mb-1">Tài khoản</p>
           <h1 className="font-display text-2xl md:text-3xl font-semibold text-ink">Sổ địa chỉ</h1>
@@ -166,7 +166,7 @@ export default function AddressesPage() {
         </div>
         {!mode && (
           <button onClick={() => setMode('add')}
-            className="flex items-center gap-1.5 px-4 py-2 bg-ink text-white text-2xs font-semibold uppercase tracking-wider rounded-xl hover:bg-ink-80 transition-colors shadow-2xs">
+            className="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 bg-ink text-white text-2xs font-semibold uppercase tracking-wider rounded-xl hover:bg-ink-80 transition-colors shadow-2xs cursor-pointer">
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4"/>
             </svg>

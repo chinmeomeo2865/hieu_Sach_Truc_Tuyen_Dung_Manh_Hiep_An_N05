@@ -84,23 +84,23 @@ export default function AccountProfilePage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 max-w-xl mx-auto">
       {/* Title */}
-      <div>
+      <div className="text-center">
         <p className="text-2xs font-semibold tracking-label-2xl uppercase text-accent">Tài khoản</p>
         <h1 className="font-display font-semibold text-2xl md:text-3xl text-ink mt-0.5">Hồ sơ cá nhân</h1>
       </div>
 
       {/* Thông tin cá nhân */}
       <section className="space-y-5">
-        <div className="flex items-center gap-2 border-b border-divider-lt pb-3">
+        <div className="flex items-center gap-2 border-b border-divider-lt pb-3 justify-center">
           <span className="text-lg">👤</span>
           <h2 className="font-display font-semibold text-ink text-lg">Thông tin cá nhân</h2>
         </div>
-        <p className="text-xs text-muted max-w-xl leading-relaxed">
+        <p className="text-xs text-muted leading-relaxed text-center">
           Quản lý thông tin liên hệ và họ tên hiển thị của bạn. Những thông tin này giúp quá trình mua sách và giao nhận diễn ra chính xác nhất.
         </p>
-        <form onSubmit={handleSaveProfile} className="space-y-4 max-w-xl">
+        <form onSubmit={handleSaveProfile} className="space-y-4">
           <div className="space-y-1">
             <label className="block text-2xs font-semibold tracking-label-lg uppercase text-ink-60">Email</label>
             <input
@@ -138,11 +138,11 @@ export default function AccountProfilePage() {
             </div>
           </div>
 
-          <div className="pt-2">
+          <div className="pt-2 flex justify-center">
             <button
               type="submit"
               disabled={savingProfile}
-              className="px-6 py-2.5 bg-ink text-white text-2xs font-semibold tracking-label-lg uppercase rounded-xl hover:bg-ink-80 disabled:opacity-50 transition-colors shadow-2xs cursor-pointer"
+              className="px-8 py-2.5 bg-ink text-white text-2xs font-semibold tracking-label-lg uppercase rounded-xl hover:bg-ink-80 disabled:opacity-50 transition-colors shadow-2xs cursor-pointer"
             >
               {savingProfile ? 'Đang lưu…' : 'Lưu thay đổi'}
             </button>
@@ -154,14 +154,14 @@ export default function AccountProfilePage() {
 
       {/* Đổi mật khẩu */}
       <section className="space-y-5">
-        <div className="flex items-center gap-2 border-b border-divider-lt pb-3">
+        <div className="flex items-center gap-2 border-b border-divider-lt pb-3 justify-center">
           <span className="text-lg">🔒</span>
           <h2 className="font-display font-semibold text-ink text-lg">Đổi mật khẩu</h2>
         </div>
-        <p className="text-xs text-muted max-w-xl leading-relaxed">
+        <p className="text-xs text-muted leading-relaxed text-center">
           Bạn nên sử dụng mật khẩu mạnh dài ít nhất 6 ký tự, kết hợp chữ cái và chữ số để tăng tính an toàn cho tài khoản.
         </p>
-        <form onSubmit={handleChangePassword} className="space-y-4 max-w-xl">
+        <form onSubmit={handleChangePassword} className="space-y-4">
           {[
             { field: 'currentPassword', label: 'Mật khẩu hiện tại', placeholder: '••••••••' },
             { field: 'newPassword',     label: 'Mật khẩu mới',      placeholder: 'Tối thiểu 6 ký tự' },
@@ -180,11 +180,11 @@ export default function AccountProfilePage() {
             </div>
           ))}
 
-          <div className="pt-2">
+          <div className="pt-2 flex justify-center">
             <button
               type="submit"
               disabled={savingPass}
-              className="px-6 py-2.5 bg-ink text-white text-2xs font-semibold tracking-label-lg uppercase rounded-xl hover:bg-ink-80 disabled:opacity-50 transition-colors shadow-2xs cursor-pointer"
+              className="px-8 py-2.5 bg-ink text-white text-2xs font-semibold tracking-label-lg uppercase rounded-xl hover:bg-ink-80 disabled:opacity-50 transition-colors shadow-2xs cursor-pointer"
             >
               {savingPass ? 'Đang xử lý…' : 'Đổi mật khẩu'}
             </button>

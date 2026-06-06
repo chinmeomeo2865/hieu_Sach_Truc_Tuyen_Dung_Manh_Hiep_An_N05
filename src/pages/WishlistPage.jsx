@@ -68,10 +68,10 @@ export default function WishlistPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-4xl mx-auto">
       {/* Header */}
-      <div className="flex items-end justify-between border-b border-divider-lt pb-4">
-        <div>
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between border-b border-divider-lt pb-4 gap-4 text-center sm:text-left">
+        <div className="w-full">
           <p className="text-2xs font-semibold tracking-label-2xl uppercase text-accent mb-1">Tài khoản</p>
           <h1 className="font-display text-2xl md:text-3xl font-semibold text-ink">
             Tủ sách của tôi
@@ -83,7 +83,7 @@ export default function WishlistPage() {
         {books.length > 0 && (
           <button
             onClick={handleClearAll}
-            className="text-xs text-muted hover:text-red-500 hover:underline underline-offset-2 transition-all cursor-pointer"
+            className="text-xs text-muted hover:text-red-500 hover:underline underline-offset-2 transition-all cursor-pointer whitespace-nowrap"
           >
             Xóa tất cả
           </button>
