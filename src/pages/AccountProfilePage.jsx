@@ -47,15 +47,17 @@ export default function AccountProfilePage() {
     e.preventDefault()
     const errors = {}
     if (!profileForm.name.trim()) errors.name = 'Vui lòng nhập họ tên'
-    if (profileForm.phone && !PHONE_REGEX.test(profileForm.phone.trim())) {
+    const cleanPhone = (profileForm.phone || '').replace(/[\s.-]/g, '')
+    if (profileForm.phone && !PHONE_REGEX.test(cleanPhone)) {
       errors.phone = 'Số điện thoại không hợp lệ (10 số, bắt đầu bằng 0)'
     }
     if (Object.keys(errors).length) { setProfileErrors(errors); return }
 
     setSavingProfile(true)
     try {
-      await updateProfile({ name: profileForm.name.trim(), phone: profileForm.phone.trim() || undefined })
+      await updateProfile({ name: profileForm.name.trim(), phone: cleanPhone || undefined })
       showToast({ message: 'Cập nhật thông tin thành công', type: 'success' })
+      setProfileForm(f => ({ ...f, phone: cleanPhone }))
     } catch (err) {
       showToast({ message: err.message || 'Cập nhật thất bại', type: 'error' })
     } finally {

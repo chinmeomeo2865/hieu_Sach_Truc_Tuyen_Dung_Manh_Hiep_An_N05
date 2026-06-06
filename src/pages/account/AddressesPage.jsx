@@ -29,16 +29,17 @@ function AddressForm({ initial, onSave, onCancel, loading }) {
   function validate() {
     const e = {}
     if (!form.name.trim())   e.name   = 'Họ tên là bắt buộc'
-    if (!/^0\d{9}$/.test(form.phone)) e.phone = 'Số điện thoại không hợp lệ (VD: 0383687670)'
+    const cleanPhone = (form.phone || '').replace(/[\s.-]/g, '')
+    if (!/^0\d{9}$/.test(cleanPhone)) e.phone = 'Số điện thoại không hợp lệ (VD: 0383687670)'
     if (!form.street.trim()) e.street = 'Địa chỉ là bắt buộc'
-    return e
+    return { errors: e, cleanPhone }
   }
 
   function handleSubmit(e) {
     e.preventDefault()
-    const errs = validate()
+    const { errors: errs, cleanPhone } = validate()
     if (Object.keys(errs).length) { setErrors(errs); return }
-    onSave(form)
+    onSave({ ...form, phone: cleanPhone })
   }
 
   const INPUT = 'w-full border border-divider rounded-xl px-4 py-2.5 text-[13.5px] text-[#0f0f0f] placeholder:text-[#a3a3a3] focus:outline-none focus:border-ink focus:ring-2 focus:ring-ink/10 transition-all'

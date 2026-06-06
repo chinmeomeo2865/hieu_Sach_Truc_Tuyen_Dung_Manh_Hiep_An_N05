@@ -356,11 +356,12 @@ function ProfileEditModal({ user, updateProfile, onClose }) {
     e.preventDefault()
     const errs = {}
     if (!form.name.trim()) errs.name = 'Vui lòng nhập họ tên'
-    if (form.phone && !PHONE_REGEX.test(form.phone.trim())) errs.phone = 'Số điện thoại không hợp lệ (10 số, bắt đầu 0)'
+    const cleanPhone = (form.phone || '').replace(/[\s.-]/g, '')
+    if (form.phone && !PHONE_REGEX.test(cleanPhone)) errs.phone = 'Số điện thoại không hợp lệ (10 số, bắt đầu 0)'
     if (Object.keys(errs).length) { setErrors(errs); return }
     setLoading(true)
     try {
-      await updateProfile({ name: form.name.trim(), phone: form.phone.trim() || undefined })
+      await updateProfile({ name: form.name.trim(), phone: cleanPhone || undefined })
       showToast({ message: 'Cập nhật hồ sơ thành công', type: 'success' })
       onClose()
     } catch (err) {

@@ -79,8 +79,13 @@ export default function CheckoutPage() {
 
   async function handleSubmit(e) {
     e.preventDefault()
-    if (!form.name.trim() || !form.phone.trim() || !form.street.trim()) {
+    const cleanPhone = form.phone.replace(/[\s.-]/g, '')
+    if (!form.name.trim() || !cleanPhone || !form.street.trim()) {
       showToast({ message: 'Vui lòng điền đầy đủ thông tin', type: 'error' })
+      return
+    }
+    if (!/^0\d{9}$/.test(cleanPhone)) {
+      showToast({ message: 'Số điện thoại không hợp lệ (10 số, bắt đầu bằng 0)', type: 'error' })
       return
     }
 
@@ -100,7 +105,7 @@ export default function CheckoutPage() {
         payment: paymentMethod,
         address: {
           name:   form.name.trim(),
-          phone:  form.phone.trim(),
+          phone:  cleanPhone,
           street: form.street.trim(),
           city:   form.city,
         },
