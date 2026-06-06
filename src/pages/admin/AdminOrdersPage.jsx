@@ -566,7 +566,7 @@ export default function AdminOrdersPage() {
       ) : (
         <div className="bg-white border border-[#EAE6DF] rounded-md shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs min-w-[1050px] font-sans table-fixed">
+            <table className="w-full text-center border-collapse text-xs min-w-[1050px] font-sans table-fixed">
               <thead>
                 <tr className="border-b border-[#EAE6DF] text-[#615C56] bg-[#FAF8F5] select-none">
                   <th className="py-3 px-4 w-[4%] text-center">
@@ -577,12 +577,12 @@ export default function AdminOrdersPage() {
                       className="cursor-pointer"
                     />
                   </th>
-                  <th className="py-3 px-2 font-semibold text-[#8E877F] uppercase tracking-wider text-[10px] w-[12%] text-left">MÃ ĐH</th>
-                  <th className="py-3 px-2 font-semibold text-[#8E877F] uppercase tracking-wider text-[10px] w-[22%] text-left">KHÁCH HÀNG</th>
-                  <th className="py-3 px-2 font-semibold text-[#8E877F] uppercase tracking-wider text-[10px] w-[12%] text-left">TỔNG TIỀN</th>
-                  <th className="py-3 px-2 font-semibold text-[#8E877F] uppercase tracking-wider text-[10px] w-[14%] text-left">NGÀY ĐẶT</th>
+                  <th className="py-3 px-2 font-semibold text-[#8E877F] uppercase tracking-wider text-[10px] w-[12%] text-center">MÃ ĐH</th>
+                  <th className="py-3 px-2 font-semibold text-[#8E877F] uppercase tracking-wider text-[10px] w-[22%] text-center">KHÁCH HÀNG</th>
+                  <th className="py-3 px-2 font-semibold text-[#8E877F] uppercase tracking-wider text-[10px] w-[12%] text-center">TỔNG TIỀN</th>
+                  <th className="py-3 px-2 font-semibold text-[#8E877F] uppercase tracking-wider text-[10px] w-[14%] text-center">NGÀY ĐẶT</th>
                   <th className="py-3 px-2 font-semibold text-[#8E877F] uppercase tracking-wider text-[10px] w-[20%] text-center">TIẾN ĐỘ GIAO HÀNG</th>
-                  <th className="py-3 px-4 font-semibold text-[#8E877F] uppercase tracking-wider text-[10px] w-[16%] text-right">HÀNH ĐỘNG</th>
+                  <th className="py-3 px-4 font-semibold text-[#8E877F] uppercase tracking-wider text-[10px] w-[16%] text-center">HÀNH ĐỘNG</th>
                 </tr>
               </thead>
               <tbody>
@@ -611,14 +611,14 @@ export default function AdminOrdersPage() {
                       </td>
 
                       {/* Order ID */}
-                      <td className="py-3.5 px-2 w-[12%] font-semibold text-[#1A1A1A] font-mono align-middle">
+                      <td className="py-3.5 px-2 w-[12%] font-semibold text-[#1A1A1A] font-mono align-middle text-center">
                         {order.orderCode || `#${order._id.slice(-8).toUpperCase()}`}
                       </td>
 
                       {/* Customer info */}
-                      <td className="py-3.5 px-2 w-[22%] align-middle">
-                        <div className="flex flex-col">
-                          <span className="font-semibold text-[#1A1A1A] text-[12px] flex items-center gap-1.5">
+                      <td className="py-3.5 px-2 w-[22%] align-middle text-center">
+                        <div className="flex flex-col items-center justify-center">
+                          <span className="font-semibold text-[#1A1A1A] text-[12px] flex items-center justify-center gap-1.5">
                             {order.address?.name || order.user?.name || 'Khách vãng lai'}
                             <span className={`inline-block px-1.5 py-0.5 rounded text-[8px] font-bold border uppercase tracking-wider ${
                               order.payment === 'COD' 
@@ -635,13 +635,13 @@ export default function AdminOrdersPage() {
                       </td>
 
                       {/* Total */}
-                      <td className="py-3.5 px-2 w-[12%] font-bold text-[#1A1A1A] text-[12px] align-middle">
+                      <td className="py-3.5 px-2 w-[12%] font-bold text-[#1A1A1A] text-[12px] align-middle text-center">
                         {formatPrice(order.total)}
                       </td>
 
                       {/* Creation Date */}
-                      <td className="py-3.5 px-2 w-[14%] text-[#615C56] align-middle">
-                        <div className="flex flex-col">
+                      <td className="py-3.5 px-2 w-[14%] text-[#615C56] align-middle text-center">
+                        <div className="flex flex-col items-center justify-center">
                           <span className="font-semibold">{new Date(order.createdAt).toLocaleDateString('vi-VN')}</span>
                           <span className="text-[10px] text-[#8E877F] mt-0.5">{new Date(order.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
                         </div>
@@ -653,8 +653,8 @@ export default function AdminOrdersPage() {
                       </td>
 
                       {/* Actions */}
-                      <td className="py-3.5 px-4 w-[16%] text-right align-middle">
-                        <div className="flex flex-col gap-1 items-stretch justify-center w-36 ml-auto">
+                      <td className="py-3.5 px-4 w-[16%] text-center align-middle">
+                        <div className="flex flex-col gap-1 items-stretch justify-center w-36 mx-auto">
                           <button
                             onClick={() => setExpanded(isExpanded ? null : order._id)}
                             className="px-2.5 py-1.5 font-sans bg-white border border-[#EAE6DF] text-[#615C56] hover:text-[#1A1A1A] hover:bg-[#FAF8F5] hover:border-[#9B9389] rounded-md text-[10px] font-medium tracking-wide transition-all duration-200 whitespace-nowrap text-center shadow-sm"
