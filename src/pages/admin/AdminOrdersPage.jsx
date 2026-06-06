@@ -454,6 +454,13 @@ export default function AdminOrdersPage() {
     }
   }
 
+  const selectedOrders = orders.filter(o => selectedOrderIds.includes(o._id))
+  const hasPending = selectedOrders.some(o => o.status === 'PENDING')
+  const hasConfirmed = selectedOrders.some(o => o.status === 'CONFIRMED')
+  const hasPacking = selectedOrders.some(o => o.status === 'PACKING')
+  const hasShipping = selectedOrders.some(o => o.status === 'SHIPPING')
+  const hasCancelable = selectedOrders.some(o => ['PENDING', 'CONFIRMED'].includes(o.status))
+
   return (
     <AdminLayout title="Quản lý đơn hàng">
       {/* Page header title with decorative underline */}
@@ -825,7 +832,7 @@ export default function AdminOrdersPage() {
           <div className="h-4 w-[1px] bg-white/20" />
 
           <div className="flex gap-2">
-            {statusFilter === 'PENDING' && (
+            {(statusFilter === 'PENDING' || (statusFilter === 'all' && hasPending)) && (
               <button
                 onClick={() => handleBulkStatusChange('CONFIRMED')}
                 className="px-3.5 py-1.5 bg-[#2E4A3F] hover:bg-[#233830] text-[10.5px] font-bold uppercase tracking-wider rounded-md transition-colors"
@@ -833,7 +840,7 @@ export default function AdminOrdersPage() {
                 Xác nhận hàng loạt
               </button>
             )}
-            {statusFilter === 'CONFIRMED' && (
+            {(statusFilter === 'CONFIRMED' || (statusFilter === 'all' && hasConfirmed)) && (
               <button
                 onClick={() => handleBulkStatusChange('PACKING')}
                 className="px-3.5 py-1.5 bg-purple-600 hover:bg-purple-700 text-[10.5px] font-bold uppercase tracking-wider rounded-md transition-colors"
@@ -841,7 +848,7 @@ export default function AdminOrdersPage() {
                 Đóng gói hàng loạt
               </button>
             )}
-            {statusFilter === 'PACKING' && (
+            {(statusFilter === 'PACKING' || (statusFilter === 'all' && hasPacking)) && (
               <button
                 onClick={() => handleBulkStatusChange('SHIPPING')}
                 className="px-3.5 py-1.5 bg-orange-600 hover:bg-orange-700 text-[10.5px] font-bold uppercase tracking-wider rounded-md transition-colors"
@@ -849,7 +856,7 @@ export default function AdminOrdersPage() {
                 Giao shipper hàng loạt
               </button>
             )}
-            {statusFilter === 'SHIPPING' && (
+            {(statusFilter === 'SHIPPING' || (statusFilter === 'all' && hasShipping)) && (
               <button
                 onClick={() => handleBulkStatusChange('DELIVERED')}
                 className="px-3.5 py-1.5 bg-green-600 hover:bg-green-700 text-[10.5px] font-bold uppercase tracking-wider rounded-md transition-colors"
@@ -857,7 +864,7 @@ export default function AdminOrdersPage() {
                 Giao thành công hàng loạt
               </button>
             )}
-            {['PENDING', 'CONFIRMED'].includes(statusFilter) && (
+            {((['PENDING', 'CONFIRMED'].includes(statusFilter)) || (statusFilter === 'all' && hasCancelable)) && (
               <button
                 onClick={handleBulkCancel}
                 className="px-3.5 py-1.5 bg-red-600 hover:bg-red-700 text-[10.5px] font-bold uppercase tracking-wider rounded-md transition-colors"
