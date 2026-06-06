@@ -196,10 +196,29 @@ function OrderTimeline({ order }) {
 /* ─── Order Detail Modal ────────────────────────────────────── */
 
 function OrderDetailModal({ order, onClose }) {
+  const [repayLoading, setRepayLoading] = useState(false)
+  const showToast = useToastStore(s => s.show)
+
   useEffect(() => {
     document.body.style.overflow = 'hidden'
     return () => { document.body.style.overflow = '' }
   }, [])
+
+  async function handleRepay(orderId) {
+    setRepayLoading(true)
+    try {
+      const res = await api.post('/api/payments/payos/create', { orderId })
+      if (res.data?.checkoutUrl) {
+        window.location.href = res.data.checkoutUrl
+      } else {
+        throw new Error('Không nhận được liên kết thanh toán từ hệ thống')
+      }
+    } catch (err) {
+      showToast({ message: err.message || 'Lỗi khi tạo liên kết thanh toán', type: 'error' })
+    } finally {
+      setRepayLoading(false)
+    }
+  }
 
   return (
     <motion.div
@@ -274,13 +293,42 @@ function OrderDetailModal({ order, onClose }) {
           )}
 
           {/* Total */}
-          <div className="flex items-end justify-between pt-4 border-t border-divider-lt">
-            <p className="text-xs text-muted">
-              Thanh toán: <span className="font-medium text-ink">{order.payment === 'COD' ? 'Tiền mặt (COD)' : 'Online'}</span>
-            </p>
-            <div className="text-right">
-              <p className="text-2xs text-muted uppercase tracking-label">Tổng cộng</p>
-              <p className="font-display font-semibold text-ink text-xl">{formatPrice(order.total)}</p>
+          <div className="flex flex-col gap-3 pt-4 border-t border-divider-lt">
+            {order.payment === 'ONLINE' && order.paymentStatus === 'UNPAID' && order.status === 'PENDING' && (
+              <div className="bg-amber-50 border border-amber-200/50 rounded-xl p-3 text-xs text-amber-800 leading-relaxed font-sans flex flex-col gap-2.5">
+                <div>
+                  ⚠️ <strong>Vui lòng hoàn tất thanh toán:</strong> Đơn hàng trực tuyến của bạn chưa được thanh toán thành công. Vui lòng hoàn tất quét mã QR chuyển khoản để cửa hàng xác nhận và chuẩn bị sách.
+                </div>
+                <button
+                  onClick={() => handleRepay(order._id)}
+                  disabled={repayLoading}
+                  className="w-full mt-1 py-2 bg-[#2E4A3F] hover:bg-[#1E3029] active:bg-[#15221D] disabled:opacity-50 text-white font-semibold rounded-xl text-center transition-colors font-sans shadow-sm uppercase text-[11px] tracking-wider"
+                >
+                  {repayLoading ? 'Đang tạo liên kết thanh toán…' : 'Thanh toán ngay (VietQR / PayOS)'}
+                </button>
+              </div>
+            )}
+            <div className="flex items-end justify-between w-full">
+              <div className="text-xs text-muted">
+                <p>
+                  Thanh toán: <span className="font-medium text-ink">{order.payment === 'COD' ? 'Tiền mặt (COD)' : 'Online'}</span>
+                </p>
+                <p className="mt-1">
+                  Trạng thái: <span className={`font-semibold ${
+                    order.paymentStatus === 'PAID' ? 'text-emerald-600' :
+                    order.paymentStatus === 'REFUNDED' ? 'text-gray-500' :
+                    order.payment === 'COD' ? 'text-gray-600' : 'text-rose-500'
+                  }`}>
+                    {order.paymentStatus === 'PAID' ? 'Đã thanh toán' : 
+                     order.paymentStatus === 'REFUNDED' ? 'Đã hoàn tiền' : 
+                     order.payment === 'COD' ? 'Chưa thu tiền (COD)' : 'Chưa thanh toán'}
+                  </span>
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-2xs text-muted uppercase tracking-label">Tổng cộng</p>
+                <p className="font-display font-semibold text-ink text-xl">{formatPrice(order.total)}</p>
+              </div>
             </div>
           </div>
         </div>
@@ -578,6 +626,8 @@ function ReviewModal({ item, orderId, onSuccess, onClose }) {
 /* ─── Order Card ────────────────────────────────────────────── */
 
 function OrderCard({ order, reviewedKeys, onViewDetail, onReorder, onCancel, onReview }) {
+  const [repayLoading, setRepayLoading] = useState(false)
+  const showToast = useToastStore(s => s.show)
   const canCancel    = ['PENDING', 'CONFIRMED'].includes(order.status)
   const isDelivered  = order.status === 'DELIVERED'
   const PREVIEW      = isDelivered ? order.items.length : 2
@@ -644,11 +694,49 @@ function OrderCard({ order, reviewedKeys, onViewDetail, onReorder, onCancel, onR
 
       {/* Footer */}
       <div className="px-5 py-3.5 border-t border-divider-lt flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex items-baseline gap-1">
-          <span className="text-xs text-muted">Tổng:</span>
-          <span className="font-display font-semibold text-ink">{formatPrice(order.total)}</span>
+        <div className="flex items-center gap-3">
+          <div className="flex items-baseline gap-1">
+            <span className="text-xs text-muted">Tổng:</span>
+            <span className="font-display font-semibold text-ink">{formatPrice(order.total)}</span>
+          </div>
+          <span className={`inline-block px-1.5 py-0.5 rounded-md text-[9px] font-semibold border ${
+            order.paymentStatus === 'PAID'
+              ? 'bg-emerald-50 text-emerald-700 border-emerald-200/50'
+              : order.paymentStatus === 'REFUNDED'
+              ? 'bg-gray-100 text-gray-600 border-gray-300/50'
+              : order.payment === 'COD'
+              ? 'bg-gray-50 text-gray-500 border-gray-200/50'
+              : 'bg-red-50 text-red-600 border-red-200/50'
+          }`}>
+            {order.paymentStatus === 'PAID' ? 'Đã thanh toán' : 
+             order.paymentStatus === 'REFUNDED' ? 'Đã hoàn tiền' : 
+             order.payment === 'COD' ? 'COD (Chưa thu)' : 'Chưa thanh toán'}
+          </span>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
+          {order.payment === 'ONLINE' && order.paymentStatus === 'UNPAID' && order.status === 'PENDING' && (
+            <button
+              disabled={repayLoading}
+              onClick={async () => {
+                setRepayLoading(true)
+                try {
+                  const res = await api.post('/api/payments/payos/create', { orderId: order._id })
+                  if (res.data?.checkoutUrl) {
+                    window.location.href = res.data.checkoutUrl
+                  } else {
+                    throw new Error('Không tạo được liên kết thanh toán')
+                  }
+                } catch (err) {
+                  showToast({ message: err.message || 'Lỗi khi tạo liên kết thanh toán', type: 'error' })
+                } finally {
+                  setRepayLoading(false)
+                }
+              }}
+              className="text-xs font-semibold px-3.5 py-1.5 bg-[#2E4A3F] text-white rounded-xl hover:bg-[#1E3029] active:bg-[#15221D] disabled:opacity-50 transition-colors shadow-sm uppercase font-sans tracking-wide text-center"
+            >
+              {repayLoading ? 'Đang tải…' : 'Thanh toán ngay'}
+            </button>
+          )}
           {canCancel && (
             <button
               onClick={() => onCancel(order._id)}
@@ -742,172 +830,71 @@ export default function AccountPage() {
   if (!isAuth) return null
 
   return (
-    <div className="min-h-screen bg-surface-warm">
-      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-10 py-8 md:py-12">
-        <div className="flex flex-col lg:flex-row gap-8">
-
-          {/* ── Sidebar ─────────────────────────────────────────── */}
-          <aside className="w-full lg:w-[260px] flex-shrink-0 space-y-4">
-
-            {/* Profile card */}
-            <div className="bg-white rounded-2xl border border-divider-lt p-6">
-              {/* Avatar + info */}
-              <div className="flex items-center gap-4 mb-6">
-                <div className="relative">
-                  <AvatarCircle name={user?.name} size="lg" />
-                  <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-emerald-400 border-2 border-white" />
-                </div>
-                <div className="min-w-0">
-                  <p className="font-display font-semibold text-ink leading-tight truncate">{user?.name}</p>
-                  <p className="text-xs text-muted mt-0.5 truncate">{user?.email}</p>
-                  {user?.phone && (
-                    <p className="text-xs text-subtle mt-0.5">{user.phone}</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Stats row */}
-              <div className="grid grid-cols-3 gap-2 mb-5 p-3 bg-surface-warm rounded-xl">
-                {[
-                  { label: 'Đơn hàng', value: orders.length },
-                  { label: 'Đã giao',  value: orders.filter(o => o.status === 'DELIVERED').length },
-                  { label: 'Đã hủy',   value: orders.filter(o => o.status === 'CANCELLED').length },
-                ].map(s => (
-                  <div key={s.label} className="text-center">
-                    <p className="font-display font-bold text-ink text-lg leading-none">{s.value}</p>
-                    <p className="text-[10px] text-muted mt-0.5 leading-tight">{s.label}</p>
-                  </div>
-                ))}
-              </div>
-
-              {/* Action buttons */}
-              <div className="space-y-2">
-                <button
-                  onClick={() => setShowEditModal(true)}
-                  className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl hover:bg-surface-subtle transition-colors group"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <span className="text-sm">✏️</span>
-                    <span className="text-sm font-medium text-ink">Chỉnh sửa hồ sơ</span>
-                  </div>
-                  <svg className="w-3.5 h-3.5 text-subtle group-hover:text-ink transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                  </svg>
-                </button>
-                <button
-                  onClick={() => setShowPassModal(true)}
-                  className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl hover:bg-surface-subtle transition-colors group"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <span className="text-sm">🔒</span>
-                    <span className="text-sm font-medium text-ink">Đổi mật khẩu</span>
-                  </div>
-                  <svg className="w-3.5 h-3.5 text-subtle group-hover:text-ink transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-
-            {/* Quick links */}
-            <nav className="bg-white rounded-2xl border border-divider-lt overflow-hidden">
-              {[
-                { to: '/account/wishlist', emoji: '♡', label: 'Danh sách yêu thích' },
-                { to: '/books',            emoji: '📚', label: 'Tiếp tục mua sách' },
-                { to: '/contact',          emoji: '💬', label: 'Liên hệ hỗ trợ' },
-              ].map((link, i) => (
-                <Link key={link.to} to={link.to}
-                  className={`flex items-center gap-3 px-5 py-3.5 hover:bg-surface-warm transition-colors group ${i > 0 ? 'border-t border-divider-lt' : ''}`}
-                >
-                  <span className="text-base">{link.emoji}</span>
-                  <span className="flex-1 text-sm font-medium text-ink">{link.label}</span>
-                  <svg className="w-3.5 h-3.5 text-subtle group-hover:text-ink transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                  </svg>
-                </Link>
-              ))}
-            </nav>
-
-            {/* Logout */}
-            <button
-              onClick={() => { logout(); navigate('/') }}
-              className="w-full py-3 rounded-2xl border border-divider-lt bg-white text-sm font-semibold text-muted hover:text-red-500 hover:border-red-200 hover:bg-red-50/30 transition-all"
-            >
-              Đăng xuất
-            </button>
-          </aside>
-
-          {/* ── Main content ─────────────────────────────────────── */}
-          <main className="flex-1 min-w-0 space-y-5">
-            {/* Title */}
-            <div>
-              <p className="text-2xs font-semibold tracking-label-2xl uppercase text-accent">Tài khoản</p>
-              <h1 className="font-display font-semibold text-2xl md:text-3xl text-ink mt-0.5">Đơn hàng của tôi</h1>
-            </div>
-
-            {/* Status tabs */}
-            <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
-              {TABS.map(tab => {
-                const count   = tabCounts[tab.key]
-                const isActive = activeTab === tab.key
-                return (
-                  <motion.button
-                    key={tab.key}
-                    onClick={() => setActiveTab(tab.key)}
-                    whileTap={{ scale: 0.96 }}
-                    className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold transition-all duration-200
-                      ${isActive
-                        ? 'bg-ink text-white shadow-sm'
-                        : 'bg-white text-ink-60 border border-divider-lt hover:border-divider hover:bg-surface-warm'
-                      }`}
-                  >
-                    {tab.label}
-                    {count > 0 && (
-                      <span className={`text-[10px] font-bold min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center
-                        ${isActive ? 'bg-white/25 text-white' : 'bg-surface-subtle text-muted'}`}>
-                        {count}
-                      </span>
-                    )}
-                  </motion.button>
-                )
-              })}
-            </div>
-
-            {/* Order list */}
-            {loading ? (
-              <div className="space-y-4">
-                {[1, 2, 3].map(i => <SkeletonCard key={i} />)}
-              </div>
-            ) : filteredOrders.length === 0 ? (
-              <div className="bg-white rounded-2xl border border-divider-lt">
-                <EmptyOrders tab={activeTab} />
-              </div>
-            ) : (
-              <AnimatePresence mode="popLayout" initial={false}>
-                <div className="space-y-4">
-                  {filteredOrders.map(order => (
-                    <OrderCard
-                      key={order._id}
-                      order={order}
-                      reviewedKeys={reviewedKeys}
-                      onViewDetail={setDetailOrder}
-                      onReorder={handleReorder}
-                      onCancel={handleCancel}
-                      onReview={setReviewTarget}
-                    />
-                  ))}
-                </div>
-              </AnimatePresence>
-            )}
-          </main>
-        </div>
+    <div className="space-y-6">
+      {/* Title */}
+      <div>
+        <p className="text-2xs font-semibold tracking-label-2xl uppercase text-accent">Tài khoản</p>
+        <h1 className="font-display font-semibold text-2xl md:text-3xl text-ink mt-0.5">Đơn hàng của tôi</h1>
       </div>
+
+      {/* Status tabs */}
+      <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+        {TABS.map(tab => {
+          const count   = tabCounts[tab.key]
+          const isActive = activeTab === tab.key
+          return (
+            <motion.button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              whileTap={{ scale: 0.96 }}
+              className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold transition-all duration-200
+                ${isActive
+                  ? 'bg-ink text-white shadow-sm'
+                  : 'bg-white text-ink-60 border border-divider-lt hover:border-divider hover:bg-surface-warm'
+                }`}
+            >
+              {tab.label}
+              {count > 0 && (
+                <span className={`text-[10px] font-bold min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center
+                  ${isActive ? 'bg-white/25 text-white' : 'bg-surface-subtle text-muted'}`}>
+                  {count}
+                </span>
+              )}
+            </motion.button>
+          )
+        })}
+      </div>
+
+      {/* Order list */}
+      {loading ? (
+        <div className="space-y-4">
+          {[1, 2, 3].map(i => <SkeletonCard key={i} />)}
+        </div>
+      ) : filteredOrders.length === 0 ? (
+        <div className="border border-divider-lt rounded-2xl">
+          <EmptyOrders tab={activeTab} />
+        </div>
+      ) : (
+        <AnimatePresence mode="popLayout" initial={false}>
+          <div className="space-y-4">
+            {filteredOrders.map(order => (
+              <OrderCard
+                key={order._id}
+                order={order}
+                reviewedKeys={reviewedKeys}
+                onViewDetail={setDetailOrder}
+                onReorder={handleReorder}
+                onCancel={handleCancel}
+                onReview={setReviewTarget}
+              />
+            ))}
+          </div>
+        </AnimatePresence>
+      )}
 
       {/* ── Modals ─────────────────────────────────────────────── */}
       <AnimatePresence>
         {detailOrder   && <OrderDetailModal key="detail" order={detailOrder}   onClose={() => setDetailOrder(null)} />}
-        {showEditModal && <ProfileEditModal key="edit"   user={user} updateProfile={updateProfile} onClose={() => setShowEditModal(false)} />}
-        {showPassModal && <PasswordModal    key="pass"   changePassword={changePassword}           onClose={() => setShowPassModal(false)} />}
         {reviewTarget  && (
           <ReviewModal
             key="review"

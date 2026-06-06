@@ -25,6 +25,7 @@ const orderSchema = new mongoose.Schema({
   items:      [orderItemSchema],
   status:     { type: String, enum: ORDER_STATUSES,   default: 'PENDING' },
   payment:    { type: String, enum: PAYMENT_METHODS,  required: true },
+  paymentStatus: { type: String, enum: ['UNPAID', 'PAID', 'REFUNDED'], default: 'UNPAID' },
   address:    { type: addressSchema, required: true },
   total:      { type: Number, required: true, min: 0 },
   discount:   { type: Number, default: 0 },

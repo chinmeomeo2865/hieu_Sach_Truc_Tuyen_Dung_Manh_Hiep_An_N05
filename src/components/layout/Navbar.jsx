@@ -135,43 +135,117 @@ export function Navbar({ links = [], categories = [] }) {
               </Link>
 
               {user ? (
-                <div className="hidden md:flex items-center gap-2 ml-1">
-                  {user.role === 'admin' && (
-                    <Link
-                      to="/admin/orders"
-                      className="px-2.5 py-1 border border-ink/25 rounded-sm text-[10px] font-semibold tracking-label uppercase text-ink-60 hover:border-ink hover:text-ink transition-colors"
-                    >
-                      Admin
-                    </Link>
-                  )}
-                  {user.role === 'product_manager' && (
-                    <Link
-                      to="/pm"
-                      className="px-2.5 py-1 border border-ink/25 rounded-sm text-[10px] font-semibold tracking-label uppercase text-ink-60 hover:border-ink hover:text-ink transition-colors"
-                    >
-                      PM Panel
-                    </Link>
-                  )}
-                  {user.role === 'warehouse' && (
-                    <Link
-                      to="/warehouse"
-                      className="px-2.5 py-1 border border-ink/25 rounded-sm text-[10px] font-semibold tracking-label uppercase text-ink-60 hover:border-ink hover:text-ink transition-colors"
-                    >
-                      Kho
-                    </Link>
-                  )}
-                  <Link
-                    to="/account"
-                    className="text-[11px] font-medium text-ink-60 max-w-[100px] truncate hover:text-ink transition-colors"
+                <div className="relative group hidden md:block ml-1">
+                  {/* Dropdown Trigger: User Pill */}
+                  <button 
+                    type="button"
+                    className="flex items-center gap-2 pl-2 pr-3 py-1 bg-white border border-divider hover:border-ink hover:bg-surface-warm rounded-full text-[11px] font-semibold tracking-wide text-ink transition-all shadow-2xs hover:shadow-xs"
                   >
-                    {user.name}
-                  </Link>
-                  <button
-                    onClick={handleLogout}
-                    className="px-3 py-1.5 border border-divider rounded text-[11px] font-medium tracking-[0.08em] uppercase text-ink-60 hover:border-ink hover:text-ink transition-colors"
-                  >
-                    Đăng xuất
+                    <div className="w-6 h-6 rounded-full bg-ink text-white text-[10px] font-bold flex items-center justify-center flex-shrink-0 select-none">
+                      {user.name.charAt(0).toUpperCase()}
+                    </div>
+                    <span className="max-w-[90px] truncate normal-case">{user.name}</span>
+                    {user.role && user.role !== 'customer' && (
+                      <span className="px-1.5 py-0.5 bg-surface-subtle border border-divider-lt rounded-full text-[8px] font-bold text-muted uppercase tracking-wider shrink-0 select-none">
+                        {user.role === 'admin' ? 'ADMIN' : user.role === 'product_manager' ? 'PM' : 'KHO'}
+                      </span>
+                    )}
+                    <svg className="w-3 h-3 text-muted transition-transform duration-300 group-hover:rotate-180 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                    </svg>
                   </button>
+
+                  {/* Dropdown Popover */}
+                  <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2.5 w-60 bg-white border border-divider-lt rounded-xl shadow-lg py-1.5 hidden group-hover:block hover:block z-[99] animate-fadeIn">
+                    {/* Tooltip Caret Pointer */}
+                    <div className="absolute left-1/2 -translate-x-1/2 -top-1.5 w-3 h-3 rotate-45 bg-white border-t border-l border-divider-lt z-[-1]" />
+
+                    {/* Header */}
+                    <div className="px-4 py-2.5 border-b border-divider-lt/60">
+                      <p className="text-[9px] text-muted uppercase font-bold tracking-wider font-sans">Tài khoản của tôi</p>
+                    </div>
+
+                    {/* Navigation Options */}
+                    <div className="py-1">
+                      {/* Dynamic Staff Panel Link */}
+                      {user.role && user.role !== 'customer' && (
+                        <Link 
+                          to={user.role === 'admin' ? '/admin/orders' : user.role === 'product_manager' ? '/pm' : '/warehouse'} 
+                          className="flex items-center gap-3 px-4 py-2.5 hover:bg-[#FAF8F5] transition-colors group"
+                        >
+                          <div className="w-7 h-7 rounded-lg border border-divider-lt flex items-center justify-center bg-[#FAF8F5] group-hover:bg-white group-hover:border-divider transition-all shrink-0">
+                            <svg className="w-3.5 h-3.5 text-ink-60 group-hover:text-ink transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-[12px] font-semibold text-ink leading-snug font-sans">
+                              {user.role === 'admin' ? 'Trang quản trị' : user.role === 'product_manager' ? 'Trang quản lý' : 'Trang thủ kho'}
+                            </p>
+                            <p className="text-[9.5px] text-muted leading-tight mt-0.5 font-sans">
+                              {user.role === 'admin' ? 'Quản lý sách & đơn hàng' : user.role === 'product_manager' ? 'Quản lý danh mục & sách' : 'Quản lý nhập xuất kho'}
+                            </p>
+                          </div>
+                        </Link>
+                      )}
+
+                      {/* Personal profile */}
+                      <Link to="/account/profile" className="flex items-center gap-3 px-4 py-2.5 hover:bg-[#FAF8F5] transition-colors group">
+                        <div className="w-7 h-7 rounded-lg border border-divider-lt flex items-center justify-center bg-[#FAF8F5] group-hover:bg-white group-hover:border-divider transition-all shrink-0">
+                          <svg className="w-3.5 h-3.5 text-ink-60 group-hover:text-ink transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[12px] font-semibold text-ink leading-snug font-sans">Hồ sơ cá nhân</p>
+                          <p className="text-[9.5px] text-muted leading-tight mt-0.5 font-sans">Thông tin cá nhân & mật khẩu</p>
+                        </div>
+                      </Link>
+
+                      {/* Orders list */}
+                      <Link to="/account" className="flex items-center gap-3 px-4 py-2.5 hover:bg-[#FAF8F5] transition-colors group">
+                        <div className="w-7 h-7 rounded-lg border border-divider-lt flex items-center justify-center bg-[#FAF8F5] group-hover:bg-white group-hover:border-divider transition-all shrink-0">
+                          <svg className="w-3.5 h-3.5 text-ink-60 group-hover:text-ink transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                          </svg>
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[12px] font-semibold text-ink leading-snug font-sans">Đơn hàng của tôi</p>
+                          <p className="text-[9.5px] text-muted leading-tight mt-0.5 font-sans">Lịch sử & theo dõi đơn hàng</p>
+                        </div>
+                      </Link>
+
+                      {/* Wishlist */}
+                      <Link to="/account/wishlist" className="flex items-center gap-3 px-4 py-2.5 hover:bg-[#FAF8F5] transition-colors group">
+                        <div className="w-7 h-7 rounded-lg border border-divider-lt flex items-center justify-center bg-[#FAF8F5] group-hover:bg-white group-hover:border-divider transition-all shrink-0">
+                          <HeartIcon className="w-3.5 h-3.5 text-ink-60 group-hover:text-ink transition-colors shrink-0" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[12px] font-semibold text-ink leading-snug font-sans">Tủ sách của tôi</p>
+                          <p className="text-[9.5px] text-muted leading-tight mt-0.5 font-sans">Sách yêu thích & Tư vấn AI</p>
+                        </div>
+                      </Link>
+                    </div>
+
+                    {/* Logout Trigger */}
+                    <div className="border-t border-divider-lt/60 pt-1.5 mt-1">
+                      <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-red-50/20 transition-colors text-left group"
+                      >
+                        <div className="w-7 h-7 rounded-lg border border-divider-lt flex items-center justify-center bg-[#FAF8F5] group-hover:bg-white group-hover:border-red-200 transition-all shrink-0">
+                          <svg className="w-3.5 h-3.5 text-red-500 group-hover:text-red-700 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                          </svg>
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[12px] font-semibold text-red-600 leading-snug font-sans">Đăng xuất</p>
+                          <p className="text-[9.5px] text-red-400/80 leading-tight mt-0.5 font-sans">Thoát khỏi tài khoản</p>
+                        </div>
+                      </button>
+                    </div>
+                  </div>
                 </div>
               ) : (
                 <Link

@@ -19,6 +19,7 @@ import WishlistPage         from './pages/WishlistPage'
 import AccountProfilePage   from './pages/AccountProfilePage'
 import AccountPage          from './pages/AccountPage'
 import AddressesPage        from './pages/account/AddressesPage'
+import { AccountLayout }          from './components/layout/AccountLayout'
 import PlaceholderPage      from './pages/PlaceholderPage'
 import SupportPage          from './pages/SupportPage'
 import AdminLoginPage       from './pages/admin/AdminLoginPage'
@@ -88,11 +89,14 @@ export default function App() {
         <Route path="/books/:id" element={<MainLayout><BookDetailPage /></MainLayout>} />
         <Route path="/cart" element={<MainLayout><CartPage /></MainLayout>} />
         <Route path="/checkout" element={<MainLayout><CheckoutPage /></MainLayout>} />
-        <Route path="/account"           element={<MainLayout><AccountPage /></MainLayout>} />
-        <Route path="/account/orders"    element={<MainLayout><OrdersPage /></MainLayout>} />
-        <Route path="/account/wishlist"  element={<MainLayout><WishlistPage /></MainLayout>} />
-        <Route path="/account/profile"   element={<MainLayout><AccountProfilePage /></MainLayout>} />
-        <Route path="/account/addresses" element={<MainLayout><AddressesPage /></MainLayout>} />
+        
+        <Route path="/account" element={<MainLayout><AccountLayout /></MainLayout>}>
+          <Route index element={<AccountPage />} />
+          <Route path="orders" element={<AccountPage />} />
+          <Route path="profile" element={<AccountProfilePage />} />
+          <Route path="addresses" element={<AddressesPage />} />
+          <Route path="wishlist" element={<WishlistPage />} />
+        </Route>
         <Route path="/support"           element={<MainLayout><SupportPage /></MainLayout>} />
         <Route path="/blog"              element={<MainLayout><BlogPage /></MainLayout>} />
         <Route path="/blog/:id"          element={<MainLayout><BlogDetailPage /></MainLayout>} />

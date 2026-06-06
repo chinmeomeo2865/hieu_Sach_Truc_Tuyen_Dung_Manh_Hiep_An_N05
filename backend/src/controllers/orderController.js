@@ -146,6 +146,7 @@ const createOrder = async (req, res, next) => {
         price:   i.price,
       })),
       payment,
+      paymentStatus: 'UNPAID',
       address,
       total,
       discount,
@@ -200,6 +201,9 @@ const cancelOrder = async (req, res, next) => {
     )
 
     order.status = 'CANCELLED'
+    if (order.payment === 'ONLINE' && order.paymentStatus === 'PAID') {
+      order.paymentStatus = 'REFUNDED'
+    }
     order.statusHistory.push({ status: 'CANCELLED', changedBy: req.user._id })
     await order.save()
 
@@ -232,6 +236,11 @@ const updateStatus = async (req, res, next) => {
     }
 
     order.status = status
+    if (status === 'DELIVERED' && order.payment === 'COD') {
+      order.paymentStatus = 'PAID'
+    } else if (status === 'RETURNED' && order.paymentStatus === 'PAID') {
+      order.paymentStatus = 'REFUNDED'
+    }
     order.statusHistory.push({ status, changedBy: req.user._id })
     await order.save()
 

@@ -66,6 +66,7 @@ exports.handlePayOSReturn = async (req, res, next) => {
       const order = await Order.findById(orderId)
       if (order && order.status === 'PENDING') {
         order.status = 'CONFIRMED'
+        order.paymentStatus = 'PAID'
         order.statusHistory.push({ status: 'CONFIRMED', changedBy: null })
         await order.save()
 
@@ -104,6 +105,7 @@ exports.payosWebhook = async (req, res, next) => {
 
       if (order) {
         order.status = 'CONFIRMED'
+        order.paymentStatus = 'PAID'
         order.statusHistory.push({ status: 'CONFIRMED', changedBy: null })
         await order.save()
         createNotification({

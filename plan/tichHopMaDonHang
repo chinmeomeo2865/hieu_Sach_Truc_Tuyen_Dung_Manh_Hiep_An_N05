@@ -1,0 +1,69 @@
+# Kế hoạch thiết kế và tích hợp mã đơn hàng tùy chỉnh `DSC-YYMMDD-XXXX`
+
+Kế hoạch này nhằm nâng cấp cơ chế quản lý mã đơn hàng từ mã băm `_id` MongoDB mặc định sang mã đơn hàng thân thiện với người dùng dạng `DSC-YYMMDD-XXXX` (ví dụ: `DSC-260605-H9K3`). Mã mới chứa ngày đặt hàng và chuỗi 4 ký tự ngẫu nhiên duy nhất, giúp tăng tính chuyên nghiệp và thuận tiện khi quản trị.
+
+---
+
+## User Review Required
+
+> [!IMPORTANT]
+> - Các đơn hàng cũ đã có sẵn trong cơ sở dữ liệu sẽ không bị ảnh hưởng. Trên giao diện, hệ thống sẽ sử dụng cơ chế fallback: nếu có `orderCode` thì hiển thị `orderCode`, ngược lại sẽ tự động cắt 8 ký tự cuối của `_id` làm mã hiển thị. điều này đảm bảo hệ thống không bị lỗi dữ liệu cũ.
+> - Mã đơn hàng mới sẽ tự sinh khi khách hàng đặt đơn hàng mới.
+
+---
+
+## Proposed Changes
+
+### [Backend Component]
+
+#### [MODIFY] [Order.js](file:///e:/it-project/hieuSachCin/backend/src/models/Order.js)
+- Thêm trường `orderCode: { type: String, unique: true, sparse: true }` vào schema. Cấu hình `sparse: true` giúp tránh lỗi trùng lặp khi các đơn hàng cũ chưa có trường này (`null`/`undefined`).
+
+#### [MODIFY] [orderController.js](file:///e:/it-project/hieuSachCin/backend/src/controllers/orderController.js)
+- Thêm hàm helper `generateOrderCode` để sinh mã dạng `DSC-YYMMDD-XXXX` từ ngày hiện tại và 4 ký tự ngẫu nhiên trong chuỗi ký tự viết hoa dễ đọc (tránh các ký tự dễ nhầm lẫn như `0`, `O`, `1`, `I`).
+- Viết logic kiểm tra trùng lặp mã đơn hàng trong DB trước khi tạo đơn.
+- Gán `orderCode` vào đối tượng đơn hàng trong hàm `createOrder`.
+
+#### [MODIFY] [analyticsController.js](file:///e:/it-project/hieuSachCin/backend/src/controllers/analyticsController.js)
+- Bổ sung trường `orderCode` vào phương thức `.select(...)` khi truy vấn danh sách đơn hàng gần đây (`recentOrders`), giúp frontend nhận được mã đơn mới.
+
+---
+
+### [Frontend Component]
+
+Chúng tôi sẽ cập nhật cách hiển thị mã đơn hàng trên toàn bộ các trang giao diện của Khách hàng, Quản trị viên (Admin) và Nhân viên kho (Warehouse):
+
+#### [MODIFY] [AdminAnalyticsPage.jsx](file:///e:/it-project/hieuSachCin/src/pages/admin/AdminAnalyticsPage.jsx)
+- Thay đổi hiển thị mã đơn hàng trong bảng Đơn hàng gần đây thành `o.orderCode || o._id.slice(-8).toUpperCase()`.
+- Cập nhật ô hiển thị mã đơn hàng trong Modal chi tiết đơn hàng thành `selectedOrder.orderCode || selectedOrder._id.toUpperCase()`.
+
+#### [MODIFY] [AdminOrdersPage.jsx](file:///e:/it-project/hieuSachCin/src/pages/admin/AdminOrdersPage.jsx)
+- Cập nhật hiển thị mã đơn thành `order.orderCode || order._id.slice(-8).toUpperCase()`.
+
+#### [MODIFY] [AdminUsersPage.jsx](file:///e:/it-project/hieuSachCin/src/pages/admin/AdminUsersPage.jsx)
+- Cập nhật hiển thị mã đơn thành `o.orderCode || o._id.slice(-8).toUpperCase()`.
+
+#### [MODIFY] [WarehouseOrdersPage.jsx](file:///e:/it-project/hieuSachCin/src/pages/warehouse/WarehouseOrdersPage.jsx)
+- Cập nhật hiển thị mã đơn trong tiêu đề và trong danh sách.
+
+#### [MODIFY] [WarehouseReturnsPage.jsx](file:///e:/it-project/hieuSachCin/src/pages/warehouse/WarehouseReturnsPage.jsx)
+- Cập nhật hiển thị mã đơn trong chi tiết hoàn trả và trong danh sách.
+
+#### [MODIFY] [OrdersPage.jsx](file:///e:/it-project/hieuSachCin/src/pages/OrdersPage.jsx)
+- Cập nhật hiển thị mã đơn của khách hàng thành `order.orderCode || order._id.slice(-8).toUpperCase()`.
+
+#### [MODIFY] [AccountPage.jsx](file:///e:/it-project/hieuSachCin/src/pages/AccountPage.jsx)
+- Cập nhật hiển thị mã đơn trong danh sách đơn mua của Khách hàng.
+
+---
+
+## Verification Plan
+
+### Automated Tests
+- Chạy `npm run build` để kiểm chứng biên dịch toàn bộ mã nguồn frontend thành công.
+
+### Manual Verification
+1. Đăng nhập tài khoản khách hàng, thực hiện đặt một đơn hàng mới.
+2. Kiểm tra mã đơn hàng hiển thị tại trang đơn mua của khách hàng xem có định dạng `DSC-YYMMDD-XXXX` hay không.
+3. Đăng nhập trang quản trị Admin Dashboard và trang quản lý đơn hàng để kiểm tra xem đơn hàng mới có hiển thị đúng mã `DSC-YYMMDD-XXXX` và các đơn hàng cũ vẫn hiển thị bình thường bằng 8 ký tự cuối `_id`.
+4. Mở trang Nhân viên kho để kiểm chứng hiển thị đồng bộ.

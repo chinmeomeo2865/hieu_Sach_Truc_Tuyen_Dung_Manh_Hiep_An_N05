@@ -624,7 +624,7 @@ export default function AdminOrdersPage() {
                       {/* Customer info */}
                       <td className="py-3.5 px-2 w-[22%] align-middle text-center">
                         <div className="flex flex-col items-center justify-center">
-                          <span className="font-semibold text-[#1A1A1A] text-[12px] flex items-center justify-center gap-1.5">
+                          <span className="font-semibold text-[#1A1A1A] text-[12px] flex items-center justify-center gap-1.5 flex-wrap">
                             {order.address?.name || order.user?.name || 'Khách vãng lai'}
                             <span className={`inline-block px-1.5 py-0.5 rounded text-[8px] font-bold border uppercase tracking-wider ${
                               order.payment === 'COD' 
@@ -632,6 +632,19 @@ export default function AdminOrdersPage() {
                                 : 'bg-green-50 text-green-700 border-green-200/50'
                             }`}>
                               {order.payment}
+                            </span>
+                            <span className={`inline-block px-1.5 py-0.5 rounded text-[8px] font-bold border uppercase tracking-wider ${
+                              order.paymentStatus === 'PAID'
+                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200/50'
+                                : order.paymentStatus === 'REFUNDED'
+                                ? 'bg-gray-100 text-gray-600 border-gray-300/50'
+                                : order.payment === 'COD'
+                                ? 'bg-gray-50 text-gray-500 border-gray-200/50'
+                                : 'bg-red-50 text-red-600 border-red-200/50'
+                            }`}>
+                              {order.paymentStatus === 'PAID' ? 'Đã thanh toán' : 
+                               order.paymentStatus === 'REFUNDED' ? 'Đã hoàn tiền' : 
+                               order.payment === 'COD' ? 'Chưa thu tiền' : 'Chưa thanh toán'}
                             </span>
                           </span>
                           <span className="text-[#8E877F] text-[10px] mt-0.5 font-normal">
@@ -674,13 +687,20 @@ export default function AdminOrdersPage() {
                             IN HÓA ĐƠN
                           </button>
                           {action && (
-                            <button
-                              disabled={busy}
-                              onClick={() => handleNextStatus(order._id, action.next)}
-                              className="px-2.5 py-1.5 font-sans bg-[#2E4A3F] text-white hover:bg-[#1E3029] active:bg-[#15221D] disabled:opacity-50 text-[10px] font-semibold tracking-wider rounded-md transition-all duration-200 whitespace-nowrap text-center shadow-sm uppercase"
-                            >
-                              {busy ? '…' : action.label}
-                            </button>
+                            <div className="flex flex-col items-center">
+                              <button
+                                disabled={busy || (order.payment === 'ONLINE' && order.paymentStatus === 'UNPAID' && action.next === 'CONFIRMED')}
+                                onClick={() => handleNextStatus(order._id, action.next)}
+                                className="w-full px-2.5 py-1.5 font-sans bg-[#2E4A3F] text-white hover:bg-[#1E3029] active:bg-[#15221D] disabled:opacity-50 text-[10px] font-semibold tracking-wider rounded-md transition-all duration-200 whitespace-nowrap text-center shadow-sm uppercase"
+                              >
+                                {busy ? '…' : action.label}
+                              </button>
+                              {order.payment === 'ONLINE' && order.paymentStatus === 'UNPAID' && action.next === 'CONFIRMED' && (
+                                <span className="text-[9px] text-[#DC2626] font-semibold mt-1">
+                                  (Chờ khách thanh toán)
+                                </span>
+                              )}
+                            </div>
                           )}
                           {canCancel && (
                             <button
@@ -770,7 +790,20 @@ export default function AdminOrdersPage() {
                       <div className="bg-white border border-[#EAE6DF]/50 p-3.5 rounded-lg grid grid-cols-2 gap-4">
                         <div>
                           <p className="text-[10px] font-bold uppercase tracking-wider text-[#8E877F] mb-1.5">THANH TOÁN</p>
-                          <p className="font-medium">{order.payment === 'COD' ? 'Thanh toán khi nhận hàng (COD)' : 'Chuyển khoản (ONLINE)'}</p>
+                          <p className="font-medium">
+                            {order.payment === 'COD' ? 'Thanh toán khi nhận hàng (COD)' : 'Chuyển khoản (ONLINE)'}
+                            <span className="text-[#8E877F] text-[10px] block mt-1">
+                              Trạng thái: <span className={
+                                order.paymentStatus === 'PAID' ? 'text-emerald-600 font-semibold' :
+                                order.paymentStatus === 'REFUNDED' ? 'text-gray-500 font-semibold' :
+                                'text-amber-600 font-semibold'
+                              }>
+                                {order.paymentStatus === 'PAID' ? 'Đã thanh toán' : 
+                                 order.paymentStatus === 'REFUNDED' ? 'Đã hoàn tiền' : 
+                                 order.payment === 'COD' ? 'Chưa thu tiền' : 'Chưa thanh toán'}
+                              </span>
+                            </span>
+                          </p>
                         </div>
                         <div>
                           <p className="text-[10px] font-bold uppercase tracking-wider text-[#8E877F] mb-1.5">Coupon giảm giá</p>

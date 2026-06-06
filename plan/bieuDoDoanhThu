@@ -1,0 +1,43 @@
+# Kế hoạch tích hợp biểu đồ doanh thu tương tác với Recharts
+
+Kế hoạch này nhằm thay thế biểu đồ SVG thô hiện tại bằng biểu đồ **Recharts** hiện đại, có khả năng tương tác đầy đủ (rê chuột hiển thị giá trị, đường lưới phụ trợ, căn chia trục tự động) và đồng bộ với thiết kế của Hiệu Sách Chin.
+
+## User Review Required
+
+> [!IMPORTANT]
+> Việc tích hợp sẽ cài đặt thêm thư viện `recharts` vào dự án (Frontend). Thư viện này chạy hoàn toàn trên Client-side và tương thích tốt với React + Vite. Việc cài đặt sẽ tăng dung lượng bundle khoảng ~100KB, nhưng mang lại trải nghiệm UX chuẩn chỉnh như các ứng dụng SaaS lớn (Shopify, Stripe).
+
+## Proposed Changes
+
+### [Frontend Component]
+
+#### [MODIFY] [AdminAnalyticsPage.jsx](file:///e:/it-project/hieuSachCin/src/pages/admin/AdminAnalyticsPage.jsx)
+* Thêm thư viện `recharts` và import các component cần thiết: `ResponsiveContainer`, `AreaChart`, `Area`, `XAxis`, `YAxis`, `CartesianGrid`, `Tooltip`.
+* Thay thế component `LineChart` cũ bằng `AreaChart` của Recharts.
+* Thiết kế biểu đồ dạng **Area Chart** với đường line màu đen than (`#1A1A1A`) và dải màu gradient mờ kem/nâu nhẹ (`#B08968` hoặc `#2E4A3F`) đổ bóng xuống dưới trục X.
+* Thêm cấu hình:
+  * **X-Axis:** Hiển thị ngày dạng định dạng rút gọn (ví dụ: `16/05`).
+  * **Y-Axis:** Hiển thị mốc doanh thu định dạng tiền tệ rút gọn (ví dụ: `500k`, `1M`, `1.5M`).
+  * **CartesianGrid:** Đường lưới đứt nét mờ màu kem ấm (`#EAE6DF`).
+  * **Custom Tooltip:** Khi rê chuột vào điểm mốc, hiện Popup màu đen than (`#1A1A1A`), chữ trắng, hiển thị:
+    * Ngày đầy đủ (ví dụ: `22/05/2026`)
+    * Doanh thu thực tế (định dạng VND bằng `formatPrice`)
+    * Số đơn hàng trong ngày đó (đọc từ thuộc tính `count` trả về từ API).
+
+---
+
+## Các bước thực hiện (Workflow)
+1. **Cài đặt thư viện:** Chạy lệnh `npm install recharts` tại thư mục gốc.
+2. **Cập nhật Code:** Thay thế logic vẽ biểu đồ SVG cũ bằng Recharts trong [AdminAnalyticsPage.jsx](file:///e:/it-project/hieuSachCin/src/pages/admin/AdminAnalyticsPage.jsx).
+3. **Chạy thử & Kiểm tra:** Xác thực biểu đồ hiển thị đúng chỉ số, co giãn mượt mà theo màn hình và tooltip hoạt động trơn tru khi rê chuột.
+
+## Verification Plan
+
+### Automated Tests
+* Không có test tự động nào trong phần này.
+
+### Manual Verification
+* Mở trang Admin Dashboard (`http://localhost:5173/admin/analytics`).
+* Kiểm tra xem biểu đồ doanh thu hiển thị đường line mượt mà và bóng mờ gradient.
+* Rê chuột qua các điểm trên biểu đồ xem Tooltip có hiển thị đúng ngày, doanh thu định dạng VND và số đơn hàng hay không.
+* Co giãn trình duyệt để kiểm tra tính năng Responsive của biểu đồ.

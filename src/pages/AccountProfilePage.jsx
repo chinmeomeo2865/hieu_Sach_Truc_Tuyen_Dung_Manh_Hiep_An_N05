@@ -84,20 +84,24 @@ export default function AccountProfilePage() {
   }
 
   return (
-    <div className="max-w-[680px] mx-auto px-4 sm:px-6 py-10 md:py-14 space-y-8">
-      <h1 className="font-display text-2xl md:text-3xl font-semibold text-ink">Hồ sơ cá nhân</h1>
+    <div className="space-y-8">
+      {/* Title */}
+      <div>
+        <p className="text-2xs font-semibold tracking-label-2xl uppercase text-accent">Tài khoản</p>
+        <h1 className="font-display font-semibold text-2xl md:text-3xl text-ink mt-0.5">Hồ sơ cá nhân</h1>
+      </div>
 
       {/* Thông tin cá nhân */}
-      <section className="bg-white border border-divider-lt rounded-sm p-6">
-        <h2 className="font-display font-semibold text-ink mb-5">Thông tin cá nhân</h2>
-        <form onSubmit={handleSaveProfile} className="space-y-4">
+      <section className="space-y-5">
+        <h2 className="font-display font-semibold text-ink text-lg">Thông tin cá nhân</h2>
+        <form onSubmit={handleSaveProfile} className="space-y-4 max-w-xl">
           <div className="space-y-1">
             <label className="block text-2xs font-semibold tracking-label-lg uppercase text-ink-60">Email</label>
             <input
               type="email"
               value={user?.email || ''}
               disabled
-              className="w-full border border-divider rounded-sm px-3 py-2.5 text-sm text-muted bg-surface-subtle cursor-not-allowed"
+              className="w-full border border-divider rounded-xl px-4 py-2.5 text-sm text-muted bg-surface-subtle cursor-not-allowed"
             />
             <p className="text-xs text-subtle">Email không thể thay đổi</p>
           </div>
@@ -109,7 +113,7 @@ export default function AccountProfilePage() {
               value={profileForm.name}
               onChange={updateProfileField('name')}
               placeholder="Nguyễn Văn A"
-              className={`w-full border rounded-sm px-3 py-2.5 text-sm text-ink placeholder:text-subtle focus:outline-none focus:border-ink transition-colors ${profileErrors.name ? 'border-red-400' : 'border-divider'}`}
+              className={`w-full border rounded-xl px-4 py-2.5 text-sm text-ink placeholder:text-subtle focus:outline-none focus:border-ink transition-colors ${profileErrors.name ? 'border-red-400' : 'border-divider'}`}
             />
             {profileErrors.name && <p className="text-xs text-red-500">{profileErrors.name}</p>}
           </div>
@@ -121,7 +125,7 @@ export default function AccountProfilePage() {
               value={profileForm.phone}
               onChange={updateProfileField('phone')}
               placeholder="09x xxx xxxx"
-              className={`w-full border rounded-sm px-3 py-2.5 text-sm text-ink placeholder:text-subtle focus:outline-none focus:border-ink transition-colors ${profileErrors.phone ? 'border-red-400' : 'border-divider'}`}
+              className={`w-full border rounded-xl px-4 py-2.5 text-sm text-ink placeholder:text-subtle focus:outline-none focus:border-ink transition-colors ${profileErrors.phone ? 'border-red-400' : 'border-divider'}`}
             />
             {profileErrors.phone && <p className="text-xs text-red-500">{profileErrors.phone}</p>}
           </div>
@@ -130,7 +134,7 @@ export default function AccountProfilePage() {
             <button
               type="submit"
               disabled={savingProfile}
-              className="px-6 py-2.5 bg-ink text-white text-2xs font-semibold tracking-label-lg uppercase rounded-sm hover:bg-ink-80 disabled:opacity-50 transition-colors"
+              className="px-6 py-2.5 bg-ink text-white text-2xs font-semibold tracking-label-lg uppercase rounded-xl hover:bg-ink-80 disabled:opacity-50 transition-colors shadow-2xs"
             >
               {savingProfile ? 'Đang lưu…' : 'Lưu thay đổi'}
             </button>
@@ -138,10 +142,12 @@ export default function AccountProfilePage() {
         </form>
       </section>
 
+      <div className="border-t border-divider-lt" />
+
       {/* Đổi mật khẩu */}
-      <section className="bg-white border border-divider-lt rounded-sm p-6">
-        <h2 className="font-display font-semibold text-ink mb-5">Đổi mật khẩu</h2>
-        <form onSubmit={handleChangePassword} className="space-y-4">
+      <section className="space-y-5">
+        <h2 className="font-display font-semibold text-ink text-lg">Đổi mật khẩu</h2>
+        <form onSubmit={handleChangePassword} className="space-y-4 max-w-xl">
           {[
             { field: 'currentPassword', label: 'Mật khẩu hiện tại', placeholder: '••••••••' },
             { field: 'newPassword',     label: 'Mật khẩu mới',      placeholder: 'Tối thiểu 6 ký tự' },
@@ -154,7 +160,7 @@ export default function AccountProfilePage() {
                 value={passForm[field]}
                 onChange={updatePassField(field)}
                 placeholder={placeholder}
-                className={`w-full border rounded-sm px-3 py-2.5 text-sm text-ink placeholder:text-subtle focus:outline-none focus:border-ink transition-colors ${passErrors[field] ? 'border-red-400' : 'border-divider'}`}
+                className={`w-full border rounded-xl px-4 py-2.5 text-sm text-ink placeholder:text-subtle focus:outline-none focus:border-ink transition-colors ${passErrors[field] ? 'border-red-400' : 'border-divider'}`}
               />
               {passErrors[field] && <p className="text-xs text-red-500">{passErrors[field]}</p>}
             </div>
@@ -164,7 +170,7 @@ export default function AccountProfilePage() {
             <button
               type="submit"
               disabled={savingPass}
-              className="px-6 py-2.5 bg-ink text-white text-2xs font-semibold tracking-label-lg uppercase rounded-sm hover:bg-ink-80 disabled:opacity-50 transition-colors"
+              className="px-6 py-2.5 bg-ink text-white text-2xs font-semibold tracking-label-lg uppercase rounded-xl hover:bg-ink-80 disabled:opacity-50 transition-colors shadow-2xs"
             >
               {savingPass ? 'Đang xử lý…' : 'Đổi mật khẩu'}
             </button>

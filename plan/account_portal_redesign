@@ -1,0 +1,94 @@
+# Kế hoạch Tái cấu trúc & Đồng bộ Giao diện Tài khoản (Account Portal Redesign)
+
+Kế hoạch này tập trung vào việc hợp nhất các trang quản lý tài khoản riêng lẻ (Hồ sơ cá nhân, Đơn hàng của tôi, Sổ địa chỉ, Tủ sách của tôi) vào một giao diện Dashboard thống nhất sử dụng thanh Sidebar điều hướng cố định bên trái và khung nội dung thay đổi động bên phải.
+
+---
+
+## User Review Required
+
+> [!IMPORTANT]
+> - **Cấu trúc URL và Router mới:**
+>   - `/account`: Trang danh sách đơn hàng chính (Orders).
+>   - `/account/profile`: Trang chỉnh sửa hồ sơ & đổi mật khẩu (Profile).
+>   - `/account/addresses`: Trang quản lý địa chỉ nhận hàng (Addresses).
+>   - `/account/wishlist`: Trang sách yêu thích (Wishlist).
+> - **Shared Layout (`AccountLayout`):** Tất cả các trang trên sẽ được bọc chung trong một Layout để đảm bảo sidebar bên trái hiển thị đồng bộ trên mọi trang, thay vì giao diện rời rạc như hiện tại.
+> - **Điều hướng Dropdown ở Header:** Cập nhật các đường dẫn trên Navbar để chuyển hướng chính xác đến từng trang con tương ứng.
+
+---
+
+## Proposed Changes
+
+### [New Component]
+
+#### [NEW] [AccountLayout.jsx](file:///e:/it-project/hieuSachCin/src/components/layout/AccountLayout.jsx)
+- Tạo một component layout dùng chung cho tất cả các trang tài khoản.
+- Component này bao gồm:
+  - **Sidebar bên trái:** hiển thị thông tin Avatar người dùng, số lượng đơn hàng nhanh, và menu điều hướng dạng Tab:
+    - 👤 **Hồ sơ cá nhân** (Link tới `/account/profile`)
+    - 📋 **Đơn hàng của tôi** (Link tới `/account`)
+    - 📍 **Sổ địa chỉ** (Link tới `/account/addresses`)
+    - 📚 **Tủ sách của tôi** (Link tới `/account/wishlist`)
+    - 🚪 **Đăng xuất** (Thực hiện đăng xuất và chuyển hướng về trang chủ)
+  - **Highlight Tab đang hoạt động:** Dùng `useLocation` từ `react-router-dom` để kiểm tra path hiện tại và thêm class active cho menu item tương ứng.
+  - **Khung nội dung bên phải:** Sử dụng `<Outlet />` để render các subpage tương ứng.
+
+---
+
+### [Frontend Page Modifications]
+
+#### [MODIFY] [App.jsx](file:///e:/it-project/hieuSachCin/src/App.jsx)
+- Import `AccountLayout` từ `src/components/layout/AccountLayout`.
+- Bọc các route tài khoản con dưới dạng nested routes trong `AccountLayout`:
+  ```jsx
+  <Route path="/account" element={<MainLayout><AccountLayout /></MainLayout>}>
+    <Route index element={<AccountPage />} />
+    <Route path="profile" element={<AccountProfilePage />} />
+    <Route path="addresses" element={<AddressesPage />} />
+    <Route path="wishlist" element={<WishlistPage />} />
+  </Route>
+  ```
+- Xóa bỏ hoặc chuyển hướng route cũ `/account/orders` (vì đã hợp nhất vào `/account`).
+
+#### [MODIFY] [Navbar.jsx](file:///e:/it-project/hieuSachCin/src/components/layout/Navbar.jsx)
+- Cập nhật các link điều hướng trong dropdown user:
+  - Hồ sơ cá nhân: chuyển từ `/account` sang `/account/profile`
+  - Đơn hàng của tôi: chuyển từ `/account` sang `/account`
+  - Tủ sách của tôi: chuyển từ `/account/wishlist` sang `/account/wishlist`
+
+#### [MODIFY] [AccountPage.jsx](file:///e:/it-project/hieuSachCin/src/pages/AccountPage.jsx)
+- Loại bỏ phần HTML/logic vẽ Sidebar cứng bên trong trang này.
+- Loại bỏ các state và modal edit profile / change password (vì các form này sẽ được xử lý trực tiếp tại trang `AccountProfilePage`).
+- Chỉ giữ lại tiêu đề "Đơn hàng của tôi", bộ lọc trạng thái và danh sách các đơn hàng (re-styling để vừa với container nội dung bên phải của layout).
+
+#### [MODIFY] [AccountProfilePage.jsx](file:///e:/it-project/hieuSachCin/src/pages/AccountProfilePage.jsx)
+- Cập nhật styling tiêu đề và spacing để hiển thị cân đối trong layout cột phải (loại bỏ padding tràn lề `py-10 md:py-14` và `max-w-[680px]`).
+- Hiển thị trực tiếp form chỉnh sửa thông tin cá nhân và form đổi mật khẩu.
+
+#### [MODIFY] [AddressesPage.jsx](file:///e:/it-project/hieuSachCin/src/pages/account/AddressesPage.jsx)
+- Sửa lại đường dẫn import (vì được bọc trong layout, cần kiểm tra tương thích style).
+- Cập nhật tiêu đề sang cấu trúc chung (với label nhỏ "TÀI KHOẢN" màu cam ở trên), điều chỉnh nút "Thêm địa chỉ" thành dạng bo góc mềm mại hơn.
+
+#### [MODIFY] [WishlistPage.jsx](file:///e:/it-project/hieuSachCin/src/pages/WishlistPage.jsx)
+- Thay đổi tiêu đề trang sang "Tủ sách của tôi" đồng bộ với thiết kế menu.
+- Loại bỏ các padding tràn lề để tương thích tốt với khung bên phải của `AccountLayout`.
+
+---
+
+## Verification Plan
+
+### Automated Tests
+- Chạy lệnh `npm run build` để xác minh dự án biên dịch thành công mà không gặp lỗi import hoặc cú pháp.
+
+### Manual Verification
+1. **Kiểm tra Dropdown Navbar:**
+   - Click vào từng mục trong menu tài khoản: "Hồ sơ cá nhân", "Đơn hàng của tôi", "Tủ sách của tôi".
+   - Đảm bảo trình duyệt chuyển hướng đúng URL (`/account/profile`, `/account`, `/account/wishlist`) và hiển thị đúng Tab tương ứng.
+2. **Kiểm tra Tính Đồng Bộ của Sidebar:**
+   - Đảm bảo thông tin avatar, họ tên và số liệu thống kê đơn hàng ở sidebar hiển thị giống hệt nhau khi chuyển đổi giữa các trang con.
+   - Nhãn menu item tương ứng trên sidebar phải tự động sáng lên (active style) khớp với trang hiện tại.
+3. **Thử nghiệm các tính năng:**
+   - Thực hiện cập nhật thông tin cá nhân / đổi mật khẩu ở trang Hồ sơ cá nhân.
+   - Thêm/sửa/xóa địa chỉ giao hàng ở trang Sổ địa chỉ.
+   - Xem đơn hàng và thực hiện thanh toán/đánh giá sách trong trang Đơn hàng.
+   - Thử click "Đăng xuất" ở sidebar xem có hoạt động đúng không.

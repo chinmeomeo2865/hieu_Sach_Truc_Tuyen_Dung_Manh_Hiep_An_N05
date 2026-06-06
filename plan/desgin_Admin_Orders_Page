@@ -1,0 +1,72 @@
+# Kế hoạch Thiết kế lại Trang Quản lý Đơn hàng (Admin Orders Page)
+
+Kế hoạch này nhằm tái thiết kế toàn bộ giao diện và chức năng của trang Quản lý đơn hàng của Admin (`AdminOrdersPage.jsx`) theo đúng thiết kế mẫu chuyên nghiệp dạng bảng của các sàn TMĐT lớn (như Shopee Seller Centre).
+
+---
+
+## User Review Required
+
+> [!IMPORTANT]
+> - **Cơ chế Vận hành:** Tất cả các thao tác hành động nhanh (Xác nhận, Đóng gói, Giao hàng, Hủy) và In hóa đơn đều được xử lý và gọi API trực tiếp theo cơ chế đã xây dựng, không làm ảnh hưởng đến luồng nghiệp vụ hiện có.
+> - **Thao tác Hàng loạt (Bulk Actions):** Chúng tôi sẽ tích hợp thanh công cụ nổi (Floating Bar) xuất hiện khi người dùng tích chọn một hoặc nhiều đơn hàng. Thao tác xử lý hàng loạt sẽ được gọi tuần tự trên Client đến các API hiện có để đảm bảo tính an toàn dữ liệu và không đòi hỏi sửa đổi API phức tạp ở Backend.
+
+---
+
+## Proposed Changes
+
+### [Frontend Component]
+
+#### [MODIFY] [AdminOrdersPage.jsx](file:///e:/it-project/hieuSachCin/src/pages/admin/AdminOrdersPage.jsx)
+- **Tái cấu trúc Tab trạng thái thành dạng Thẻ Card:**
+  - Thay đổi thanh nút tròn cũ thành 7 thẻ trạng thái hình chữ nhật bo góc nhẹ xếp liền kề nhau:
+    - *TẤT CẢ* (viền đen/xám)
+    - *CHỜ XÁC NHẬN* (viền cam)
+    - *ĐÃ XÁC NHẬN* (viền xanh dương)
+    - *ĐÓNG GÓI* (viền tím)
+    - *ĐANG GIAO* (viền cam hổ phách)
+    - *ĐÃ GIAO* (viền xanh lá)
+    - *ĐÃ HỦY* (viền đỏ)
+  - Mỗi thẻ hiển thị **Số lượng số đơn hàng** tương ứng ở phía trên và **Tên trạng thái (In hoa)** ở phía dưới.
+  - Thẻ đang hoạt động sẽ có nền xám nhạt và đường viền đen đậm nổi bật.
+- **Xây dựng Thanh công cụ Tìm kiếm & Bộ lọc mới:**
+  - Lưới 3 cột:
+    - *Cột 1: Tìm kiếm từ khóa:* Ô nhập "Nhập mã ĐH, tên, SĐT, email...".
+    - *Cột 2: Phương thức thanh toán:* Dropdown chọn tất cả hình thức, COD, ONLINE.
+    - *Cột 3: Lọc ngày đặt:* Ô input date kèm hai nút bấm nhanh: `HÔM NAY` (chọn ngày hiện tại) và `TẤT CẢ NGÀY` (xóa bộ lọc ngày).
+- **Thiết kế lại Bảng danh sách đơn hàng (Table Layout):**
+  - Chuyển đổi từ danh sách dạng khối sang dạng bảng HTML `<table>` chuyên nghiệp.
+  - Cột 1: Checkbox (hỗ trợ chọn toàn bộ hoặc chọn từng đơn).
+  - Cột 2: Mã đơn hàng (áp dụng mã tùy chỉnh `orderCode` hoặc fallback `_id`).
+  - Cột 3: Khách hàng (Tên, Email, nhãn phương thức thanh toán `COD`/`ONLINE` màu sắc bắt mắt).
+  - Cột 4: Tổng tiền (VND in đậm).
+  - Cột 5: Ngày đặt (Ngày & Giờ rõ ràng).
+  - Cột 6: Tiến độ giao hàng:
+    - Nếu trạng thái là `CANCELLED`, hiển thị tag đỏ `✕ ĐÃ HỦY` kèm lý do nghiêng mờ ở dưới.
+    - Nếu trạng thái khác, hiển thị thanh tiến trình 5 điểm kết nối: `CH` -> `XN` -> `ĐG` -> `GH` -> `OK`.
+    - Điểm trạng thái hiện tại sẽ sáng màu nổi bật kèm viền dày, các điểm khác màu xám mờ. Di chuột vào từng điểm hiển thị **Tooltip** giải thích đầy đủ ý nghĩa (Chờ xác nhận, Đã xác nhận, Đóng gói, Đang giao, Đã giao).
+  - Cột 7: Hành động:
+    - Nút `CHI TIẾT` (Xem chi tiết đơn).
+    - Nút `IN HÓA ĐƠN` (Mở mẫu in hóa đơn gọn gàng).
+    - Nút hành động trạng thái tiếp theo (ví dụ: `→ ĐÃ XÁC NHẬN`, `BẮT ĐẦU ĐÓNG GÓI`) màu xanh đậm.
+    - Nút `HỦY ĐƠN` màu đỏ nhạt.
+- **Tích hợp Thanh Thao tác Hàng loạt (Bulk Actions Floating Bar):**
+  - Khi có $\ge 1$ đơn hàng được tick chọn, một thanh công cụ nổi tinh tế xuất hiện ở mép dưới màn hình.
+  - Hiển thị số lượng đơn đã chọn và các nút hành động hàng loạt: **Xác nhận hàng loạt**, **Hủy hàng loạt**, **In hóa đơn hàng loạt**.
+- **Chức năng In Hóa đơn:**
+  - Viết hàm `handlePrintInvoice(order)` tạo một cửa sổ in mới với HTML được định dạng gọn gàng như một biên lai thanh toán (tiêu đề nhà sách, thông tin đơn hàng, danh sách sản phẩm, tổng tiền) và kích hoạt hộp thoại in ấn của trình duyệt.
+
+---
+
+## Verification Plan
+
+### Automated Tests
+- Chạy `npm run build` để kiểm chứng biên dịch toàn bộ mã nguồn frontend thành công.
+
+### Manual Verification
+1. Truy cập `/admin/orders`.
+2. Xác nhận giao diện hiển thị đúng 7 thẻ tab trạng thái với số lượng chính xác trên đầu.
+3. Thử tìm kiếm theo tên khách hàng hoặc mã đơn, lọc theo hình thức thanh toán COD/ONLINE, hoặc bấm nút `HÔM NAY` để kiểm tra kết quả lọc tức thời.
+4. Tích chọn 1 đơn hàng ở trạng thái `PENDING`:
+   - Xác nhận thanh công cụ nổi xuất hiện ở dưới.
+   - Bấm nút **Xác nhận hàng loạt** và kiểm tra xem đơn hàng có được cập nhật thành công hay không.
+5. Bấm vào nút `IN HÓA ĐƠN` của một đơn hàng bất kỳ, kiểm tra hộp thoại in của trình duyệt có bật lên với mẫu hóa đơn hiển thị đẹp mắt và đầy đủ thông tin hay không.

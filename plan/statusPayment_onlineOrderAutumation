@@ -1,0 +1,98 @@
+# Kế hoạch Tích hợp Trạng thái Thanh toán & Tự động hóa Đơn hàng Online
+
+Kế hoạch này thiết lập thuộc tính trạng thái thanh toán (`paymentStatus`) riêng biệt chạy song song với trạng thái vận đơn, đồng thời xây dựng cơ chế tự động hủy đơn trực tuyến hết hạn thanh toán và bảo vệ luồng vận hành trên trang quản trị Admin.
+
+---
+
+## User Review Required
+
+> [!IMPORTANT]
+> - **Cập nhật Database Schema:** Thêm trường `paymentStatus` với các giá trị: `UNPAID` (Chưa thanh toán), `PAID` (Đã thanh toán), `REFUNDED` (Đã hoàn tiền).
+> - **Chặn Admin Duyệt Đơn Online Chưa Thanh Toán:** Nút xác nhận đơn hàng (`→ ĐÃ XÁC NHẬN`) của Admin sẽ bị vô hiệu hóa đối với đơn hàng `ONLINE` có trạng thái thanh toán là `UNPAID`. Hệ thống sẽ hiển thị nhãn cảnh báo `(Chờ khách thanh toán)`.
+> - **Tác Vụ Nền Hủy Đơn Hết Hạn (Auto-Cancel Service):** Triển khai một cơ chế quét định kỳ (mỗi 5 phút) bằng `setInterval` chạy ở Backend. Tác vụ này tự động tìm kiếm các đơn hàng `ONLINE` có trạng thái vận đơn `PENDING` và thanh toán `UNPAID` quá 20 phút để hủy đơn, hoàn trả số lượng sách lại vào kho hàng.
+
+---
+
+## Proposed Changes
+
+### [Backend Components]
+
+#### [MODIFY] [Order.js](file:///e:/it-project/hieuSachCin/backend/src/models/Order.js)
+- Thêm thuộc tính `paymentStatus` vào schema của `Order`:
+  ```javascript
+  paymentStatus: {
+    type: String,
+    enum: ['UNPAID', 'PAID', 'REFUNDED'],
+    default: 'UNPAID'
+  }
+  ```
+
+#### [MODIFY] [orderController.js](file:///e:/it-project/hieuSachCin/backend/src/controllers/orderController.js)
+- **`createOrder`**: Khi tạo đơn hàng mới, thiết lập `paymentStatus: 'UNPAID'`.
+- **`updateStatus`** (Cập nhật từ Admin/Warehouse):
+  - Khi cập nhật trạng thái vận chuyển lên `DELIVERED` (Đã giao), nếu phương thức thanh toán là `COD`, tự động cập nhật `paymentStatus = 'PAID'`.
+  - Khi cập nhật trạng thái vận chuyển lên `RETURNED` (Hoàn trả), nếu đơn hàng đã được thanh toán (`PAID`), chuyển trạng thái thanh toán sang `REFUNDED` (Đã hoàn tiền).
+- **`cancelOrder`** (Khách hàng hủy):
+  - Nếu đơn hàng trực tuyến đã được thanh toán (`PAID`), cập nhật `paymentStatus = 'REFUNDED'`.
+
+#### [MODIFY] [paymentController.js](file:///e:/it-project/hieuSachCin/backend/src/controllers/paymentController.js)
+- **`handlePayOSReturn`** và **`payosWebhook`**:
+  - Khi nhận được tín hiệu thanh toán thành công (`code === '00'`), ngoài việc cập nhật trạng thái vận đơn sang `CONFIRMED`, tiến hành cập nhật trạng thái thanh toán `paymentStatus = 'PAID'`.
+
+#### [NEW] [cronService.js](file:///e:/it-project/hieuSachCin/backend/src/services/cronService.js)
+- Viết hàm `startAutoCancelJob()` sử dụng `setInterval` chạy mỗi 5 phút:
+  - Quét cơ sở dữ liệu tìm các đơn hàng `payment === 'ONLINE'`, `status === 'PENDING'`, `paymentStatus === 'UNPAID'`, và được tạo trước thời điểm hiện tại hơn 20 phút.
+  - Với mỗi đơn hàng tìm thấy:
+    1. Chuyển trạng thái đơn hàng `status = 'CANCELLED'`.
+    2. Cập nhật lịch sử trạng thái `statusHistory` với thông tin do hệ thống tự động hủy.
+    3. Trả lại số lượng tồn kho sách cho từng sản phẩm có trong đơn hàng bằng `Product.bulkWrite`.
+    4. Gửi thông báo hệ thống và gửi email tự động cho khách hàng để thông báo đơn hàng đã bị hủy vì hết thời gian thanh toán.
+    5. Lưu thông tin vào database.
+
+#### [MODIFY] [server.js](file:///e:/it-project/hieuSachCin/backend/server.js)
+- Require và khởi chạy hàm `startAutoCancelJob()` ngay sau khi kết nối MongoDB thành công.
+
+---
+
+### [Frontend Components]
+
+#### [MODIFY] [AdminOrdersPage.jsx](file:///e:/it-project/hieuSachCin/src/pages/admin/AdminOrdersPage.jsx)
+- **Hiển thị Huy hiệu Trạng thái Thanh toán (Payment Status Badge):**
+  - Tại cột "Khách hàng" bên dưới nhãn hình thức thanh toán (`COD` / `ONLINE`), hiển thị thêm huy hiệu trạng thái thanh toán:
+    - `PAID`: `Đã thanh toán` (màu xanh lá nhạt)
+    - `UNPAID` (đơn ONLINE): `Chưa thanh toán` (màu đỏ/cam nhạt)
+    - `UNPAID` (đơn COD): `Chưa thu tiền` (màu xám)
+    - `REFUNDED`: `Đã hoàn tiền` (màu xám đậm)
+- **Kiểm soát Nút Xác Nhận của Admin:**
+  - Vô hiệu hóa (disable) nút hành động `→ ĐÃ XÁC NHẬN` nếu đơn hàng có `payment === 'ONLINE'` và `paymentStatus === 'UNPAID'`.
+  - Hiển thị dòng chữ cảnh báo nhỏ màu đỏ `(Chờ khách thanh toán)` ngay bên dưới nút bị vô hiệu hóa.
+- **Cập nhật Giao diện Chi tiết Đơn hàng (Drawer):**
+  - Hiển thị thêm thông tin trạng thái thanh toán bên cạnh hình thức thanh toán (ví dụ: `Chuyển khoản (ONLINE) - Đã thanh toán` hoặc `Tiền mặt (COD) - Chưa thu tiền`).
+
+#### [MODIFY] [AccountPage.jsx](file:///e:/it-project/hieuSachCin/src/pages/AccountPage.jsx)
+- Hiển thị chi tiết trạng thái thanh toán trong thông tin đơn hàng của khách hàng.
+- Nếu đơn hàng là trực tuyến và chưa thanh toán (`paymentStatus === 'UNPAID'` và `status === 'PENDING'`), hiển thị thông báo nhắc nhở khách hàng: *"Vui lòng hoàn tất thanh toán để cửa hàng xử lý đơn hàng."*
+
+---
+
+## Verification Plan
+
+### Automated Tests
+- Chạy biên dịch Frontend bằng lệnh `npm run build` ở thư mục dự án.
+- Khởi chạy server Backend để đảm bảo không lỗi cú pháp hoặc import.
+
+### Manual Verification
+1. **Đặt đơn hàng Online mới:**
+   - Tạo đơn hàng trực tuyến qua PayOS. Xem đơn hàng hiển thị ở trạng thái `Chờ xác nhận / Chưa thanh toán`.
+   - Vào tài khoản Admin, mở trang quản trị đơn hàng, kiểm tra:
+     - Nút `→ ĐÃ XÁC NHẬN` của đơn hàng này có bị khóa và hiển thị dòng chữ `(Chờ khách thanh toán)` hay không.
+2. **Kiểm tra luồng thanh toán thành công:**
+   - Hoàn tất quét QR thanh toán đơn hàng (giả lập thanh toán hoặc test qua cổng PayOS).
+   - Kiểm tra xem trạng thái vận đơn tự động cập nhật sang `ĐÃ XÁC NHẬN` và trạng thái thanh toán tự động chuyển sang `Đã thanh toán`.
+   - Nút hành động của Admin chuyển sang `BẮT ĐẦU ĐÓNG GÓI` và không bị khóa nữa.
+3. **Thanh toán COD:**
+   - Tạo đơn COD. Đơn sẽ hiển thị là `Chưa thu tiền`.
+   - Đi hết luồng giao hàng và cập nhật đơn sang `Đã giao`. Kiểm tra xem trạng thái thanh toán có tự động chuyển sang `Đã thanh toán` hay không.
+4. **Kiểm tra cơ chế Hủy tự động:**
+   - Tạo một đơn hàng trực tuyến giả lập, chỉnh sửa thời gian tạo đơn lùi lại hơn 20 phút bằng database hoặc giảm thời gian chờ ở code xuống 1 phút để test nhanh.
+   - Kiểm tra xem tác vụ nền có tự động hủy đơn và cộng trả số lượng sách về tồn kho hay không.
