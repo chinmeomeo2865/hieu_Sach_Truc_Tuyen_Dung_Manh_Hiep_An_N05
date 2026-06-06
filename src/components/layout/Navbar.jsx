@@ -223,7 +223,7 @@ export function Navbar({ links = [], categories = [] }) {
                         </div>
                         <div className="min-w-0 flex-1">
                           <p className="text-[12px] font-semibold text-ink leading-snug font-sans">Tủ sách của tôi</p>
-                          <p className="text-[9.5px] text-muted leading-tight mt-0.5 font-sans">Sách yêu thích & Tư vấn AI</p>
+                          <p className="text-[9.5px] text-muted leading-tight mt-0.5 font-sans">Danh sách sách yêu thích</p>
                         </div>
                       </Link>
                     </div>
