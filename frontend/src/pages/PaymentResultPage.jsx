@@ -17,7 +17,7 @@ export default function PaymentResultPage() {
         api.get(`/api/orders/${orderId}`).then(r => setOrder(r.data)).catch(() => {})
       }
     }
-  }, [status, orderId])
+  }, [status, orderId, clearCart])
 
   if (status === 'success') return (
     <div className="max-w-[480px] mx-auto px-4 py-20 text-center">

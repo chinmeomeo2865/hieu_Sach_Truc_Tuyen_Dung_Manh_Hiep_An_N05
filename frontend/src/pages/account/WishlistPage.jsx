@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link }                from 'react-router-dom'
-import { useWishlistStore }    from '../store/wishlistStore'
-import { useToastStore }       from '../store/toastStore'
-import { api }                 from '../services/api'
-import { BookCard }            from '../components/ui/BookCard'
+import { useWishlistStore }    from '../../store/wishlistStore'
+import { useToastStore }       from '../../store/toastStore'
+import { api }                 from '../../services/api'
+import { BookCard }            from '../../components/ui/BookCard'
 
 export default function WishlistPage() {
   const ids       = useWishlistStore(s => s.ids)

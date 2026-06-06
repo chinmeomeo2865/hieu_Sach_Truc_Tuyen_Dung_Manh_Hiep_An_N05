@@ -1,11 +1,11 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Link, useNavigate }            from 'react-router-dom'
 import { motion, AnimatePresence }      from 'framer-motion'
-import { api }                          from '../services/api'
-import { useAuthStore }                 from '../store/authStore'
-import { useCartStore }                 from '../store/cartStore'
-import { useToastStore }                from '../store/toastStore'
-import { formatPrice }                  from '../utils/format'
+import { api }                          from '../../services/api'
+import { useAuthStore }                 from '../../store/authStore'
+import { useCartStore }                 from '../../store/cartStore'
+import { useToastStore }                from '../../store/toastStore'
+import { formatPrice }                  from '../../utils/format'
 
 /* ─── Constants ─────────────────────────────────────────────── */
 

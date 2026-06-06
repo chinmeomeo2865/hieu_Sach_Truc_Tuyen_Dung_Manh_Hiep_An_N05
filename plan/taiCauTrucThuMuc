@@ -1,0 +1,139 @@
+# Tái cấu trúc thư mục Frontend
+
+## Mục tiêu
+Tạo cấu trúc monorepo rõ ràng với `frontend/` và `backend/` song song nhau, đồng thời gom các trang account về một chỗ nhất quán.
+
+## Kết quả mong muốn
+
+```
+hieuSachCin/                ← Root
+  ├── frontend/             ← ✅ MỚI: toàn bộ React app
+  │     ├── src/
+  │     │     ├── pages/
+  │     │     │     ├── account/      ← gom TẤT CẢ account pages vào đây
+  │     │     │     │     ├── AccountPage.jsx       (di chuyển từ pages/)
+  │     │     │     │     ├── ProfilePage.jsx       (đổi tên + di chuyển)
+  │     │     │     │     ├── AddressesPage.jsx     (giữ nguyên)
+  │     │     │     │     ├── OrdersPage.jsx        (di chuyển từ pages/)
+  │     │     │     │     └── WishlistPage.jsx      (di chuyển từ pages/)
+  │     │     │     ├── admin/        (giữ nguyên)
+  │     │     │     ├── pm/           (giữ nguyên)
+  │     │     │     ├── warehouse/    (giữ nguyên)
+  │     │     │     ├── Home.jsx
+  │     │     │     ├── LoginPage.jsx
+  │     │     │     └── ...các trang còn lại
+  │     │     └── ...components, store, hooks...
+  │     ├── index.html
+  │     ├── package.json
+  │     ├── vite.config.js
+  │     ├── tailwind.config.js
+  │     ├── postcss.config.js
+  │     └── vercel.json
+  │
+  ├── backend/              ← giữ nguyên
+  ├── plan/                 ← giữ nguyên
+  ├── run-dev.bat           ← cập nhật đường dẫn
+  └── .gitignore            ← cập nhật thêm frontend/node_modules
+
+```
+
+---
+
+## User Review Required
+
+> [!IMPORTANT]
+> **Vercel cần cập nhật thủ công sau khi xong**: Vào Vercel Dashboard → Project Settings → Root Directory → đổi thành `frontend`. Đây là bước bắt buộc để deploy tiếp tục hoạt động.
+
+> [!WARNING]
+> **Không di chuyển**: `node_modules/` và `dist/` ở root — chúng sẽ được tạo lại tự động khi chạy `npm install` bên trong `frontend/`. Sau khi tái cấu trúc xong, cần chạy lại `npm install` trong `frontend/`.
+
+---
+
+## Open Questions
+
+> [!IMPORTANT]
+> **File `.env` frontend**: Hiện tại frontend có dùng `VITE_API_URL` không? Nếu có thì cần tạo `frontend/.env` sau khi di chuyển.
+
+---
+
+## Proposed Changes
+
+### Bước 1 — Tạo thư mục `frontend/` và di chuyển files
+
+#### Dùng PowerShell để di chuyển (không xóa gì cả, chỉ copy + verify)
+
+Di chuyển các file/thư mục sau vào `frontend/`:
+- `src/` → `frontend/src/`
+- `index.html` → `frontend/index.html`
+- `package.json` → `frontend/package.json`
+- `package-lock.json` → `frontend/package-lock.json`
+- `vite.config.js` → `frontend/vite.config.js`
+- `tailwind.config.js` → `frontend/tailwind.config.js`
+- `postcss.config.js` → `frontend/postcss.config.js`
+- `vercel.json` → `frontend/vercel.json`
+
+---
+
+### Bước 2 — Gom account pages vào `frontend/src/pages/account/`
+
+Các file di chuyển + đổi tên:
+
+#### [MOVE] AccountPage.jsx → `pages/account/AccountPage.jsx`
+#### [MOVE+RENAME] AccountProfilePage.jsx → `pages/account/ProfilePage.jsx`
+#### [MOVE] OrdersPage.jsx → `pages/account/OrdersPage.jsx`
+#### [MOVE] WishlistPage.jsx → `pages/account/WishlistPage.jsx`
+#### [KEEP] `pages/account/AddressesPage.jsx` — đã đúng chỗ
+
+---
+
+### Bước 3 — Cập nhật imports trong App.jsx
+
+#### [MODIFY] [App.jsx](file:///e:/it-project/hieuSachCin/src/App.jsx)
+
+Cập nhật tất cả import path của account pages:
+```diff
+- import AccountPage        from './pages/AccountPage'
+- import AccountProfilePage from './pages/AccountProfilePage'
+- import OrdersPage         from './pages/OrdersPage'
+- import WishlistPage       from './pages/WishlistPage'
++ import AccountPage        from './pages/account/AccountPage'
++ import ProfilePage        from './pages/account/ProfilePage'
++ import OrdersPage         from './pages/account/OrdersPage'
++ import WishlistPage       from './pages/account/WishlistPage'
+```
+
+---
+
+### Bước 4 — Cập nhật run-dev.bat
+
+#### [MODIFY] run-dev.bat
+
+```diff
+- npm run dev
++ npm run dev --prefix frontend
+```
+
+Hoặc dùng script trong root `package.json` nếu giữ lại.
+
+---
+
+### Bước 5 — Cập nhật .gitignore
+
+#### [MODIFY] .gitignore
+
+Thêm:
+```
+frontend/node_modules
+frontend/dist
+```
+
+---
+
+## Verification Plan
+
+### Sau khi tái cấu trúc
+1. Chạy `npm install` bên trong `frontend/`
+2. Chạy `npm run dev` từ `frontend/` → frontend phải start ở `localhost:5173`
+3. Kiểm tra các route account (`/account`, `/account/profile`, `/account/addresses`, `/account/wishlist`) hoạt động đúng
+4. Build thử: `npm run build` từ `frontend/` → không báo lỗi
+5. Vercel: cập nhật Root Directory thành `frontend` trong project settings
