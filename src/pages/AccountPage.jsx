@@ -127,8 +127,8 @@ function OrderTimeline({ order }) {
         {/* Step 1: placed */}
         <div className="flex gap-4">
           <div className="flex flex-col items-center">
-            <div className="w-9 h-9 rounded-full bg-ink text-white flex items-center justify-center text-sm flex-shrink-0">📋</div>
-            <div className="w-0.5 h-10 my-1 bg-divider-lt rounded-full" />
+            <div className="w-8 h-8 rounded-full bg-ink text-white flex items-center justify-center text-[11px] flex-shrink-0">📋</div>
+            <div className="w-[1.5px] h-10 my-1 bg-divider-lt rounded-full" />
           </div>
           <div className="flex-1 pt-1 pb-3">
             <p className="text-sm font-semibold text-ink">Đặt hàng thành công</p>
@@ -138,7 +138,7 @@ function OrderTimeline({ order }) {
         {/* Step 2: cancelled */}
         <div className="flex gap-4">
           <div className="flex flex-col items-center">
-            <div className="w-9 h-9 rounded-full bg-red-500 text-white flex items-center justify-center text-sm flex-shrink-0">✕</div>
+            <div className="w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center text-[11px] flex-shrink-0">✕</div>
           </div>
           <div className="flex-1 pt-1">
             <p className="text-sm font-semibold text-red-600">Đơn hàng đã bị hủy</p>
@@ -169,13 +169,13 @@ function OrderTimeline({ order }) {
               <motion.div
                 initial={false}
                 animate={{ scale: isCurrent ? 1.12 : 1 }}
-                className={`w-9 h-9 rounded-full flex items-center justify-center text-sm flex-shrink-0 transition-colors duration-300
+                className={`w-8 h-8 rounded-full flex items-center justify-center text-[11px] flex-shrink-0 transition-colors duration-300
                   ${isCurrent ? 'bg-ink text-white ring-4 ring-ink/10' : isDone ? 'bg-ink text-white' : 'bg-surface-subtle text-subtle'}`}
               >
                 {step.emoji}
               </motion.div>
               {!isLast && (
-                <div className={`w-0.5 h-10 my-1 rounded-full transition-colors duration-500 ${isDone && stepIdx < currentIdx ? 'bg-ink' : 'bg-divider-lt'}`} />
+                <div className={`w-[1.5px] h-10 my-1 rounded-full transition-colors duration-500 ${isDone && stepIdx < currentIdx ? 'bg-ink' : 'bg-divider-lt'}`} />
               )}
             </div>
             <div className={`flex-1 pt-1 ${!isLast ? 'pb-3' : 'pb-1'}`}>
@@ -653,42 +653,45 @@ function OrderCard({ order, reviewedKeys, onViewDetail, onReorder, onCancel, onR
       </div>
 
       {/* Items */}
-      <div className="px-5 py-4 space-y-3">
+      <div className="px-5 py-4 space-y-3.5">
         {order.items.slice(0, PREVIEW).map((item, i) => {
           const pid      = item.product?._id || item.product
           const rKey     = `${order._id}:${pid}`
           const reviewed = reviewedKeys.has(rKey)
           return (
-            <div key={i} className="flex gap-3 items-center">
-              {item.image
-                ? <img src={item.image} alt={item.title} className="w-11 h-[58px] object-cover rounded-xl flex-shrink-0" />
-                : <div className="w-11 h-[58px] bg-surface-subtle rounded-xl flex-shrink-0" />
-              }
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-ink line-clamp-1 leading-snug">{item.title}</p>
-                <p className="text-xs text-muted mt-0.5">{item.author}</p>
-                <p className="text-xs text-subtle">x{item.qty}</p>
-              </div>
-              <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                <span className="text-sm font-semibold text-ink">{formatPrice(item.price * item.qty)}</span>
-                {isDelivered && (
-                  reviewed
-                    ? <span className="text-[10px] font-semibold text-emerald-600 flex items-center gap-0.5">✓ Đã đánh giá</span>
-                    : (
-                      <button
-                        onClick={() => onReview({ item, orderId: order._id })}
-                        className="text-[10px] font-semibold text-accent hover:underline underline-offset-2 transition-colors"
-                      >
-                        ⭐ Viết đánh giá
-                      </button>
-                    )
-                )}
+            <div key={i}>
+              {i > 0 && <div className="border-t border-divider-lt/60 my-3.5" />}
+              <div className="flex gap-4 items-center">
+                {item.image
+                  ? <img src={item.image} alt={item.title} className="w-11 h-[58px] object-cover rounded-xl flex-shrink-0" />
+                  : <div className="w-11 h-[58px] bg-surface-subtle rounded-xl flex-shrink-0" />
+                }
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-ink line-clamp-1 leading-snug">{item.title}</p>
+                  <p className="text-xs text-muted mt-0.5">{item.author}</p>
+                  <p className="text-xs text-subtle">x{item.qty}</p>
+                </div>
+                <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                  <span className="text-sm font-semibold text-ink">{formatPrice(item.price * item.qty)}</span>
+                  {isDelivered && (
+                    reviewed
+                      ? <span className="text-[10px] font-semibold text-emerald-600 flex items-center gap-0.5">✓ Đã đánh giá</span>
+                      : (
+                        <button
+                          onClick={() => onReview({ item, orderId: order._id })}
+                          className="text-[10px] font-semibold text-accent hover:underline underline-offset-2 transition-colors cursor-pointer"
+                        >
+                          ⭐ Viết đánh giá
+                        </button>
+                      )
+                  )}
+                </div>
               </div>
             </div>
           )
         })}
         {!isDelivered && order.items.length > PREVIEW && (
-          <p className="text-xs text-muted pl-14">và {order.items.length - PREVIEW} sản phẩm khác</p>
+          <p className="text-xs text-muted pl-15">và {order.items.length - PREVIEW} sản phẩm khác</p>
         )}
       </div>
 

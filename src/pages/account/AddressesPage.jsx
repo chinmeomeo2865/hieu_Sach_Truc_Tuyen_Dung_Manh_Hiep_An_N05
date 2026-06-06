@@ -8,6 +8,14 @@ const CITIES = ['Hà Nội','TP. Hồ Chí Minh','Đà Nẵng','Hải Phòng','C
 
 const EMPTY_FORM = { label: '', name: '', phone: '', street: '', city: 'Hà Nội', isDefault: false }
 
+function getAddressLabelIcon(label) {
+  if (!label) return null
+  const l = label.toLowerCase()
+  if (l.includes('nhà') || l.includes('home') || l.includes('riêng')) return '🏠'
+  if (l.includes('văn phòng') || l.includes('công ty') || l.includes('làm') || l.includes('work') || l.includes('office')) return '🏢'
+  return '📍'
+}
+
 function AddressForm({ initial, onSave, onCancel, loading }) {
   const [form, setForm] = useState(initial || EMPTY_FORM)
   const [errors, setErrors] = useState({})
@@ -33,16 +41,12 @@ function AddressForm({ initial, onSave, onCancel, loading }) {
     onSave(form)
   }
 
-  const INPUT = 'w-full border border-divider rounded-xl px-4 py-2.5 text-[13.5px] text-[#0f0f0f] placeholder:text-[#a3a3a3] focus:outline-none focus:border-[#0f0f0f] transition-colors'
+  const INPUT = 'w-full border border-divider rounded-xl px-4 py-2.5 text-[13.5px] text-[#0f0f0f] placeholder:text-[#a3a3a3] focus:outline-none focus:border-ink focus:ring-2 focus:ring-ink/10 transition-all'
   const ERROR = 'text-[11px] text-red-500 mt-1'
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label className="block text-2xs font-semibold uppercase tracking-wider text-[#737373] mb-1.5">Nhãn (tùy chọn)</label>
-        <input value={form.label} onChange={set('label')} placeholder="VD: Nhà, Văn phòng…" className={INPUT} />
-      </div>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-2xs font-semibold uppercase tracking-wider text-[#737373] mb-1.5">Họ tên người nhận *</label>
           <input value={form.name} onChange={set('name')} placeholder="Nguyễn Văn A" className={INPUT} />
@@ -59,23 +63,29 @@ function AddressForm({ initial, onSave, onCancel, loading }) {
         <input value={form.street} onChange={set('street')} placeholder="123 Đường Nguyễn Trác" className={INPUT} />
         {errors.street && <p className={ERROR}>{errors.street}</p>}
       </div>
-      <div>
-        <label className="block text-2xs font-semibold uppercase tracking-wider text-[#737373] mb-1.5">Tỉnh / Thành phố</label>
-        <select value={form.city} onChange={set('city')} className={INPUT}>
-          {CITIES.map(c => <option key={c}>{c}</option>)}
-        </select>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-2xs font-semibold uppercase tracking-wider text-[#737373] mb-1.5">Tỉnh / Thành phố</label>
+          <select value={form.city} onChange={set('city')} className={INPUT}>
+            {CITIES.map(c => <option key={c}>{c}</option>)}
+          </select>
+        </div>
+        <div>
+          <label className="block text-2xs font-semibold uppercase tracking-wider text-[#737373] mb-1.5">Nhãn địa chỉ (tùy chọn)</label>
+          <input value={form.label} onChange={set('label')} placeholder="VD: Nhà riêng, Văn phòng…" className={INPUT} />
+        </div>
       </div>
-      <label className="flex items-center gap-2 cursor-pointer">
-        <input type="checkbox" checked={form.isDefault} onChange={set('isDefault')} className="w-4 h-4 accent-[#0f0f0f]" />
+      <label className="flex items-center gap-2 cursor-pointer pt-1">
+        <input type="checkbox" checked={form.isDefault} onChange={set('isDefault')} className="w-4 h-4 accent-ink" />
         <span className="text-[13px] text-[#404040]">Đặt làm địa chỉ mặc định</span>
       </label>
       <div className="flex gap-3 pt-2">
         <button type="submit" disabled={loading}
-          className="px-6 py-2.5 bg-ink text-white text-[13px] font-semibold rounded-xl hover:bg-ink-80 disabled:opacity-50 transition-colors shadow-2xs">
+          className="px-6 py-2.5 bg-ink text-white text-[13px] font-semibold rounded-xl hover:bg-ink-80 disabled:opacity-50 transition-colors shadow-2xs cursor-pointer">
           {loading ? 'Đang lưu…' : 'Lưu địa chỉ'}
         </button>
         <button type="button" onClick={onCancel}
-          className="px-6 py-2.5 border border-divider text-ink-60 text-[13px] font-semibold rounded-xl hover:border-ink hover:text-ink transition-colors">
+          className="px-6 py-2.5 border border-divider text-ink-60 text-[13px] font-semibold rounded-xl hover:border-ink hover:text-ink transition-colors cursor-pointer">
           Hủy
         </button>
       </div>
@@ -200,12 +210,15 @@ export default function AddressesPage() {
         <div className="space-y-3">
           {addresses.map(addr => (
             <div key={addr._id}
-              className={`border rounded-2xl p-4 transition-all ${addr.isDefault ? 'border-ink bg-white' : 'border-divider-lt bg-white'}`}>
+              className={`border rounded-2xl p-5 transition-all duration-300 ${addr.isDefault ? 'border-ink bg-sand-50/50 shadow-2xs' : 'border-divider-lt bg-white hover:border-divider'}`}>
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className="flex items-center gap-2 mb-2">
                     {addr.label && (
-                      <span className="text-[11px] font-semibold uppercase tracking-wider text-accent">{addr.label}</span>
+                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-accent bg-accent/5 px-2 py-0.5 rounded-md">
+                        <span>{getAddressLabelIcon(addr.label)}</span>
+                        <span>{addr.label}</span>
+                      </span>
                     )}
                     {addr.isDefault && (
                       <span className="text-[10px] font-semibold uppercase tracking-wider bg-ink text-white px-2 py-0.5 rounded-md">
@@ -220,18 +233,22 @@ export default function AddressesPage() {
                 <div className="flex items-center gap-1 shrink-0">
                   {!addr.isDefault && (
                     <button onClick={() => handleSetDefault(addr._id)}
-                      className="text-[11.5px] font-semibold text-muted hover:text-ink px-2.5 py-1 rounded-lg hover:bg-[#f5f5f4] transition-colors">
+                      className="text-[11.5px] font-semibold text-muted hover:text-ink px-2.5 py-1 rounded-lg hover:bg-[#f5f5f4] transition-colors cursor-pointer">
                       Đặt mặc định
                     </button>
                   )}
                   <button onClick={() => setMode({ editing: addr })}
-                    className="p-2 rounded-lg hover:bg-[#f5f5f4] text-muted hover:text-ink transition-colors">
+                    className="p-2 rounded-lg hover:bg-[#f5f5f4] text-muted hover:text-ink transition-colors cursor-pointer"
+                    aria-label="Chỉnh sửa địa chỉ"
+                  >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                     </svg>
                   </button>
                   <button onClick={() => handleDelete(addr._id)}
-                    className="p-2 rounded-lg hover:bg-red-50 text-muted hover:text-red-500 transition-colors">
+                    className="p-2 rounded-lg hover:bg-red-50 text-muted hover:text-red-500 transition-colors cursor-pointer"
+                    aria-label="Xóa địa chỉ"
+                  >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                     </svg>

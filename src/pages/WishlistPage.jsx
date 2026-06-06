@@ -83,7 +83,7 @@ export default function WishlistPage() {
         {books.length > 0 && (
           <button
             onClick={handleClearAll}
-            className="text-xs text-muted hover:text-red-500 underline underline-offset-2 transition-colors"
+            className="text-xs text-muted hover:text-red-500 hover:underline underline-offset-2 transition-all cursor-pointer"
           >
             Xóa tất cả
           </button>
