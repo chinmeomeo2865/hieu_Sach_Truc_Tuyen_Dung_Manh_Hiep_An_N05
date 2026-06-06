@@ -463,12 +463,11 @@ export default function AdminOrdersPage() {
 
   return (
     <AdminLayout title="Quản lý đơn hàng">
-      {/* Page header title with decorative underline */}
+      {/* Page header title */}
       <div className="text-center mb-8 mt-2">
         <h2 className="font-display text-[16px] font-bold uppercase tracking-wider text-[#1A1A1A]">
           Quản lý tiến độ giao hàng
         </h2>
-        <div className="w-12 h-0.5 bg-[#1A1A1A] mx-auto mt-2" />
       </div>
 
       {/* Tabs */}
