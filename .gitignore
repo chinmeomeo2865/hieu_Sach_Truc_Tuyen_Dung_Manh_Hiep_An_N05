@@ -1,6 +1,9 @@
 # Claude Code
 .claude/
-CLAUDE.md
+
+# Local-only context files (không commit lên GitHub)
+CONTEXT.md
+WORKLOG.md
 
 # Dependencies
 node_modules/
