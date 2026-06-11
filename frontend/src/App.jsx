@@ -22,7 +22,6 @@ import WishlistPage         from './pages/account/WishlistPage'
 import { AccountLayout }          from './components/layout/AccountLayout'
 import PlaceholderPage      from './pages/PlaceholderPage'
 import SupportPage          from './pages/SupportPage'
-import AdminLoginPage       from './pages/admin/AdminLoginPage'
 import AdminOrdersPage      from './pages/admin/AdminOrdersPage'
 import AdminUsersPage       from './pages/admin/AdminUsersPage'
 import AdminProductsPage    from './pages/admin/AdminProductsPage'
@@ -39,14 +38,12 @@ import NotificationsPage   from './pages/NotificationsPage'
 import PaymentResultPage   from './pages/PaymentResultPage'
 import WarehouseRoute        from './components/warehouse/WarehouseRoute'
 import PMRoute              from './components/pm/PMRoute'
-import PMLoginPage          from './pages/pm/PMLoginPage'
 import PMDashboard          from './pages/pm/PMDashboard'
 import PMCategoriesPage     from './pages/pm/PMCategoriesPage'
 import PMProductsPage       from './pages/pm/PMProductsPage'
 import PMVisibilityPage     from './pages/pm/PMVisibilityPage'
 import PMPromotionsPage     from './pages/pm/PMPromotionsPage'
 import PMActivityPage       from './pages/pm/PMActivityPage'
-import WarehouseLoginPage    from './pages/warehouse/WarehouseLoginPage'
 import WarehouseDashboard    from './pages/warehouse/WarehouseDashboard'
 import WarehouseOrdersPage   from './pages/warehouse/WarehouseOrdersPage'
 import WarehouseInventoryPage from './pages/warehouse/WarehouseInventoryPage'
@@ -106,7 +103,6 @@ export default function App() {
         <Route path="/auth/register"  element={<RegisterPage />} />
 
         {/* Product Manager */}
-        <Route path="/pm/login"      element={<PMLoginPage />} />
         <Route path="/pm"            element={<PMRoute><PMDashboard /></PMRoute>} />
         <Route path="/pm/categories" element={<PMRoute><PMCategoriesPage /></PMRoute>} />
         <Route path="/pm/products"   element={<PMRoute><PMProductsPage /></PMRoute>} />
@@ -115,7 +111,6 @@ export default function App() {
         <Route path="/pm/activity"   element={<PMRoute><PMActivityPage /></PMRoute>} />
 
         {/* Warehouse */}
-        <Route path="/warehouse/login"     element={<WarehouseLoginPage />} />
         <Route path="/warehouse"           element={<WarehouseRoute><WarehouseDashboard /></WarehouseRoute>} />
         <Route path="/warehouse/orders"    element={<WarehouseRoute><WarehouseOrdersPage /></WarehouseRoute>} />
         <Route path="/warehouse/inventory" element={<WarehouseRoute><WarehouseInventoryPage /></WarehouseRoute>} />
@@ -124,7 +119,6 @@ export default function App() {
         <Route path="/warehouse/activity"  element={<WarehouseRoute><WarehouseActivityPage /></WarehouseRoute>} />
 
         {/* Admin */}
-        <Route path="/admin/login"      element={<AdminLoginPage />} />
         <Route path="/admin/analytics"  element={<AdminRoute><AdminAnalyticsPage /></AdminRoute>} />
         <Route path="/admin/orders"     element={<AdminRoute><AdminOrdersPage /></AdminRoute>} />
         <Route path="/admin/products"   element={<AdminRoute><AdminProductsPage /></AdminRoute>} />
