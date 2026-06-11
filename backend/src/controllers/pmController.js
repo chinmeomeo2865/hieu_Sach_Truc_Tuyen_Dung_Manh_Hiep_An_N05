@@ -10,15 +10,22 @@ async function log(action, description, userId, entity, entityId, metadata) {
 /* ── Dashboard stats ──────────────────────────────────────── */
 exports.getStats = async (req, res, next) => {
   try {
-    const [total, visible, hidden, outOfStock, activePromos, totalCats] = await Promise.all([
+    const [total, visible, hidden, outOfStock, activePromos, totalCats, lowStockCount, lowStockProducts, topCategories] = await Promise.all([
       Product.countDocuments({}),
       Product.countDocuments({ visible: true }),
       Product.countDocuments({ visible: false }),
       Product.countDocuments({ stock: 0, visible: true }),
       Promotion.countDocuments({ status: 'active' }),
       Category.countDocuments({}),
+      Product.countDocuments({ visible: true, stock: { $lte: 10 } }),
+      Product.find({ visible: true, stock: { $lte: 10 } }).sort({ stock: 1 }).limit(5).select('title author image stock'),
+      Product.aggregate([
+        { $group: { _id: '$categorySlug', category: { $first: '$category' }, count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 5 },
+      ]),
     ])
-    res.json({ success: true, data: { total, visible, hidden, outOfStock, activePromos, totalCats } })
+    res.json({ success: true, data: { total, visible, hidden, outOfStock, activePromos, totalCats, lowStockCount, lowStockProducts, topCategories } })
   } catch (err) { next(err) }
 }
 
@@ -204,18 +211,43 @@ exports.toggleVisibility = async (req, res, next) => {
 }
 
 /* ── Activity log ─────────────────────────────────────────── */
+const ACTIVITY_ACTIONS = ['create_category', 'update_category', 'delete_category', 'create_promotion', 'end_promotion', 'toggle_visibility', 'create_product', 'update_product', 'delete_product']
+
 exports.getActivity = async (req, res, next) => {
   try {
     const page  = Math.max(1, parseInt(req.query.page) || 1)
     const limit = Math.min(50, parseInt(req.query.limit) || 30)
-    const [logs, total] = await Promise.all([
-      ActivityLog.find({ action: { $in: ['create_category', 'update_category', 'delete_category', 'create_promotion', 'end_promotion', 'toggle_visibility', 'create_product', 'update_product', 'delete_product'] } })
+    const baseFilter = { action: { $in: ACTIVITY_ACTIONS } }
+    const filter = { ...baseFilter }
+    if (['category', 'product', 'promotion'].includes(req.query.entity)) {
+      filter.entity = req.query.entity
+    }
+
+    const startOfToday = new Date()
+    startOfToday.setHours(0, 0, 0, 0)
+
+    const [logs, total, entityCounts, todayCount] = await Promise.all([
+      ActivityLog.find(filter)
         .populate('performedBy', 'name role')
         .sort({ createdAt: -1 })
         .skip((page - 1) * limit)
         .limit(limit),
-      ActivityLog.countDocuments({ action: { $in: ['create_category', 'update_category', 'delete_category', 'create_promotion', 'end_promotion', 'toggle_visibility', 'create_product', 'update_product', 'delete_product'] } }),
+      ActivityLog.countDocuments(filter),
+      ActivityLog.aggregate([
+        { $match: baseFilter },
+        { $group: { _id: '$entity', count: { $sum: 1 } } },
+      ]),
+      ActivityLog.countDocuments({ ...baseFilter, createdAt: { $gte: startOfToday } }),
     ])
-    res.json({ success: true, data: logs, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } })
+
+    const byEntity = entityCounts.reduce((acc, c) => ({ ...acc, [c._id]: c.count }), {})
+    const grandTotal = entityCounts.reduce((sum, c) => sum + c.count, 0)
+
+    res.json({
+      success: true,
+      data: logs,
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+      stats: { total: grandTotal, today: todayCount, byEntity },
+    })
   } catch (err) { next(err) }
 }
