@@ -1,95 +1,260 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import WarehouseLayout from '../../components/warehouse/WarehouseLayout'
-import { api }         from '../../services/api'
+import { api } from '../../services/api'
 import { useToastStore } from '../../store/toastStore'
 
-const ACTION_CFG = {
-  import_stock:        { icon: '📦', label: 'Nhập kho',          color: 'bg-emerald-50 text-emerald-700' },
-  update_order_status: { icon: '🚚', label: 'Cập nhật đơn',      color: 'bg-blue-50 text-blue-700' },
-  process_return:      { icon: '↩️', label: 'Xử lý hoàn trả',   color: 'bg-orange-50 text-orange-700' },
-  submit_audit:        { icon: '📋', label: 'Kiểm kê kho',       color: 'bg-violet-50 text-violet-700' },
+/* ─── Icons ──────────────────────────────────────────────── */
+const ICON_PATHS = {
+  grid:      <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />,
+  clipboard: <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />,
+  undo:      <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />,
+  layers:    <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />,
+  check:     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />,
+  clock: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 7v5l3 3" />
+    </>
+  ),
+  search: (
+    <>
+      <circle cx="11" cy="11" r="8" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35" />
+    </>
+  ),
 }
 
+function Icon({ name, className = 'w-3.5 h-3.5' }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      {ICON_PATHS[name]}
+    </svg>
+  )
+}
+
+/* ─── Action config — đồng bộ với WarehouseDashboard ────────── */
+const ACTION_CFG = {
+  import_stock:        { icon: 'layers',    label: 'Nhập kho',     badge: 'bg-emerald-50 text-emerald-700 border border-emerald-200/50' },
+  update_order_status: { icon: 'clipboard', label: 'Cập nhật đơn', badge: 'bg-sky-50 text-sky-700 border border-sky-200/50' },
+  process_return:      { icon: 'undo',      label: 'Hoàn trả',     badge: 'bg-orange-50 text-orange-700 border border-orange-200/50' },
+  submit_audit:        { icon: 'check',     label: 'Kiểm kê',      badge: 'bg-violet-50 text-violet-700 border border-violet-200/50' },
+}
+const FALLBACK_CFG = { icon: 'clipboard', label: 'Khác', badge: 'bg-gray-50 text-gray-500 border border-gray-200/50' }
+
+const ROLE_LABELS = { admin: 'Admin', product_manager: 'PM', warehouse: 'Kho', customer: 'Khách' }
+
+const ACTION_FILTERS = [
+  { key: '',                    label: 'Tất cả',       icon: 'grid' },
+  { key: 'import_stock',        label: 'Nhập kho',     icon: 'layers' },
+  { key: 'update_order_status', label: 'Cập nhật đơn', icon: 'clipboard' },
+  { key: 'process_return',      label: 'Hoàn trả',     icon: 'undo' },
+  { key: 'submit_audit',        label: 'Kiểm kê',      icon: 'check' },
+]
+
+function dateLabel(dateStr) {
+  const d = new Date(dateStr)
+  const today = new Date()
+  const yesterday = new Date(today)
+  yesterday.setDate(today.getDate() - 1)
+  const sameDay = (a, b) => a.toDateString() === b.toDateString()
+  if (sameDay(d, today)) return 'Hôm nay'
+  if (sameDay(d, yesterday)) return 'Hôm qua'
+  return d.toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' })
+}
+
+/* ─── Sidebar stat box ───────────────────────────────────────── */
+function StatBox({ icon, label, value, accent }) {
+  return (
+    <div className="bg-white rounded-lg border border-[#EAE6DF] p-3.5 shadow-sm">
+      <div className="flex items-center justify-between mb-1.5">
+        <p className="text-[9px] font-bold tracking-wider text-[#8E877F] uppercase">{label}</p>
+        <span className="text-[#9B9389]"><Icon name={icon} className="w-3.5 h-3.5" /></span>
+      </div>
+      <p className={`font-display text-[20px] font-bold ${accent || 'text-[#1A1A1A]'}`}>{value}</p>
+    </div>
+  )
+}
+
+/* ─── Page ───────────────────────────────────────────────────── */
 export default function WarehouseActivityPage() {
   const showToast = useToastStore(s => s.show)
-  const [logs,    setLogs]    = useState([])
-  const [loading, setLoading] = useState(true)
-  const [page,    setPage]    = useState(1)
-  const [pagination, setPagination] = useState({})
+  const [logs,         setLogs]         = useState([])
+  const [loading,      setLoading]      = useState(true)
+  const [page,         setPage]         = useState(1)
+  const [pagination,   setPagination]   = useState({})
+  const [stats,        setStats]        = useState({ total: 0, today: 0, byAction: {} })
+  const [actionFilter, setActionFilter] = useState('')
+  const [search,       setSearch]       = useState('')
 
   const fetchLogs = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await api.get(`/api/warehouse/activity?page=${page}&limit=30`)
+      const params = new URLSearchParams({ page: String(page), limit: '20' })
+      if (actionFilter) params.set('action', actionFilter)
+      const res = await api.get(`/api/warehouse/activity?${params}`)
       setLogs(res.data)
       setPagination(res.pagination || {})
+      setStats(res.stats || { total: 0, today: 0, byAction: {} })
     } catch (e) { showToast({ message: e.message, type: 'error' }) }
     finally { setLoading(false) }
-  }, [page])
+  }, [page, actionFilter])
 
   useEffect(() => { fetchLogs() }, [fetchLogs])
 
+  function handleFilter(key) {
+    setActionFilter(key)
+    setPage(1)
+  }
+
+  const filtered = useMemo(() => {
+    if (!search.trim()) return logs
+    const q = search.trim().toLowerCase()
+    return logs.filter(l =>
+      l.description?.toLowerCase().includes(q) ||
+      l.performedBy?.name?.toLowerCase().includes(q)
+    )
+  }, [logs, search])
+
+  const groups = useMemo(() => {
+    const out = []
+    filtered.forEach(l => {
+      const label = dateLabel(l.createdAt)
+      let g = out[out.length - 1]
+      if (!g || g.label !== label) { g = { label, items: [] }; out.push(g) }
+      g.items.push(l)
+    })
+    return out
+  }, [filtered])
+
   return (
     <WarehouseLayout title="Nhật ký thao tác">
-      <div className="max-w-3xl space-y-4">
-        <div className="bg-white rounded-xl border border-[#e8e8e6] overflow-hidden">
-          {loading
-            ? (
-              <div className="divide-y divide-[#f5f5f4]">
-                {Array.from({ length: 10 }).map((_, i) => (
-                  <div key={i} className="flex gap-3 px-5 py-4 animate-pulse">
-                    <div className="w-9 h-9 bg-[#f0f0f0] rounded-xl shrink-0"/>
-                    <div className="flex-1 space-y-2 pt-1">
-                      <div className="h-3 bg-[#f0f0f0] rounded w-2/3"/>
-                      <div className="h-2.5 bg-[#f0f0f0] rounded w-1/3"/>
+      {/* Header */}
+      <div className="border-b border-[#EAE6DF] pb-3 mb-5">
+        <h2 className="font-display text-[14.5px] font-bold text-[#1A1A1A] uppercase tracking-wider">Nhật ký thao tác</h2>
+        <p className="text-[11px] text-[#9B9389] mt-0.5">Theo dõi lịch sử nhập kho, xử lý đơn, hoàn trả và kiểm kê</p>
+      </div>
+
+      <div className="flex flex-col lg:flex-row gap-5">
+        {/* Sidebar */}
+        <aside className="lg:w-60 shrink-0 space-y-4">
+          <div className="grid grid-cols-2 lg:grid-cols-1 gap-3">
+            <StatBox icon="grid" label="Tổng hoạt động" value={stats.total} />
+            <StatBox icon="clock" label="Hôm nay" value={stats.today} accent={stats.today > 0 ? 'text-[#2E4A3F]' : undefined} />
+          </div>
+
+          <div className="bg-white border border-[#EAE6DF] rounded-lg shadow-sm overflow-hidden">
+            <p className="px-4 pt-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-[#8E877F]">Lọc theo loại</p>
+            <div className="pb-2">
+              {ACTION_FILTERS.map(f => {
+                const count = f.key ? (stats.byAction[f.key] || 0) : stats.total
+                const active = actionFilter === f.key
+                return (
+                  <button key={f.key} onClick={() => handleFilter(f.key)}
+                    className={`w-full flex items-center justify-between gap-2 px-4 py-2 text-[12px] font-medium transition-colors ${active ? 'bg-[#1A1A1A] text-white' : 'text-[#615C56] hover:bg-[#FAF8F5]'}`}>
+                    <span className="flex items-center gap-2"><Icon name={f.icon} /> {f.label}</span>
+                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${active ? 'bg-white/15 text-white' : 'bg-[#FAF8F5] text-[#9B9389]'}`}>{count}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        </aside>
+
+        {/* Timeline */}
+        <div className="flex-1 min-w-0">
+          <div className="relative mb-4 max-w-sm">
+            <Icon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#9B9389]" />
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Tìm theo nội dung, người thực hiện…"
+              className="w-full pl-9 pr-3 py-2.5 border border-[#EAE6DF] rounded-lg text-[12.5px] bg-white placeholder:text-[#9B9389] focus:outline-none focus:border-[#1A1A1A] transition-colors"/>
+          </div>
+
+          <div className="bg-white border border-[#EAE6DF] rounded-xl shadow-sm overflow-hidden">
+            {loading ? (
+              <div className="p-6 space-y-6">
+                {Array.from({ length: 2 }).map((_, gi) => (
+                  <div key={gi}>
+                    <div className="h-2.5 bg-[#F2EFEA] rounded w-20 mb-4 animate-pulse" />
+                    <div className="space-y-5">
+                      {Array.from({ length: 3 }).map((_, i) => (
+                        <div key={i} className="flex gap-3 animate-pulse">
+                          <div className="w-8 h-8 bg-[#F2EFEA] rounded-full shrink-0" />
+                          <div className="flex-1 space-y-2 pt-1">
+                            <div className="h-3 bg-[#F2EFEA] rounded w-2/3" />
+                            <div className="h-2.5 bg-[#F2EFEA] rounded w-1/3" />
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 ))}
               </div>
-            )
-            : logs.length === 0
-              ? (
-                <div className="py-16 text-center">
-                  <p className="text-[13px] font-semibold text-[#1c1c1a]">Chưa có hoạt động nào</p>
-                  <p className="text-[11px] text-[#a3a3a3] mt-1">Các thao tác kho sẽ được ghi lại tại đây</p>
-                </div>
-              )
-              : (
-                <ul className="divide-y divide-[#f5f5f4]">
-                  {logs.map((log, i) => {
-                    const cfg = ACTION_CFG[log.action] || { icon: '🔧', label: log.action, color: 'bg-gray-50 text-gray-600' }
-                    return (
-                      <li key={log._id || i} className="flex items-start gap-3.5 px-5 py-4 hover:bg-[#fafafa] transition-colors">
-                        <span className={`text-base p-2 rounded-xl shrink-0 ${cfg.color}`}>{cfg.icon}</span>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-2">
-                            <p className="text-[12.5px] text-[#1c1c1a] leading-snug">{log.description}</p>
-                            <span className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded-full shrink-0 ${cfg.color}`}>{cfg.label}</span>
-                          </div>
-                          <p className="text-[11px] text-[#a3a3a3] mt-1">
-                            {log.performedBy?.name} ·{' '}
-                            {new Date(log.createdAt).toLocaleString('vi-VN', {
-                              hour: '2-digit', minute: '2-digit',
-                              day: '2-digit', month: '2-digit', year: 'numeric',
-                            })}
-                          </p>
-                        </div>
-                      </li>
-                    )
-                  })}
-                </ul>
-              )
-          }
-
-          {pagination.totalPages > 1 && (
-            <div className="flex items-center justify-between px-5 py-3 border-t border-[#f0f0f0]">
-              <p className="text-[11px] text-[#a3a3a3]">Trang {pagination.page} / {pagination.totalPages} · {pagination.total} thao tác</p>
-              <div className="flex gap-1.5">
-                <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="px-3 py-1.5 text-[11px] border border-[#e8e8e6] rounded-lg disabled:opacity-40 hover:border-[#1c1c1a] transition-colors">← Trước</button>
-                <button disabled={page >= pagination.totalPages} onClick={() => setPage(p => p + 1)} className="px-3 py-1.5 text-[11px] border border-[#e8e8e6] rounded-lg disabled:opacity-40 hover:border-[#1c1c1a] transition-colors">Tiếp →</button>
+            ) : groups.length === 0 ? (
+              <div className="py-16 text-center">
+                {logs.length === 0 ? (
+                  <>
+                    <p className="font-display text-[13px] font-bold text-[#1A1A1A]">Chưa có hoạt động nào</p>
+                    <p className="text-[11px] text-[#9B9389] mt-1">Các thao tác kho sẽ được ghi lại tại đây</p>
+                  </>
+                ) : (
+                  <>
+                    <p className="font-display text-[13px] font-bold text-[#1A1A1A]">Không tìm thấy hoạt động phù hợp</p>
+                    <button onClick={() => setSearch('')} className="text-[11px] text-[#615C56] hover:text-[#1A1A1A] underline mt-1.5">Xóa bộ lọc tìm kiếm</button>
+                  </>
+                )}
               </div>
-            </div>
-          )}
+            ) : (
+              <div className="p-5 sm:p-6">
+                {groups.map((g, gi) => (
+                  <div key={g.label + gi} className={gi > 0 ? 'mt-7' : ''}>
+                    <div className="flex items-center gap-3 mb-4">
+                      <p className="text-[11px] font-bold uppercase tracking-wider text-[#8E877F] shrink-0">{g.label}</p>
+                      <div className="flex-1 h-px bg-[#EAE6DF]" />
+                    </div>
+                    {g.items.map((l, i) => {
+                      const cfg = ACTION_CFG[l.action] || FALLBACK_CFG
+                      const isLast = i === g.items.length - 1
+                      return (
+                        <div key={l._id || i} className="relative pl-10 pb-5 last:pb-0">
+                          {!isLast && <div className="absolute left-[15px] top-8 bottom-0 w-px bg-[#EAE6DF]" />}
+                          <div className={`absolute left-0 top-0 w-8 h-8 rounded-full flex items-center justify-center ${cfg.badge}`}>
+                            <Icon name={cfg.icon} className="w-3.5 h-3.5" />
+                          </div>
+                          <div className="flex items-start justify-between gap-3 pt-1">
+                            <div className="min-w-0">
+                              <p className="text-[12.5px] text-[#1A1A1A] font-medium leading-snug">{l.description}</p>
+                              <p className="text-[11px] text-[#9B9389] mt-1 flex items-center flex-wrap gap-1.5">
+                                <span className="font-medium text-[#615C56]">{l.performedBy?.name || 'Hệ thống'}</span>
+                                {l.performedBy?.role && (
+                                  <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-[#FAF8F5] border border-[#EAE6DF] text-[#9B9389]">
+                                    {ROLE_LABELS[l.performedBy.role] || l.performedBy.role}
+                                  </span>
+                                )}
+                                <span>·</span>
+                                <span>{new Date(l.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</span>
+                              </p>
+                            </div>
+                            <span className={`shrink-0 text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded ${cfg.badge}`}>{cfg.label}</span>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {pagination.totalPages > 1 && (
+              <div className="flex items-center justify-between px-5 py-3.5 border-t border-[#EAE6DF] bg-[#FAF8F5]">
+                <p className="text-[11px] text-[#9B9389]">Trang {pagination.page}/{pagination.totalPages} · {pagination.total} hoạt động</p>
+                <div className="flex gap-1.5">
+                  <button disabled={page <= 1} onClick={() => setPage(p => p - 1)}
+                    className="px-3 py-1.5 text-[11px] font-medium border border-[#EAE6DF] rounded-lg disabled:opacity-40 hover:border-[#1A1A1A] hover:text-[#1A1A1A] text-[#615C56] transition-colors">← Trước</button>
+                  <button disabled={page >= pagination.totalPages} onClick={() => setPage(p => p + 1)}
+                    className="px-3 py-1.5 text-[11px] font-medium border border-[#EAE6DF] rounded-lg disabled:opacity-40 hover:border-[#1A1A1A] hover:text-[#1A1A1A] text-[#615C56] transition-colors">Tiếp →</button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </WarehouseLayout>

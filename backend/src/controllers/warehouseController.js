@@ -7,6 +7,8 @@ async function log(action, description, userId, entity, entityId, metadata) {
   await ActivityLog.create({ action, description, performedBy: userId, entity, entityId, metadata }).catch(() => {})
 }
 
+const WAREHOUSE_ACTIONS = ['import_stock', 'update_order_status', 'process_return', 'submit_audit']
+
 /* ── Dashboard stats ──────────────────────────────────────── */
 exports.getStats = async (req, res, next) => {
   try {
@@ -17,7 +19,7 @@ exports.getStats = async (req, res, next) => {
       Product.countDocuments({ stock: { $lte: 10, $gt: 0 }, visible: true }),
       Order.countDocuments({ status: { $in: ['CANCELLED', 'RETURNED'] }, updatedAt: { $gte: today } }),
       InventoryTransaction.countDocuments({ type: 'import', createdAt: { $gte: today } }),
-      ActivityLog.find()
+      ActivityLog.find({ action: { $in: WAREHOUSE_ACTIONS } })
         .populate('performedBy', 'name')
         .sort({ createdAt: -1 })
         .limit(8),
@@ -262,17 +264,38 @@ exports.getActivity = async (req, res, next) => {
   try {
     const page  = Math.max(1, parseInt(req.query.page) || 1)
     const limit = Math.min(50, parseInt(req.query.limit) || 30)
+    const baseFilter = { action: { $in: WAREHOUSE_ACTIONS } }
+    const filter = { ...baseFilter }
+    if (WAREHOUSE_ACTIONS.includes(req.query.action)) {
+      filter.action = req.query.action
+    }
 
-    const [logs, total] = await Promise.all([
-      ActivityLog.find()
+    const startOfToday = new Date()
+    startOfToday.setHours(0, 0, 0, 0)
+
+    const [logs, total, actionCounts, todayCount] = await Promise.all([
+      ActivityLog.find(filter)
         .populate('performedBy', 'name role')
         .sort({ createdAt: -1 })
         .skip((page - 1) * limit)
         .limit(limit),
-      ActivityLog.countDocuments(),
+      ActivityLog.countDocuments(filter),
+      ActivityLog.aggregate([
+        { $match: baseFilter },
+        { $group: { _id: '$action', count: { $sum: 1 } } },
+      ]),
+      ActivityLog.countDocuments({ ...baseFilter, createdAt: { $gte: startOfToday } }),
     ])
 
-    res.json({ success: true, data: logs, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } })
+    const byAction = actionCounts.reduce((acc, c) => ({ ...acc, [c._id]: c.count }), {})
+    const grandTotal = actionCounts.reduce((sum, c) => sum + c.count, 0)
+
+    res.json({
+      success: true,
+      data: logs,
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+      stats: { total: grandTotal, today: todayCount, byAction },
+    })
   } catch (err) { next(err) }
 }
 
