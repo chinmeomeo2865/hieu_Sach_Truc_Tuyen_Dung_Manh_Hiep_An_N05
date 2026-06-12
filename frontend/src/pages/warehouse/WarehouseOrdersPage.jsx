@@ -103,11 +103,16 @@ function Timeline({ order }) {
               initial={{ scale: 0.5, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: i * 0.1, type: 'spring', stiffness: 300 }}
-              style={done ? { background: cfg?.dot || '#1c1c1a', borderColor: cfg?.dot || '#1c1c1a' } : {}}
               className={`relative z-10 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all
                 ${done ? 'border-current' : 'bg-white border-[#E5E7EB]'}
                 ${current ? 'ring-4 ring-offset-1' : ''}`}
-              style={current ? { background: cfg?.dot, borderColor: cfg?.dot, ringColor: cfg?.dot + '33' } : done ? { background: cfg?.dot, borderColor: cfg?.dot } : {}}
+              style={
+                current
+                  ? { background: cfg?.dot, borderColor: cfg?.dot, '--tw-ring-color': cfg?.dot ? `${cfg.dot}33` : undefined }
+                  : done
+                  ? { background: cfg?.dot || '#1c1c1a', borderColor: cfg?.dot || '#1c1c1a' }
+                  : {}
+              }
             >
               {done ? (
                 <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
