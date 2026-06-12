@@ -89,12 +89,12 @@ function Timeline({ order }) {
             {/* connector line */}
             {i < TIMELINE_STEPS.length - 1 && (
               <div className="absolute top-3 left-1/2 w-full h-0.5 z-0">
-                <div className="h-full bg-[#E5E7EB]" />
+                <div className="h-full bg-divider-lt" />
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: done && i < doneIdx ? '100%' : '0%' }}
                   transition={{ duration: 0.5, delay: i * 0.1 }}
-                  className="h-full bg-[#1c1c1a] absolute top-0 left-0"
+                  className="h-full bg-ink absolute top-0 left-0"
                 />
               </div>
             )}
@@ -104,7 +104,7 @@ function Timeline({ order }) {
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: i * 0.1, type: 'spring', stiffness: 300 }}
               className={`relative z-10 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all
-                ${done ? 'border-current' : 'bg-white border-[#E5E7EB]'}
+                ${done ? 'border-current' : 'bg-white border-divider-lt'}
                 ${current ? 'ring-4 ring-offset-1' : ''}`}
               style={
                 current
@@ -119,14 +119,14 @@ function Timeline({ order }) {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
               ) : (
-                <span className="w-1.5 h-1.5 rounded-full bg-[#D1D5DB]" />
+                <span className="w-1.5 h-1.5 rounded-full bg-subtle" />
               )}
             </motion.div>
             {/* label */}
             <div className="mt-2 text-center">
-              <p className={`text-[10px] font-semibold ${done ? 'text-[#1c1c1a]' : 'text-[#9CA3AF]'}`}>{step.label}</p>
+              <p className={`text-[10px] font-semibold ${done ? 'text-ink' : 'text-subtle'}`}>{step.label}</p>
               {hist && (
-                <p className="text-[9px] text-[#9CA3AF] mt-0.5 tabular-nums">
+                <p className="text-[9px] text-subtle mt-0.5 tabular-nums">
                   {new Date(hist.changedAt).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' })}
                 </p>
               )}
@@ -158,19 +158,19 @@ function OrderDetail({ order, onUpdate, onClose }) {
   return (
     <>
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-        className="fixed inset-0 z-40 bg-black/30 backdrop-blur-[2px]" onClick={onClose} />
+        className="fixed inset-0 z-40 bg-[#1a1714]/40 backdrop-blur-[2px]" onClick={onClose} />
       <motion.div
         initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
         transition={{ type: 'spring', damping: 30, stiffness: 320 }}
-        className="fixed right-0 top-0 h-full w-[500px] bg-white z-50 shadow-2xl flex flex-col overflow-hidden"
+        className="fixed right-0 top-0 h-full w-[500px] bg-white z-50 shadow-card-h border-l border-divider-lt flex flex-col overflow-hidden"
       >
         {/* Header */}
-        <div className="flex items-start justify-between px-6 py-5 border-b border-[#F3F4F6] shrink-0">
+        <div className="flex items-start justify-between px-6 py-5 border-b border-divider-lt shrink-0">
           <div>
-            <p className="text-[13px] font-mono font-bold text-[#1c1c1a] tracking-wide">
+            <p className="text-[13px] font-mono font-bold text-ink tracking-wide">
               {order.orderCode || `#${order._id.slice(-8).toUpperCase()}`}
             </p>
-            <p className="text-[11px] text-[#9CA3AF] mt-0.5">
+            <p className="text-[11px] text-muted mt-0.5">
               {new Date(order.createdAt).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
             </p>
             <div className="mt-2">
@@ -178,7 +178,7 @@ function OrderDetail({ order, onUpdate, onClose }) {
             </div>
           </div>
           <button onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#F3F4F6] text-[#9CA3AF] hover:text-[#1c1c1a] transition-colors mt-0.5">
+            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-subtle text-subtle hover:text-ink transition-colors mt-0.5">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -190,21 +190,21 @@ function OrderDetail({ order, onUpdate, onClose }) {
 
             {/* Timeline */}
             <section>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-[#9CA3AF] mb-4">Tiến trình</p>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-subtle mb-4">Tiến trình</p>
               <Timeline order={order} />
             </section>
 
             {/* Divider */}
-            <div className="h-px bg-[#F3F4F6]" />
+            <div className="h-px bg-divider-lt" />
 
             {/* Customer */}
-            <section className="bg-[#FAFAFA] rounded-xl p-4 border border-[#F3F4F6]">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-[#9CA3AF] mb-3">Người nhận</p>
+            <section className="bg-surface-warm/30 rounded-xl p-4 border border-divider-lt">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-subtle mb-3">Người nhận</p>
               <div className="space-y-1">
-                <p className="text-[13px] font-semibold text-[#111827]">{order.address?.name || order.user?.name}</p>
-                <p className="text-[12px] text-[#6B7280] tabular-nums">{order.address?.phone || order.user?.phone}</p>
+                <p className="text-[13px] font-bold text-ink">{order.address?.name || order.user?.name}</p>
+                <p className="text-[12px] text-ink-80 tabular-nums">{order.address?.phone || order.user?.phone}</p>
                 {order.address && (
-                  <p className="text-[12px] text-[#6B7280] leading-relaxed">
+                  <p className="text-[12px] text-ink-80 leading-relaxed">
                     {order.address.street}, {order.address.city}
                   </p>
                 )}
@@ -213,33 +213,33 @@ function OrderDetail({ order, onUpdate, onClose }) {
 
             {/* Items */}
             <section>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-[#9CA3AF] mb-3">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-subtle mb-3">
                 Sản phẩm ({order.items?.length})
               </p>
               <div className="space-y-2">
                 {order.items?.map((item, i) => (
-                  <div key={i} className="flex gap-3 p-3 border border-[#F3F4F6] rounded-xl hover:border-[#E5E7EB] transition-colors">
+                  <div key={i} className="flex gap-3.5 p-3.5 border border-divider-lt rounded-xl hover:border-divider transition-colors bg-white shadow-sm">
                     {item.image && (
                       <img src={item.image} alt={item.title}
-                        className="w-11 h-15 object-cover rounded-lg bg-[#F9FAFB] shrink-0 shadow-sm" />
+                        className="w-11 h-15 object-cover rounded-lg bg-surface-warm shrink-0 shadow-sm border border-divider-lt/30" />
                     )}
                     <div className="flex-1 min-w-0">
-                      <p className="text-[12.5px] font-semibold text-[#111827] line-clamp-2 leading-snug">{item.title}</p>
-                      <p className="text-[11px] text-[#9CA3AF] mt-0.5">{item.author}</p>
-                      <div className="flex items-center justify-between mt-2">
-                        <span className="text-[11px] bg-[#F3F4F6] text-[#374151] font-semibold px-2 py-0.5 rounded-md">×{item.qty}</span>
-                        <span className="text-[12px] font-bold text-[#111827] tabular-nums">{formatPrice(item.price)}</span>
+                      <p className="text-[12.5px] font-bold text-ink line-clamp-2 leading-snug">{item.title}</p>
+                      <p className="text-[11px] text-subtle mt-0.5">{item.author}</p>
+                      <div className="flex items-center justify-between mt-2.5">
+                        <span className="text-[11px] bg-surface-subtle text-ink-80 font-bold px-2 py-0.5 rounded-md">×{item.qty}</span>
+                        <span className="text-[12.5px] font-bold text-ink tabular-nums">{formatPrice(item.price)}</span>
                       </div>
                     </div>
                   </div>
                 ))}
               </div>
-              <div className="flex justify-between items-center mt-4 pt-4 border-t border-[#F3F4F6]">
-                <span className="text-[12px] text-[#6B7280]">Tổng cộng</span>
-                <span className="text-[16px] font-bold text-[#111827] tabular-nums">{formatPrice(order.total)}</span>
+              <div className="flex justify-between items-center mt-4 pt-4 border-t border-divider-lt">
+                <span className="text-[12.5px] text-ink-80">Tổng cộng</span>
+                <span className="text-[16px] font-bold text-ink tabular-nums">{formatPrice(order.total)}</span>
               </div>
               <div className="flex justify-between items-center mt-2">
-                <span className="text-[12px] text-[#6B7280]">Thanh toán</span>
+                <span className="text-[12.5px] text-ink-80">Thanh toán</span>
                 <PaymentBadge payment={order.payment} paymentStatus={order.paymentStatus} />
               </div>
             </section>
@@ -249,10 +249,10 @@ function OrderDetail({ order, onUpdate, onClose }) {
 
         {/* Action Footer */}
         {nextCfg ? (
-          <div className="px-6 py-4 border-t border-[#F3F4F6] shrink-0 bg-white">
+          <div className="px-6 py-4 border-t border-divider-lt shrink-0 bg-white">
             <button onClick={advance} disabled={updating}
               style={{ background: nextCfg.color }}
-              className="w-full py-3 text-white text-[13px] font-semibold rounded-xl hover:opacity-90 active:scale-[0.99] transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+              className="w-full py-3 text-white text-[13px] font-bold rounded-xl hover:opacity-90 active:scale-[0.99] transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-sm">
               {updating
                 ? <><svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/></svg> Đang cập nhật…</>
                 : nextCfg.label
@@ -260,8 +260,8 @@ function OrderDetail({ order, onUpdate, onClose }) {
             </button>
           </div>
         ) : order.status === 'DELIVERED' ? (
-          <div className="px-6 py-4 border-t border-[#F3F4F6] shrink-0">
-            <div className="w-full py-3 bg-emerald-50 text-emerald-700 text-[13px] font-semibold rounded-xl text-center border border-emerald-100">
+          <div className="px-6 py-4 border-t border-divider-lt shrink-0 bg-white">
+            <div className="w-full py-3 bg-emerald-50 text-emerald-800 text-[13px] font-bold rounded-xl text-center border border-emerald-100">
               ✓ Đơn hàng đã giao thành công
             </div>
           </div>
@@ -305,17 +305,22 @@ export default function WarehouseOrdersPage() {
 
   return (
     <WarehouseLayout title="Xử lý đơn hàng">
-      <div className="space-y-5">
+      <div className="space-y-6">
+        {/* Title and header */}
+        <div className="flex flex-col gap-1.5">
+          <h1 className="font-display text-2xl font-bold text-ink leading-tight">Xử lý đơn hàng</h1>
+          <p className="text-[12px] text-muted font-medium">Theo dõi, nhặt hàng, đóng gói và bàn giao đơn hàng cho đơn vị vận chuyển.</p>
+        </div>
 
         {/* ── Tabs ── */}
-        <div className="flex gap-1 bg-white border border-[#E5E7EB] rounded-xl p-1 w-fit shadow-sm">
+        <div className="flex gap-1.5 bg-white border border-divider-lt rounded-2xl p-1 w-fit shadow-sm">
           {TABS.map(t => (
             <button key={t.status}
               onClick={() => setSearchParams(t.status ? { status: t.status } : {})}
-              className={`px-4 py-1.5 rounded-lg text-[12px] font-semibold transition-all duration-200
+              className={`px-4 py-1.5 rounded-lg text-[12px] font-bold tracking-wide transition-all duration-200
                 ${activeStatus === t.status
-                  ? 'bg-[#1c1c1a] text-white shadow-sm'
-                  : 'text-[#6B7280] hover:text-[#1c1c1a] hover:bg-[#F9FAFB]'
+                  ? 'bg-ink text-white shadow-card'
+                  : 'text-ink-80 hover:text-ink hover:bg-surface-subtle'
                 }`}>
               {t.label}
             </button>
@@ -323,27 +328,26 @@ export default function WarehouseOrdersPage() {
         </div>
 
         {/* ── Table ── */}
-        <div className="bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden shadow-sm">
+        <div className="bg-white rounded-2xl border border-divider-lt overflow-hidden shadow-card">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-[#F3F4F6]">
-                <th className="px-5 py-3.5 text-left text-[10px] font-bold uppercase tracking-widest text-[#9CA3AF]">Mã đơn</th>
-                <th className="px-5 py-3.5 text-left text-[10px] font-bold uppercase tracking-widest text-[#9CA3AF]">Khách hàng</th>
-                <th className="px-5 py-3.5 text-left text-[10px] font-bold uppercase tracking-widest text-[#9CA3AF]">Sản phẩm</th>
-                <th className="px-5 py-3.5 text-right text-[10px] font-bold uppercase tracking-widest text-[#9CA3AF]">Tổng tiền</th>
-                <th className="px-5 py-3.5 text-left text-[10px] font-bold uppercase tracking-widest text-[#9CA3AF]">Trạng thái</th>
-                <th className="px-5 py-3.5 text-left text-[10px] font-bold uppercase tracking-widest text-[#9CA3AF]">Ngày tạo</th>
+              <tr className="border-b border-divider-lt bg-surface-warm/30">
+                <th className="px-5 py-3.5 text-left text-[10px] font-bold uppercase tracking-widest text-subtle">Mã đơn</th>
+                <th className="px-5 py-3.5 text-left text-[10px] font-bold uppercase tracking-widest text-subtle">Khách hàng</th>
+                <th className="px-5 py-3.5 text-left text-[10px] font-bold uppercase tracking-widest text-subtle">Sản phẩm</th>
+                <th className="px-5 py-3.5 text-right text-[10px] font-bold uppercase tracking-widest text-subtle">Tổng tiền</th>
+                <th className="px-5 py-3.5 text-left text-[10px] font-bold uppercase tracking-widest text-subtle">Trạng thái</th>
+                <th className="px-5 py-3.5 text-left text-[10px] font-bold uppercase tracking-widest text-subtle">Ngày tạo</th>
                 <th className="px-3 py-3.5" />
               </tr>
             </thead>
             <tbody>
               {loading
                 ? Array.from({ length: 6 }).map((_, i) => (
-                  <tr key={i} className="border-t border-[#F9FAFB] animate-pulse">
+                  <tr key={i} className="border-t border-divider-lt/50 animate-pulse">
                     {[90, 130, 160, 80, 110, 80, 20].map((w, j) => (
                       <td key={j} className="px-5 py-4">
-                        <div className="h-3 bg-[#F3F4F6] rounded-full" style={{ width: w }} />
-                        {j === 1 && <div className="h-2.5 bg-[#F9FAFB] rounded-full mt-2 w-16" />}
+                        <div className="h-3.5 bg-surface-subtle rounded-full" style={{ width: w }} />
                       </td>
                     ))}
                   </tr>
@@ -351,16 +355,15 @@ export default function WarehouseOrdersPage() {
                 : orders.length === 0
                   ? (
                     <tr><td colSpan={7}>
-                      <div className="py-24 flex flex-col items-center gap-3">
-                        <div className="w-14 h-14 rounded-2xl bg-[#F3F4F6] flex items-center justify-center">
-                          <svg className="w-7 h-7 text-[#D1D5DB]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                      <div className="py-24 flex flex-col items-center gap-3 bg-white">
+                        <div className="w-14 h-14 rounded-2xl bg-surface-warm border border-divider-lt flex items-center justify-center">
+                          <svg className="w-7 h-7 text-subtle" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M16 3H8a2 2 0 00-2 2v2h12V5a2 2 0 00-2-2z" />
                           </svg>
                         </div>
                         <div className="text-center">
-                          <p className="text-[14px] font-semibold text-[#374151]">Không có đơn hàng</p>
-                          <p className="text-[12px] text-[#9CA3AF] mt-1">
+                          <p className="text-[14px] font-bold text-ink">Không có đơn hàng</p>
+                          <p className="text-[12px] text-muted mt-1">
                             {activeStatus ? 'Không có đơn ở trạng thái này' : 'Tất cả đơn đã được xử lý'}
                           </p>
                         </div>
@@ -373,38 +376,38 @@ export default function WarehouseOrdersPage() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: idx * 0.04, duration: 0.2 }}
                       onClick={() => setSelected(o)}
-                      className="border-t border-[#F9FAFB] hover:bg-[#FAFAFA] cursor-pointer transition-colors group"
+                      className="border-t border-divider-lt hover:bg-surface-warm/30 cursor-pointer transition-colors duration-200 group"
                     >
                       {/* Mã đơn */}
                       <td className="px-5 py-4">
-                        <span className="text-[12px] font-mono font-bold text-[#111827] tracking-wide">
+                        <span className="text-[12px] font-mono font-bold text-ink tracking-wide">
                           {o.orderCode || `#${o._id.slice(-8).toUpperCase()}`}
                         </span>
                       </td>
 
                       {/* Khách hàng */}
                       <td className="px-5 py-4">
-                        <p className="text-[12.5px] font-semibold text-[#111827] leading-tight">
+                        <p className="text-[12.5px] font-bold text-ink leading-tight">
                           {o.user?.name || o.address?.name || '—'}
                         </p>
-                        <p className="text-[11px] text-[#9CA3AF] mt-0.5 tabular-nums">
+                        <p className="text-[11px] text-muted mt-0.5 tabular-nums">
                           {o.user?.phone || o.address?.phone || ''}
                         </p>
                       </td>
 
                       {/* Sản phẩm */}
                       <td className="px-5 py-4">
-                        <p className="text-[12px] font-medium text-[#374151]">
+                        <p className="text-[12px] font-semibold text-ink-80">
                           {o.items?.length} sản phẩm
                         </p>
-                        <p className="text-[11px] text-[#9CA3AF] mt-0.5 truncate max-w-[180px]">
+                        <p className="text-[11px] text-muted mt-0.5 truncate max-w-[180px]">
                           {o.items?.map(i => i.title).join(', ')}
                         </p>
                       </td>
 
                       {/* Tổng tiền */}
                       <td className="px-5 py-4 text-right">
-                        <span className="text-[13px] font-bold text-[#111827] tabular-nums">
+                        <span className="text-[13px] font-bold text-ink tabular-nums">
                           {formatPrice(o.total)}
                         </span>
                       </td>
@@ -416,14 +419,14 @@ export default function WarehouseOrdersPage() {
 
                       {/* Ngày tạo */}
                       <td className="px-5 py-4">
-                        <span className="text-[11.5px] text-[#6B7280] tabular-nums">
+                        <span className="text-[11.5px] text-muted font-semibold tabular-nums">
                           {new Date(o.createdAt).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })}
                         </span>
                       </td>
 
                       {/* Arrow */}
                       <td className="px-3 py-4">
-                        <svg className="w-4 h-4 text-[#D1D5DB] group-hover:text-[#9CA3AF] transition-colors"
+                        <svg className="w-4 h-4 text-subtle group-hover:text-ink transition-colors duration-200"
                           fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                         </svg>
@@ -436,17 +439,17 @@ export default function WarehouseOrdersPage() {
 
           {/* Pagination */}
           {pagination.totalPages > 1 && (
-            <div className="flex items-center justify-between px-5 py-3 border-t border-[#F3F4F6] bg-[#FAFAFA]">
-              <p className="text-[11px] text-[#9CA3AF] tabular-nums">
+            <div className="flex items-center justify-between px-5 py-3 border-t border-divider-lt bg-surface-warm/20">
+              <p className="text-[11px] text-muted font-semibold tabular-nums">
                 Trang {pagination.page}/{pagination.totalPages} · {pagination.total} đơn
               </p>
-              <div className="flex gap-1.5">
+              <div className="flex gap-2">
                 <button disabled={page <= 1} onClick={() => setPage(p => p - 1)}
-                  className="px-3 py-1.5 text-[11px] font-medium border border-[#E5E7EB] rounded-lg bg-white disabled:opacity-40 hover:border-[#1c1c1a] hover:text-[#1c1c1a] transition-colors disabled:cursor-not-allowed">
+                  className="px-3 py-1.5 text-[11px] font-bold border border-divider-lt rounded-xl bg-white disabled:opacity-40 hover:border-ink transition-colors duration-200 disabled:cursor-not-allowed">
                   ← Trước
                 </button>
                 <button disabled={page >= pagination.totalPages} onClick={() => setPage(p => p + 1)}
-                  className="px-3 py-1.5 text-[11px] font-medium border border-[#E5E7EB] rounded-lg bg-white disabled:opacity-40 hover:border-[#1c1c1a] hover:text-[#1c1c1a] transition-colors disabled:cursor-not-allowed">
+                  className="px-3 py-1.5 text-[11px] font-bold border border-divider-lt rounded-xl bg-white disabled:opacity-40 hover:border-ink transition-colors duration-200 disabled:cursor-not-allowed">
                   Tiếp →
                 </button>
               </div>
