@@ -47,11 +47,12 @@ export default function WarehouseActivityPage() {
 
   return (
     <WarehouseLayout title="Nhật ký thao tác">
-      <div className="max-w-3xl space-y-6">
+      <div className="max-w-3xl mx-auto space-y-6 w-full py-4">
         {/* Title and stats summary */}
-        <div className="flex flex-col gap-1.5">
-          <h1 className="font-display text-2xl font-bold text-ink leading-tight">Nhật ký thao tác</h1>
-          <p className="text-[12px] text-muted font-medium">Lịch sử ghi nhận toàn bộ hoạt động điều chỉnh tồn kho, kiểm kê và thay đổi trạng thái đơn hàng.</p>
+        <div className="flex flex-col items-center text-center gap-2 mb-2">
+          <h1 className="font-display text-3xl font-bold text-ink leading-tight">Nhật ký thao tác</h1>
+          <div className="h-0.5 w-10 bg-accent rounded-full" />
+          <p className="text-[12.5px] text-muted font-semibold max-w-xl">Lịch sử ghi nhận toàn bộ hoạt động điều chỉnh tồn kho, kiểm kê và thay đổi trạng thái đơn hàng.</p>
         </div>
 
         {/* Timeline block */}

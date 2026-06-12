@@ -70,11 +70,12 @@ export default function WarehouseAuditPage() {
 
   return (
     <WarehouseLayout title="Kiểm kê kho">
-      <div className="space-y-6 max-w-5xl">
+      <div className="max-w-5xl mx-auto space-y-6 w-full py-4">
         {/* Title and subtitle */}
-        <div className="flex flex-col gap-1.5">
-          <h1 className="font-display text-2xl font-bold text-ink leading-tight">Kiểm kê kho hàng</h1>
-          <p className="text-[12px] text-muted font-medium">Đối chiếu chênh lệch giữa số lượng tồn kho thực tế và trên hệ thống.</p>
+        <div className="flex flex-col items-center text-center gap-2 mb-2">
+          <h1 className="font-display text-3xl font-bold text-ink leading-tight">Kiểm kê kho hàng</h1>
+          <div className="h-0.5 w-10 bg-accent rounded-full" />
+          <p className="text-[12.5px] text-muted font-semibold max-w-xl">Đối chiếu chênh lệch giữa số lượng tồn kho thực tế và trên hệ thống.</p>
         </div>
 
         {/* Action controls */}

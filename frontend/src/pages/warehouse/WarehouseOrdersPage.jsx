@@ -305,15 +305,16 @@ export default function WarehouseOrdersPage() {
 
   return (
     <WarehouseLayout title="Xử lý đơn hàng">
-      <div className="space-y-6">
+      <div className="max-w-5xl mx-auto space-y-6 w-full py-4">
         {/* Title and header */}
-        <div className="flex flex-col gap-1.5">
-          <h1 className="font-display text-2xl font-bold text-ink leading-tight">Xử lý đơn hàng</h1>
-          <p className="text-[12px] text-muted font-medium">Theo dõi, nhặt hàng, đóng gói và bàn giao đơn hàng cho đơn vị vận chuyển.</p>
+        <div className="flex flex-col items-center text-center gap-2 mb-2">
+          <h1 className="font-display text-3xl font-bold text-ink leading-tight">Xử lý đơn hàng</h1>
+          <div className="h-0.5 w-10 bg-accent rounded-full" />
+          <p className="text-[12.5px] text-muted font-semibold max-w-xl">Theo dõi, nhặt hàng, đóng gói và bàn giao đơn hàng cho đơn vị vận chuyển.</p>
         </div>
 
         {/* ── Tabs ── */}
-        <div className="flex gap-1.5 bg-white border border-divider-lt rounded-2xl p-1 w-fit shadow-sm">
+        <div className="flex gap-1.5 bg-white border border-divider-lt rounded-2xl p-1 w-fit shadow-sm mx-auto">
           {TABS.map(t => (
             <button key={t.status}
               onClick={() => setSearchParams(t.status ? { status: t.status } : {})}

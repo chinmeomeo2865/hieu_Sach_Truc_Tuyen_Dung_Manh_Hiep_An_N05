@@ -64,12 +64,13 @@ export default function WarehouseDashboard() {
 
   return (
     <WarehouseLayout title="Dashboard">
-      <div className="max-w-5xl mx-auto space-y-8">
+      <div className="max-w-5xl mx-auto space-y-8 py-4">
         
-        {/* Header section with clean serif greeting */}
-        <div className="flex flex-col gap-1.5">
-          <h1 className="font-display text-2xl font-bold text-ink leading-tight">Tổng quan kho hàng</h1>
-          <p className="text-[12px] text-muted font-medium">Báo cáo tồn kho, trạng thái đơn hàng và nhật ký hoạt động ngày hôm nay.</p>
+        {/* Header section centered with custom line indicator */}
+        <div className="flex flex-col items-center text-center gap-2 mb-2">
+          <h1 className="font-display text-3xl font-bold text-ink leading-tight">Tổng quan kho hàng</h1>
+          <div className="h-0.5 w-10 bg-accent rounded-full" />
+          <p className="text-[12.5px] text-muted font-semibold max-w-xl">Báo cáo tồn kho, trạng thái đơn hàng và nhật ký hoạt động ngày hôm nay.</p>
         </div>
 
         {/* Stat cards */}
@@ -89,8 +90,8 @@ export default function WarehouseDashboard() {
         </div>
 
         {/* Quick actions */}
-        <div className="space-y-3">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-subtle">Thao tác nhanh</p>
+        <div className="space-y-4">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-subtle text-center">Thao tác nhanh</p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {[
               { to: '/warehouse/orders?status=CONFIRMED', label: 'Xử lý đơn chờ', icon: '🚚', desc: 'Nhặt & đóng gói đơn hàng' },
@@ -120,8 +121,8 @@ export default function WarehouseDashboard() {
         </div>
 
         {/* Recent activity */}
-        <div className="space-y-3">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-subtle">Hoạt động gần đây</p>
+        <div className="space-y-4">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-subtle text-center">Hoạt động gần đây</p>
           <div className="bg-white rounded-2xl border border-divider-lt overflow-hidden shadow-card">
             {loading ? (
               <div className="p-6 space-y-4 animate-pulse">
