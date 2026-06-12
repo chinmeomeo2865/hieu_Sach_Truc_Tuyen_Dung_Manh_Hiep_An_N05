@@ -14,11 +14,10 @@ const STATUS_LABEL = {
   RETURNED:  { text: 'Hoàn trả',      color: 'bg-gray-50 text-gray-600 border-gray-200' },
 }
 
+/* Admin chỉ xác nhận đơn ban đầu — warehouse xử lý các bước sau */
 const NEXT_ACTION = {
-  PENDING:   { label: '→ ĐÃ XÁC NHẬN',    next: 'CONFIRMED' },
-  CONFIRMED: { label: 'BẮT ĐẦU ĐÓNG GÓI', next: 'PACKING'   },
-  PACKING:   { label: 'GIAO VẬN CHUYỂN',  next: 'SHIPPING'  },
-  SHIPPING:  { label: 'ĐÁNH DẤU ĐÃ GIAO', next: 'DELIVERED' },
+  PENDING: { label: '→ XÁC NHẬN ĐƠN', next: 'CONFIRMED' },
+  // CONFIRMED, PACKING, SHIPPING, DELIVERED: do Thủ Kho xử lý
 }
 
 const CAN_CANCEL = ['PENDING', 'CONFIRMED']
@@ -872,30 +871,7 @@ export default function AdminOrdersPage() {
                 Xác nhận hàng loạt
               </button>
             )}
-            {(statusFilter === 'CONFIRMED' || (statusFilter === 'all' && hasConfirmed)) && (
-              <button
-                onClick={() => handleBulkStatusChange('PACKING')}
-                className="px-3.5 py-1.5 bg-purple-600 hover:bg-purple-700 text-[10.5px] font-bold uppercase tracking-wider rounded-md transition-colors"
-              >
-                Đóng gói hàng loạt
-              </button>
-            )}
-            {(statusFilter === 'PACKING' || (statusFilter === 'all' && hasPacking)) && (
-              <button
-                onClick={() => handleBulkStatusChange('SHIPPING')}
-                className="px-3.5 py-1.5 bg-orange-600 hover:bg-orange-700 text-[10.5px] font-bold uppercase tracking-wider rounded-md transition-colors"
-              >
-                Giao shipper hàng loạt
-              </button>
-            )}
-            {(statusFilter === 'SHIPPING' || (statusFilter === 'all' && hasShipping)) && (
-              <button
-                onClick={() => handleBulkStatusChange('DELIVERED')}
-                className="px-3.5 py-1.5 bg-green-600 hover:bg-green-700 text-[10.5px] font-bold uppercase tracking-wider rounded-md transition-colors"
-              >
-                Giao thành công hàng loạt
-              </button>
-            )}
+            {/* PACKING / SHIPPING / DELIVERED: do Thủ Kho xử lý tại /warehouse/orders */}
             {((['PENDING', 'CONFIRMED'].includes(statusFilter)) || (statusFilter === 'all' && hasCancelable)) && (
               <button
                 onClick={handleBulkCancel}
