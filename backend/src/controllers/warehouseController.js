@@ -7,7 +7,7 @@ async function log(action, description, userId, entity, entityId, metadata) {
   await ActivityLog.create({ action, description, performedBy: userId, entity, entityId, metadata }).catch(() => {})
 }
 
-const WAREHOUSE_ACTIONS = ['import_stock', 'update_order_status', 'process_return', 'submit_audit']
+const WAREHOUSE_ACTIONS = ['import_stock', 'export_stock', 'update_order_status', 'process_return', 'submit_audit']
 
 /* ── Dashboard stats ──────────────────────────────────────── */
 exports.getStats = async (req, res, next) => {
@@ -35,20 +35,59 @@ exports.getWarehouseOrders = async (req, res, next) => {
     const page   = Math.max(1, parseInt(req.query.page) || 1)
     const limit  = Math.min(50, parseInt(req.query.limit) || 20)
     const status = req.query.status
+    const search = req.query.search?.trim()
+    const date   = req.query.date // today | 7days | 30days
 
-    const filter = { status: { $in: ['CONFIRMED', 'PACKING', 'SHIPPING'] } }
-    if (status && ['CONFIRMED', 'PACKING', 'SHIPPING'].includes(status)) filter.status = status
+    const ACTIVE = ['CONFIRMED', 'PACKING', 'SHIPPING']
+    const ALL    = [...ACTIVE, 'DELIVERED']
 
-    const [orders, total] = await Promise.all([
-      Order.find(filter)
-        .populate('user', 'name email phone')
-        .sort({ createdAt: 1 })
-        .skip((page - 1) * limit)
-        .limit(limit),
+    const filter = { status: { $in: ACTIVE } }
+    if (status && ALL.includes(status)) filter.status = status
+
+    if (search) {
+      filter.$or = [
+        { orderCode:       { $regex: search, $options: 'i' } },
+        { 'address.name':  { $regex: search, $options: 'i' } },
+        { 'address.phone': { $regex: search, $options: 'i' } },
+      ]
+    }
+
+    if (['today', '7days', '30days'].includes(date)) {
+      const start = new Date()
+      if (date === 'today') start.setHours(0, 0, 0, 0)
+      if (date === '7days')  start.setDate(start.getDate() - 7)
+      if (date === '30days') start.setDate(start.getDate() - 30)
+      filter.createdAt = { $gte: start }
+    }
+
+    /* Ưu tiên xử lý: PACKING (đang dở) → CONFIRMED (chờ) → SHIPPING (đợi shipper),
+       trong mỗi nhóm đơn cũ nhất trước. Tab Đã giao: mới nhất trước. */
+    const sortStage = status === 'DELIVERED'
+      ? { createdAt: -1 }
+      : { statusRank: 1, createdAt: 1 }
+
+    const [orders, total, countAgg] = await Promise.all([
+      Order.aggregate([
+        { $match: filter },
+        { $addFields: { statusRank: { $indexOfArray: [['PACKING', 'CONFIRMED', 'SHIPPING', 'DELIVERED'], '$status'] } } },
+        { $sort: sortStage },
+        { $skip: (page - 1) * limit },
+        { $limit: limit },
+      ]),
       Order.countDocuments(filter),
+      Order.aggregate([
+        { $match: { status: { $in: ALL } } },
+        { $group: { _id: '$status', count: { $sum: 1 } } },
+      ]),
     ])
 
-    res.json({ success: true, data: orders, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } })
+    await Order.populate(orders, { path: 'user', select: 'name email phone' })
+
+    const counts = countAgg.reduce((acc, c) => ({ ...acc, [c._id]: c.count }), {})
+    counts.active = ACTIVE.reduce((s, k) => s + (counts[k] || 0), 0)
+    counts.total  = ALL.reduce((s, k) => s + (counts[k] || 0), 0)
+
+    res.json({ success: true, data: orders, counts, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } })
   } catch (err) { next(err) }
 }
 
@@ -93,12 +132,25 @@ exports.getInventory = async (req, res, next) => {
     if (filter === 'low') query.stock = { $gt: 0, $lte: 10 }
     if (filter === 'out') query.stock = 0
 
-    const [products, total] = await Promise.all([
+    const [products, total, summaryAgg] = await Promise.all([
       Product.find(query).sort({ stock: 1, title: 1 }).skip((page - 1) * limit).limit(limit),
       Product.countDocuments(query),
+      Product.aggregate([
+        { $match: { visible: true } },
+        { $group: {
+          _id: null,
+          totalSku:   { $sum: 1 },
+          totalUnits: { $sum: '$stock' },
+          totalValue: { $sum: { $multiply: ['$stock', '$price'] } },
+          lowCount:   { $sum: { $cond: [{ $and: [{ $gt: ['$stock', 0] }, { $lte: ['$stock', 10] }] }, 1, 0] } },
+          outCount:   { $sum: { $cond: [{ $eq: ['$stock', 0] }, 1, 0] } },
+        } },
+      ]),
     ])
 
-    res.json({ success: true, data: products, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } })
+    const summary = summaryAgg[0] || { totalSku: 0, totalUnits: 0, totalValue: 0, lowCount: 0, outCount: 0 }
+
+    res.json({ success: true, data: products, summary, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } })
   } catch (err) { next(err) }
 }
 
@@ -126,6 +178,40 @@ exports.importStock = async (req, res, next) => {
     await log('import_stock',
       `Nhập kho "${product.title}": +${quantity} (${stockBefore} → ${product.stock})`,
       req.user._id, 'product', product._id, { quantity, supplier })
+
+    res.json({ success: true, data: { product, stockBefore, stockAfter: product.stock } })
+  } catch (err) { next(err) }
+}
+
+/* ── Export stock ─────────────────────────────────────────── */
+exports.exportStock = async (req, res, next) => {
+  try {
+    const { productId, quantity, reason, notes } = req.body
+    if (!productId || !quantity || quantity <= 0) {
+      return res.status(400).json({ success: false, message: 'Số lượng không hợp lệ' })
+    }
+
+    const product = await Product.findById(productId)
+    if (!product) return res.status(404).json({ success: false, message: 'Không tìm thấy sản phẩm' })
+
+    const qty = parseInt(quantity)
+    if (qty > product.stock) {
+      return res.status(400).json({ success: false, message: `Số lượng xuất (${qty}) vượt tồn kho hiện tại (${product.stock})` })
+    }
+
+    const stockBefore = product.stock
+    product.stock -= qty
+    await product.save()
+
+    await InventoryTransaction.create({
+      product: productId, type: 'export',
+      quantity: qty, stockBefore, stockAfter: product.stock,
+      reason, notes, performedBy: req.user._id,
+    })
+
+    await log('export_stock',
+      `Xuất kho "${product.title}": -${qty} (${stockBefore} → ${product.stock})`,
+      req.user._id, 'product', product._id, { quantity: qty, reason })
 
     res.json({ success: true, data: { product, stockBefore, stockAfter: product.stock } })
   } catch (err) { next(err) }

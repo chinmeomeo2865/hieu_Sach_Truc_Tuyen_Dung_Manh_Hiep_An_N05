@@ -65,6 +65,7 @@ const QUICK_ACTIONS = [
 
 const ACTION_CFG = {
   import_stock:        { icon: 'layers',    label: 'Nhập kho',     badge: 'bg-emerald-50 text-emerald-700 border border-emerald-200/50' },
+  export_stock:        { icon: 'layers',    label: 'Xuất kho',     badge: 'bg-red-50 text-red-600 border border-red-200/50' },
   update_order_status: { icon: 'clipboard', label: 'Cập nhật đơn', badge: 'bg-sky-50 text-sky-700 border border-sky-200/50' },
   process_return:      { icon: 'undo',      label: 'Hoàn trả',     badge: 'bg-orange-50 text-orange-700 border border-orange-200/50' },
   submit_audit:        { icon: 'check',     label: 'Kiểm kê',      badge: 'bg-violet-50 text-violet-700 border border-violet-200/50' },
