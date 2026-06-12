@@ -215,9 +215,23 @@ const cancelOrder = async (req, res, next) => {
 const updateStatus = async (req, res, next) => {
   try {
     const { status } = req.body
-    const VALID = ['CONFIRMED', 'PACKING', 'SHIPPING', 'DELIVERED', 'RETURNED']
-    if (!VALID.includes(status)) {
-      return res.status(400).json({ success: false, message: 'Trạng thái không hợp lệ' })
+    const role = req.user.role
+
+    /* ── Phân quyền theo role ─────────────────────────────────
+     * Admin   : chỉ được CONFIRMED (xác nhận) hoặc CANCELLED (hủy từ PENDING)
+     * Warehouse: xử lý PACKING → SHIPPING → DELIVERED → CANCELLED/RETURNED
+     * ─────────────────────────────────────────────────────── */
+    const ADMIN_ALLOWED     = ['CONFIRMED', 'CANCELLED']
+    const WAREHOUSE_ALLOWED = ['PACKING', 'SHIPPING', 'DELIVERED', 'CANCELLED', 'RETURNED']
+
+    const allowed = role === 'admin' ? ADMIN_ALLOWED : WAREHOUSE_ALLOWED
+    if (!allowed.includes(status)) {
+      return res.status(403).json({
+        success: false,
+        message: role === 'admin'
+          ? 'Admin chỉ được xác nhận hoặc hủy đơn. Các bước xử lý tiếp theo do Thủ Kho đảm nhận.'
+          : 'Thủ Kho không có quyền thực hiện thao tác này.',
+      })
     }
 
     const order = await Order.findById(req.params.id)
