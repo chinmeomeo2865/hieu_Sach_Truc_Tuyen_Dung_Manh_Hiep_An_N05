@@ -53,6 +53,7 @@ import WarehouseInventoryPage from './pages/warehouse/WarehouseInventoryPage'
 import WarehouseAuditPage    from './pages/warehouse/WarehouseAuditPage'
 import WarehouseReturnsPage  from './pages/warehouse/WarehouseReturnsPage'
 import WarehouseActivityPage from './pages/warehouse/WarehouseActivityPage'
+import WarehouseTransactionsPage from './pages/warehouse/WarehouseTransactionsPage'
 import {
   NAV_LINKS,
   NAV_CATEGORIES,
@@ -120,6 +121,7 @@ export default function App() {
         <Route path="/warehouse/orders"    element={<WarehouseRoute><WarehouseOrdersPage /></WarehouseRoute>} />
         <Route path="/warehouse/inventory" element={<WarehouseRoute><WarehouseInventoryPage /></WarehouseRoute>} />
         <Route path="/warehouse/audit"     element={<WarehouseRoute><WarehouseAuditPage /></WarehouseRoute>} />
+        <Route path="/warehouse/transactions" element={<WarehouseRoute><WarehouseTransactionsPage /></WarehouseRoute>} />
         <Route path="/warehouse/returns"   element={<WarehouseRoute><WarehouseReturnsPage /></WarehouseRoute>} />
         <Route path="/warehouse/activity"  element={<WarehouseRoute><WarehouseActivityPage /></WarehouseRoute>} />
 

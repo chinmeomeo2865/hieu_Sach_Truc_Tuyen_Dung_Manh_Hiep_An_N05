@@ -86,17 +86,10 @@ function ImportModal({ product, onClose, onSuccess }) {
                 {error && <p className="mt-1.5 text-[10.5px] text-red-600 font-semibold">{error}</p>}
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[10px] font-bold text-ink-80 uppercase tracking-widest mb-1.5">Giá nhập (₫)</label>
-                  <input type="number" min="0" value={form.costPrice} onChange={e => setForm(f => ({ ...f, costPrice: e.target.value }))}
-                    placeholder="0" className="w-full px-4 py-2.5 border border-divider-lt rounded-xl text-[13px] font-semibold focus:outline-none focus:border-ink focus:ring-1 focus:ring-ink/20 transition-all duration-200"/>
-                </div>
-                <div>
-                  <label className="block text-[10px] font-bold text-ink-80 uppercase tracking-widest mb-1.5">Nhà cung cấp</label>
-                  <input type="text" value={form.supplier} onChange={e => setForm(f => ({ ...f, supplier: e.target.value }))}
-                    placeholder="Tên NCC..." className="w-full px-4 py-2.5 border border-divider-lt rounded-xl text-[13px] font-semibold focus:outline-none focus:border-ink focus:ring-1 focus:ring-ink/20 transition-all duration-200"/>
-                </div>
+              <div>
+                <label className="block text-[10px] font-bold text-ink-80 uppercase tracking-widest mb-1.5">Giá nhập (₫)</label>
+                <input type="number" min="0" value={form.costPrice} onChange={e => setForm(f => ({ ...f, costPrice: e.target.value }))}
+                  placeholder="Nhập giá nhập..." className="w-full px-4 py-2.5 border border-divider-lt rounded-xl text-[13px] font-semibold focus:outline-none focus:border-ink focus:ring-1 focus:ring-ink/20 transition-all duration-200"/>
               </div>
 
               <div>
