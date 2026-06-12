@@ -70,96 +70,129 @@ export default function WarehouseAuditPage() {
 
   return (
     <WarehouseLayout title="Kiểm kê kho">
-      <div className="space-y-4 max-w-5xl">
+      <div className="space-y-6 max-w-5xl">
+        {/* Title and subtitle */}
+        <div className="flex flex-col gap-1.5">
+          <h1 className="font-display text-2xl font-bold text-ink leading-tight">Kiểm kê kho hàng</h1>
+          <p className="text-[12px] text-muted font-medium">Đối chiếu chênh lệch giữa số lượng tồn kho thực tế và trên hệ thống.</p>
+        </div>
 
-        <div className="flex items-center justify-between">
-          <div className="relative flex-1 max-w-xs">
-            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#a3a3a3]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="11" cy="11" r="8"/><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35"/></svg>
-            <input type="text" value={search} onChange={handleSearch} placeholder="Tìm sản phẩm…"
-              className="w-full pl-9 pr-4 py-2.5 border border-[#e8e8e6] rounded-xl text-[13px] bg-white placeholder:text-[#c4c4c4] focus:outline-none focus:border-[#1c1c1a] transition-colors"/>
+        {/* Action controls */}
+        <div className="flex items-center justify-between gap-4 flex-wrap bg-white p-3 rounded-2xl border border-divider-lt shadow-sm">
+          <div className="relative flex-1 max-w-xs min-w-[200px]">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-subtle" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="11" cy="11" r="8"/><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35"/></svg>
+            <input type="text" value={search} onChange={handleSearch} placeholder="Tìm sản phẩm kiểm kê…"
+              className="w-full pl-9 pr-4 py-2 border border-divider-lt rounded-xl text-[12.5px] font-semibold bg-white placeholder:text-subtle focus:outline-none focus:border-ink transition-colors duration-200"/>
           </div>
           {changedItems.length > 0 && (
-            <motion.button initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
+            <motion.button initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
               onClick={handleSubmit} disabled={submitting}
-              className="px-5 py-2.5 bg-[#1c1c1a] text-white text-[12.5px] font-semibold rounded-xl hover:bg-[#333] disabled:opacity-50 transition-colors">
-              {submitting ? 'Đang lưu…' : `Lưu kiểm kê (${changedItems.length} thay đổi)`}
+              className="px-5 py-2.5 bg-ink text-white text-[12px] font-bold rounded-xl hover:bg-ink-80 disabled:opacity-50 transition-colors duration-200 shadow-sm whitespace-nowrap">
+              {submitting ? 'Đang lưu…' : `Lưu thay đổi (${changedItems.length})`}
             </motion.button>
           )}
         </div>
 
+        {/* Alert box */}
         {changedItems.length > 0 && (
-          <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
+          <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }}
             className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
-            <p className="text-[12px] font-semibold text-amber-800">
-              ⚠️ {changedItems.length} sản phẩm có thay đổi tồn kho — nhớ lưu trước khi rời trang.
+            <p className="text-[11.5px] font-bold text-amber-800 flex items-center gap-1.5">
+              <span>⚠️</span> Có {changedItems.length} sản phẩm bị chênh lệch số lượng. Bạn cần nhấn "Lưu thay đổi" để hệ thống cập nhật.
             </p>
           </motion.div>
         )}
 
-        <div className="bg-white rounded-xl border border-[#e8e8e6] overflow-hidden">
+        {/* Table Container */}
+        <div className="bg-white rounded-2xl border border-divider-lt overflow-hidden shadow-card">
           <table className="w-full">
             <thead>
-              <tr className="bg-[#fafafa] border-b border-[#f0f0f0]">
-                {['Sản phẩm', 'Tồn HT', 'Thực tế', 'Lệch', 'Lý do'].map((h, i) => (
-                  <th key={i} className="px-4 py-3 text-left text-[10.5px] font-bold uppercase tracking-wider text-[#a3a3a3]">{h}</th>
-                ))}
+              <tr className="border-b border-divider-lt bg-surface-warm/30">
+                <th className="px-5 py-3.5 text-left text-[10px] font-bold uppercase tracking-widest text-subtle">Sản phẩm</th>
+                <th className="px-5 py-3.5 text-center text-[10px] font-bold uppercase tracking-widest text-subtle">Tồn hệ thống</th>
+                <th className="px-5 py-3.5 text-center text-[10px] font-bold uppercase tracking-widest text-subtle">Thực tế</th>
+                <th className="px-5 py-3.5 text-center text-[10px] font-bold uppercase tracking-widest text-subtle">Lệch</th>
+                <th className="px-5 py-3.5 text-left text-[10px] font-bold uppercase tracking-widest text-subtle">Lý do điều chỉnh</th>
               </tr>
             </thead>
             <tbody>
               {loading
-                ? Array.from({ length: 8 }).map((_, i) => (
-                  <tr key={i} className="border-t border-[#f5f5f4] animate-pulse">
-                    {[180, 60, 80, 60, 120].map((w, j) => (
-                      <td key={j} className="px-4 py-3.5"><div className="h-3.5 bg-[#f0f0f0] rounded-full" style={{ width: w }}/></td>
+                ? Array.from({ length: 6 }).map((_, i) => (
+                  <tr key={i} className="border-t border-divider-lt/50 animate-pulse">
+                    {[200, 80, 80, 80, 120].map((w, j) => (
+                      <td key={j} className="px-5 py-4">
+                        <div className="h-3.5 bg-surface-subtle rounded-full mx-auto" style={{ width: w }} />
+                      </td>
                     ))}
                   </tr>
                 ))
-                : products.map(p => {
-                  const diff = getDiff(p)
-                  const hasChange = diff !== null && diff !== 0
-                  return (
-                    <tr key={p._id} className={`border-t border-[#f5f5f4] transition-colors ${hasChange ? (diff < 0 ? 'bg-red-50/40' : 'bg-emerald-50/40') : 'hover:bg-[#fafafa]'}`}>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2.5">
-                          {p.image && <img src={p.image} alt="" className="w-8 h-11 object-cover rounded-md bg-[#f0f0f0] shrink-0"/>}
-                          <div>
-                            <p className="text-[12px] font-semibold text-[#1c1c1a] line-clamp-1">{p.title}</p>
-                            <p className="text-[10px] text-[#a3a3a3]">{p.author}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className="text-[13px] font-bold text-[#1c1c1a]">{p.stock}</span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <input
-                          type="number" min="0" step="1"
-                          value={counts[p._id]?.actual ?? ''}
-                          onChange={e => setCount(p._id, 'actual', e.target.value)}
-                          placeholder={String(p.stock)}
-                          className="w-20 px-2.5 py-1.5 border border-[#e8e8e6] rounded-lg text-[12px] focus:outline-none focus:border-[#1c1c1a] transition-colors text-center"
-                        />
-                      </td>
-                      <td className="px-4 py-3">
-                        {diff === null ? <span className="text-[#d4d4d4] text-[11px]">—</span>
-                          : diff === 0 ? <span className="text-[11px] text-emerald-600 font-semibold">✓</span>
-                          : <span className={`text-[12px] font-bold ${diff < 0 ? 'text-red-500' : 'text-emerald-600'}`}>
-                              {diff > 0 ? '+' : ''}{diff}
-                            </span>
-                        }
-                      </td>
-                      <td className="px-4 py-3">
-                        {hasChange ? (
-                          <select value={counts[p._id]?.reason || ''} onChange={e => setCount(p._id, 'reason', e.target.value)}
-                            className="px-2.5 py-1.5 border border-[#e8e8e6] rounded-lg text-[11px] focus:outline-none focus:border-[#1c1c1a] bg-white">
-                            <option value="">Chọn lý do…</option>
-                            {REASONS.map(r => <option key={r} value={r}>{r}</option>)}
-                          </select>
-                        ) : <span className="text-[#d4d4d4] text-[11px]">—</span>}
-                      </td>
-                    </tr>
+                : products.length === 0
+                  ? (
+                    <tr><td colSpan={5} className="py-24 text-center">
+                      <p className="text-[13.5px] font-semibold text-ink">Không tìm thấy sản phẩm cần kiểm kê</p>
+                    </td></tr>
                   )
-                })
+                  : products.map((p, idx) => {
+                    const diff = getDiff(p)
+                    const hasChange = diff !== null && diff !== 0
+                    return (
+                      <motion.tr
+                        key={p._id}
+                        initial={{ opacity: 0, y: 5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: idx * 0.03, duration: 0.2 }}
+                        className={`border-t border-divider-lt transition-colors duration-200 ${hasChange ? (diff < 0 ? 'bg-red-50/20' : 'bg-emerald-50/20') : 'hover:bg-surface-warm/30'}`}
+                      >
+                        {/* Sản phẩm */}
+                        <td className="px-5 py-3">
+                          <div className="flex items-center gap-3">
+                            {p.image && <img src={p.image} alt="" className="w-8 h-11 object-cover rounded-md bg-surface-warm shrink-0 shadow-sm border border-divider-lt/40"/>}
+                            <div className="min-w-0">
+                              <p className="text-[12.5px] font-bold text-ink line-clamp-1 leading-snug">{p.title}</p>
+                              <p className="text-[11px] text-muted mt-0.5 font-medium">{p.author}</p>
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* Tồn hệ thống */}
+                        <td className="px-5 py-3 text-center">
+                          <span className="text-[13px] font-bold text-ink tabular-nums">{p.stock}</span>
+                        </td>
+
+                        {/* Thực tế input */}
+                        <td className="px-5 py-3 text-center">
+                          <input
+                            type="number" min="0" step="1"
+                            value={counts[p._id]?.actual ?? ''}
+                            onChange={e => setCount(p._id, 'actual', e.target.value)}
+                            placeholder={String(p.stock)}
+                            className="w-20 px-2.5 py-1.5 border border-divider-lt rounded-xl text-[12.5px] font-bold text-center focus:outline-none focus:border-ink transition-colors duration-200 bg-white"
+                          />
+                        </td>
+
+                        {/* Lệch */}
+                        <td className="px-5 py-3 text-center">
+                          {diff === null ? <span className="text-subtle text-[11.5px]">—</span>
+                            : diff === 0 ? <span className="text-[12.5px] text-emerald-600 font-bold">✓</span>
+                            : <span className={`text-[12.5px] font-bold tabular-nums ${diff < 0 ? 'text-red-600' : 'text-emerald-700'}`}>
+                                {diff > 0 ? '+' : ''}{diff}
+                              </span>
+                          }
+                        </td>
+
+                        {/* Lý do select */}
+                        <td className="px-5 py-3">
+                          {hasChange ? (
+                            <select value={counts[p._id]?.reason || ''} onChange={e => setCount(p._id, 'reason', e.target.value)}
+                              className="px-3 py-1.5 border border-divider-lt rounded-xl text-[11.5px] font-bold text-ink-80 focus:outline-none focus:border-ink bg-white shadow-sm">
+                              <option value="">Chọn lý do…</option>
+                              {REASONS.map(r => <option key={r} value={r}>{r}</option>)}
+                            </select>
+                          ) : <span className="text-subtle text-[11.5px]">—</span>}
+                        </td>
+                      </motion.tr>
+                    )
+                  })
               }
             </tbody>
           </table>

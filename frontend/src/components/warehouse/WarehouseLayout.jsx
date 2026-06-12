@@ -51,22 +51,22 @@ export default function WarehouseLayout({ children, title }) {
   const navigate = useNavigate()
 
   return (
-    <div className="min-h-screen flex bg-[#FAF8F5]">
+    <div className="min-h-screen flex bg-surface-warm font-sans antialiased text-ink">
       {/* Sidebar */}
-      <aside className="w-56 shrink-0 bg-white border-r border-[#EAE6DF] flex flex-col fixed inset-y-0 left-0 z-30">
+      <aside className="w-56 shrink-0 bg-white border-r border-divider-lt flex flex-col fixed inset-y-0 left-0 z-30">
         {/* Logo */}
-        <div className="px-5 pt-5 pb-4 border-b border-[#EAE6DF]">
-          <p className="font-display text-[14px] font-semibold text-[#1A1A1A] leading-tight">
-            Hiệu Sách <span className="italic font-display font-medium text-[#B08968]">Chin</span>
+        <div className="px-5 pt-5 pb-4 border-b border-divider-lt">
+          <p className="font-display text-[14px] font-semibold text-ink leading-tight">
+            Hiệu Sách <span className="italic font-display font-medium text-accent">Chin</span>
           </p>
-          <p className="text-[9px] tracking-widest uppercase text-[#9B9389] font-bold mt-1">Thủ kho</p>
+          <p className="text-[9px] tracking-widest uppercase text-muted font-bold mt-1">Thủ kho</p>
         </div>
 
         {/* Nav */}
         <nav className="flex-1 px-3 py-4 space-y-5 overflow-y-auto">
           {NAV.map(group => (
             <div key={group.label}>
-              <p className="px-3 mb-1.5 text-[9px] font-bold tracking-widest uppercase text-[#9B9389]">
+              <p className="px-3 mb-1.5 text-[9px] font-bold tracking-widest uppercase text-subtle">
                 {group.label}
               </p>
               <div className="space-y-0.5">
@@ -76,14 +76,14 @@ export default function WarehouseLayout({ children, title }) {
                     to={item.to}
                     end={item.end}
                     className={({ isActive }) =>
-                      `flex items-center gap-2.5 px-3 py-2 rounded-md text-[12.5px] font-medium transition-colors ${
+                      `flex items-center gap-2.5 px-3 py-2 rounded-lg text-[12.5px] font-semibold transition-all duration-200 ${
                         isActive
-                          ? 'bg-[#1A1A1A] text-white shadow-sm'
-                          : 'text-[#615C56] hover:bg-[#F4F1EA] hover:text-[#1A1A1A]'
+                          ? 'bg-ink text-white shadow-card'
+                          : 'text-ink-80 hover:bg-surface-subtle hover:text-ink'
                       }`
                     }
                   >
-                    {item.icon}
+                    <span className="opacity-80 group-hover:opacity-100 transition-opacity">{item.icon}</span>
                     {item.label}
                   </NavLink>
                 ))}
@@ -93,14 +93,14 @@ export default function WarehouseLayout({ children, title }) {
         </nav>
 
         {/* User profile & controls */}
-        <div className="px-3 pb-4 border-t border-[#EAE6DF] pt-3 space-y-0.5 bg-[#FAF8F5]">
+        <div className="px-3 pb-4 border-t border-divider-lt pt-3 space-y-0.5 bg-surface-warm/50">
           <div className="px-3 py-2">
-            <p className="text-[12.5px] font-semibold text-[#1A1A1A] truncate leading-tight">{user?.name}</p>
-            <p className="text-[10px] text-[#9B9389] capitalize font-medium">{user?.role}</p>
+            <p className="text-[12.5px] font-semibold text-ink truncate leading-tight">{user?.name}</p>
+            <p className="text-[10px] text-muted capitalize font-medium">{user?.role}</p>
           </div>
           <Link
             to="/"
-            className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-[12px] text-[#615C56] hover:text-[#1A1A1A] hover:bg-[#F4F1EA] transition-colors"
+            className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-[12px] text-ink-80 hover:text-ink hover:bg-surface-subtle transition-all duration-200"
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
@@ -109,7 +109,7 @@ export default function WarehouseLayout({ children, title }) {
           </Link>
           <button
             onClick={() => { logout(); navigate('/auth/login') }}
-            className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-[12px] text-[#615C56] hover:text-[#1A1A1A] hover:bg-[#F4F1EA] transition-colors"
+            className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-[12px] text-ink-80 hover:text-ink hover:bg-surface-subtle transition-all duration-200"
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
@@ -121,8 +121,8 @@ export default function WarehouseLayout({ children, title }) {
 
       {/* Main content */}
       <div className="flex-1 ml-56 min-h-screen flex flex-col">
-        <header className="h-14 bg-white border-b border-[#EAE6DF] flex items-center justify-end px-6 sticky top-0 z-20 shrink-0">
-          <span className="text-[11px] text-[#9B9389] font-medium">
+        <header className="h-14 bg-white border-b border-divider-lt flex items-center justify-end px-6 sticky top-0 z-20 shrink-0">
+          <span className="text-[11px] text-muted font-semibold tracking-wide">
             {new Date().toLocaleDateString('vi-VN', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' })}
           </span>
         </header>
