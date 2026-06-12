@@ -29,7 +29,6 @@ import AdminAccountsPage    from './pages/admin/AdminAccountsPage'
 import AdminAnalyticsPage   from './pages/admin/AdminAnalyticsPage'
 import AdminSettingsPage    from './pages/admin/AdminSettingsPage'
 import AdminRoute           from './components/admin/AdminRoute'
-import AdminCouponsPage     from './pages/admin/AdminCouponsPage'
 import AdminReviewsPage    from './pages/admin/AdminReviewsPage'
 import AdminArticlesPage   from './pages/admin/AdminArticlesPage'
 import BlogPage            from './pages/BlogPage'
@@ -125,7 +124,6 @@ export default function App() {
         <Route path="/admin/users"      element={<AdminRoute><AdminUsersPage /></AdminRoute>} />
         <Route path="/admin/accounts"   element={<AdminRoute><AdminAccountsPage /></AdminRoute>} />
         <Route path="/admin/settings"   element={<AdminRoute><AdminSettingsPage /></AdminRoute>} />
-        <Route path="/admin/coupons"    element={<AdminRoute><AdminCouponsPage /></AdminRoute>} />
         <Route path="/admin/reviews"    element={<AdminRoute><AdminReviewsPage /></AdminRoute>} />
         <Route path="/admin/articles"   element={<AdminRoute><AdminArticlesPage /></AdminRoute>} />
       </Routes>
