@@ -13,9 +13,12 @@ function StockBadge({ stock }) {
   return <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 text-[10.5px] font-semibold border border-emerald-100 whitespace-nowrap">{stock}</span>
 }
 
+const REASONS = ['Rách/hỏng', 'Thất lạc', 'Lỗi vận chuyển', 'Mất mát', 'Khác']
+
 function ImportModal({ product, onClose, onSuccess }) {
   const showToast = useToastStore(s => s.show)
-  const [form, setForm]     = useState({ quantity: '', costPrice: '', supplier: '', notes: '' })
+  const [mode, setMode]     = useState('import') // 'import' | 'writeoff'
+  const [form, setForm]     = useState({ quantity: '', costPrice: '', reason: 'Rách/hỏng', notes: '' })
   const [error, setError]   = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -26,17 +29,33 @@ function ImportModal({ product, onClose, onSuccess }) {
       setError('Số lượng không hợp lệ — phải là số dương')
       return
     }
+    if (mode === 'writeoff' && qty > product.stock) {
+      setError(`Số lượng hủy vượt quá tồn kho hiện tại (${product.stock})`)
+      return
+    }
     setError('')
     setLoading(true)
     try {
-      await api.post('/api/warehouse/inventory/import', {
-        productId: product._id,
-        quantity:  qty,
-        costPrice: form.costPrice ? parseFloat(form.costPrice) : undefined,
-        supplier:  form.supplier || undefined,
-        notes:     form.notes || undefined,
-      })
-      showToast({ message: `Nhập kho thành công: +${qty} "${product.title}"`, type: 'success' })
+      if (mode === 'import') {
+        await api.post('/api/warehouse/inventory/import', {
+          productId: product._id,
+          quantity:  qty,
+          costPrice: form.costPrice ? parseFloat(form.costPrice) : undefined,
+          notes:     form.notes || undefined,
+        })
+        showToast({ message: `Nhập kho thành công: +${qty} "${product.title}"`, type: 'success' })
+      } else {
+        const actualCount = product.stock - qty
+        await api.post('/api/warehouse/inventory/audit', {
+          items: [{
+            productId: product._id,
+            actualCount: actualCount,
+            reason: form.reason,
+            notes: form.notes || undefined
+          }]
+        })
+        showToast({ message: `Đã xuất hủy thành công: -${qty} "${product.title}"`, type: 'success' })
+      }
       onSuccess()
     } catch (e) { showToast({ message: e.message, type: 'error' }) }
     finally { setLoading(false) }
@@ -54,14 +73,32 @@ function ImportModal({ product, onClose, onSuccess }) {
       >
         <div className="bg-white rounded-2xl shadow-card-h border border-divider-lt w-full max-w-md pointer-events-auto overflow-hidden">
           <div className="flex items-center justify-between px-6 py-4 border-b border-divider-lt">
-            <p className="font-display text-[15px] font-bold text-ink">Nhập kho bổ sung</p>
+            <p className="font-display text-[15px] font-bold text-ink">Điều chỉnh kho hàng</p>
             <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-subtle text-subtle hover:text-ink transition-colors duration-200">
               <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
           </div>
 
-          <div className="px-6 py-5">
-            <div className="flex items-start gap-4 p-4 bg-surface-warm rounded-xl border border-divider-lt mb-5">
+          <div className="px-6 py-5 space-y-4">
+            {/* Toggle Modes */}
+            <div className="flex gap-1.5 bg-surface-warm border border-divider-lt rounded-xl p-1 w-full shadow-sm">
+              <button
+                type="button"
+                onClick={() => { setMode('import'); setError(''); setForm(f => ({ ...f, quantity: '' })) }}
+                className={`flex-1 py-1.5 rounded-lg text-[11px] font-bold tracking-wide transition-all duration-200 ${mode === 'import' ? 'bg-ink text-white shadow-card' : 'text-ink-80 hover:text-ink hover:bg-surface-subtle'}`}
+              >
+                Nhập hàng (+)
+              </button>
+              <button
+                type="button"
+                onClick={() => { setMode('writeoff'); setError(''); setForm(f => ({ ...f, quantity: '' })) }}
+                className={`flex-1 py-1.5 rounded-lg text-[11px] font-bold tracking-wide transition-all duration-200 ${mode === 'writeoff' ? 'bg-rose-600 text-white shadow-card' : 'text-ink-80 hover:text-ink hover:bg-surface-subtle'}`}
+              >
+                Báo hỏng / Hủy (-)
+              </button>
+            </div>
+
+            <div className="flex items-start gap-4 p-4 bg-surface-warm rounded-xl border border-divider-lt">
               {product.image && <img src={product.image} alt="" className="w-10 h-14 object-cover rounded-lg bg-white shrink-0 shadow-sm" />}
               <div className="min-w-0 flex-1">
                 <p className="text-[13px] font-bold text-ink truncate leading-snug">{product.title}</p>
@@ -75,7 +112,9 @@ function ImportModal({ product, onClose, onSuccess }) {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-[10px] font-bold text-ink-80 uppercase tracking-widest mb-1.5">Số lượng nhập *</label>
+                <label className="block text-[10px] font-bold text-ink-80 uppercase tracking-widest mb-1.5">
+                  {mode === 'import' ? 'Số lượng nhập *' : 'Số lượng hủy *'}
+                </label>
                 <input
                   type="number" min="1" step="1"
                   value={form.quantity}
@@ -86,23 +125,35 @@ function ImportModal({ product, onClose, onSuccess }) {
                 {error && <p className="mt-1.5 text-[10.5px] text-red-600 font-semibold">{error}</p>}
               </div>
 
-              <div>
-                <label className="block text-[10px] font-bold text-ink-80 uppercase tracking-widest mb-1.5">Giá nhập (₫)</label>
-                <input type="number" min="0" value={form.costPrice} onChange={e => setForm(f => ({ ...f, costPrice: e.target.value }))}
-                  placeholder="Nhập giá nhập..." className="w-full px-4 py-2.5 border border-divider-lt rounded-xl text-[13px] font-semibold focus:outline-none focus:border-ink focus:ring-1 focus:ring-ink/20 transition-all duration-200"/>
-              </div>
+              {mode === 'import' ? (
+                <div>
+                  <label className="block text-[10px] font-bold text-ink-80 uppercase tracking-widest mb-1.5">Giá nhập (₫)</label>
+                  <input type="number" min="0" value={form.costPrice} onChange={e => setForm(f => ({ ...f, costPrice: e.target.value }))}
+                    placeholder="Nhập giá nhập..." className="w-full px-4 py-2.5 border border-divider-lt rounded-xl text-[13px] font-semibold focus:outline-none focus:border-ink focus:ring-1 focus:ring-ink/20 transition-all duration-200"/>
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-[10px] font-bold text-ink-80 uppercase tracking-widest mb-1.5">Lý do hỏng / hủy *</label>
+                  <select value={form.reason} onChange={e => setForm(f => ({ ...f, reason: e.target.value }))}
+                    className="w-full px-4 py-2.5 border border-divider-lt rounded-xl text-[13px] font-semibold focus:outline-none focus:border-ink focus:ring-1 focus:ring-ink/20 bg-white transition-all duration-200">
+                    {REASONS.map(r => (
+                      <option key={r} value={r}>{r}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               <div>
                 <label className="block text-[10px] font-bold text-ink-80 uppercase tracking-widest mb-1.5">Ghi chú</label>
                 <textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
-                  rows={2} placeholder="Ghi chú thêm về lô hàng này..." className="w-full px-4 py-2.5 border border-divider-lt rounded-xl text-[13px] font-medium focus:outline-none focus:border-ink focus:ring-1 focus:ring-ink/20 transition-all duration-200 resize-none"/>
+                  rows={2} placeholder="Ghi chú thêm về điều chỉnh này..." className="w-full px-4 py-2.5 border border-divider-lt rounded-xl text-[13px] font-medium focus:outline-none focus:border-ink focus:ring-1 focus:ring-ink/20 transition-all duration-200 resize-none"/>
               </div>
 
               <div className="flex gap-3 pt-3">
                 <button type="button" onClick={onClose} className="flex-1 py-2.5 border border-divider-lt rounded-xl text-[12.5px] font-bold text-ink-80 hover:bg-surface-warm transition-colors duration-200">Hủy</button>
                 <button type="submit" disabled={loading}
-                  className="flex-1 py-2.5 bg-ink text-white rounded-xl text-[12.5px] font-bold hover:bg-ink-80 disabled:opacity-50 transition-colors duration-200 shadow-sm">
-                  {loading ? 'Đang lưu…' : 'Xác nhận nhập'}
+                  className={`flex-1 py-2.5 text-white rounded-xl text-[12.5px] font-bold disabled:opacity-50 transition-colors duration-200 shadow-sm ${mode === 'import' ? 'bg-ink hover:bg-ink-80' : 'bg-rose-600 hover:bg-rose-700'}`}>
+                  {loading ? 'Đang lưu…' : mode === 'import' ? 'Xác nhận nhập' : 'Xác nhận hủy'}
                 </button>
               </div>
             </form>
