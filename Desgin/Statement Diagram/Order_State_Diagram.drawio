@@ -1,0 +1,99 @@
+<mxfile host="Electron">
+  <diagram name="Trang-1" id="aYKbTBxvyZVvuWvT3nuD">
+    <mxGraphModel dx="1131" dy="682" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="ZIJS9awZSaNgsHV7K2JO-27" parent="1" style="ellipse;fillColor=strokeColor;fontColor=light-dark(#333333,#cccccc);" value="" vertex="1">
+          <mxGeometry height="14" width="14" x="330" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="ZIJS9awZSaNgsHV7K2JO-28" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;startSize=25;container=0;collapsible=0;rounded=1;arcSize=14;dropTarget=0;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="PENDING" vertex="1">
+          <mxGeometry height="415" width="541" x="66" y="132" as="geometry" />
+        </mxCell>
+        <mxCell id="ZIJS9awZSaNgsHV7K2JO-29" parent="ZIJS9awZSaNgsHV7K2JO-28" style="ellipse;fillColor=strokeColor;fontColor=light-dark(#333333,#cccccc);" value="" vertex="1">
+          <mxGeometry height="14" width="14" x="322" y="46" as="geometry" />
+        </mxCell>
+        <mxCell id="ZIJS9awZSaNgsHV7K2JO-30" parent="ZIJS9awZSaNgsHV7K2JO-28" style="rounded=1;arcSize=20;strokeWidth=2;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="Unpaid" vertex="1">
+          <mxGeometry height="40" width="66" x="205" y="159" as="geometry" />
+        </mxCell>
+        <mxCell id="ZIJS9awZSaNgsHV7K2JO-31" parent="ZIJS9awZSaNgsHV7K2JO-28" style="rounded=1;arcSize=20;strokeWidth=2;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="Paid_COD" vertex="1">
+          <mxGeometry height="40" width="85" x="410" y="159" as="geometry" />
+        </mxCell>
+        <mxCell id="ZIJS9awZSaNgsHV7K2JO-32" parent="ZIJS9awZSaNgsHV7K2JO-28" style="rounded=1;arcSize=20;strokeWidth=2;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="Paid_Online" vertex="1">
+          <mxGeometry height="40" width="101" x="78" y="346" as="geometry" />
+        </mxCell>
+        <mxCell id="ZIJS9awZSaNgsHV7K2JO-33" parent="ZIJS9awZSaNgsHV7K2JO-28" style="rounded=1;arcSize=20;strokeWidth=2;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="CANCELLED_INTERNAL" vertex="1">
+          <mxGeometry height="40" width="176" x="314" y="298" as="geometry" />
+        </mxCell>
+        <mxCell id="ZIJS9awZSaNgsHV7K2JO-34" edge="1" parent="ZIJS9awZSaNgsHV7K2JO-28" source="ZIJS9awZSaNgsHV7K2JO-29" style="startArrow=none;;fillColor=none;;exitX=0.02;exitY=0.77;entryX=0.5;entryY=-0.01;rounded=0;" target="ZIJS9awZSaNgsHV7K2JO-30" value="Chọn thanh toán Online">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ZIJS9awZSaNgsHV7K2JO-35" edge="1" parent="ZIJS9awZSaNgsHV7K2JO-28" source="ZIJS9awZSaNgsHV7K2JO-29" style="startArrow=none;;fillColor=none;;exitX=1.02;exitY=0.69;entryX=0.5;entryY=-0.01;rounded=0;" target="ZIJS9awZSaNgsHV7K2JO-31" value="Chọn thanh toán COD">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ZIJS9awZSaNgsHV7K2JO-36" edge="1" parent="ZIJS9awZSaNgsHV7K2JO-28" source="ZIJS9awZSaNgsHV7K2JO-30" style="startArrow=none;;fillColor=none;;exitX=0.14;exitY=0.99;entryX=0.5;entryY=-0.01;rounded=0;" target="ZIJS9awZSaNgsHV7K2JO-32" value="Thanh toán qua PayOS thành công">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ZIJS9awZSaNgsHV7K2JO-37" edge="1" parent="ZIJS9awZSaNgsHV7K2JO-28" source="ZIJS9awZSaNgsHV7K2JO-30" style="startArrow=none;;fillColor=none;;exitX=0.86;exitY=0.99;entryX=0.5;entryY=-0.01;rounded=0;" target="ZIJS9awZSaNgsHV7K2JO-33" value="Hết hạn thanh toán (15 phút) / Khách chủ động hủy">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ZIJS9awZSaNgsHV7K2JO-38" parent="1" style="rounded=1;arcSize=20;strokeWidth=2;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="CONFIRMED" vertex="1">
+          <mxGeometry height="40" width="98" x="240" y="660" as="geometry" />
+        </mxCell>
+        <mxCell id="ZIJS9awZSaNgsHV7K2JO-39" parent="1" style="rounded=1;arcSize=20;strokeWidth=2;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="CANCELLED" vertex="1">
+          <mxGeometry height="40" width="98" x="396" y="1139" as="geometry" />
+        </mxCell>
+        <mxCell id="ZIJS9awZSaNgsHV7K2JO-40" parent="1" style="rounded=1;arcSize=20;strokeWidth=2;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="PACKING" vertex="1">
+          <mxGeometry height="40" width="77" x="137" y="811" as="geometry" />
+        </mxCell>
+        <mxCell id="ZIJS9awZSaNgsHV7K2JO-41" parent="1" style="rounded=1;arcSize=20;strokeWidth=2;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="SHIPPING" vertex="1">
+          <mxGeometry height="40" width="82" x="134" y="977" as="geometry" />
+        </mxCell>
+        <mxCell id="ZIJS9awZSaNgsHV7K2JO-42" parent="1" style="rounded=1;arcSize=20;strokeWidth=2;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="DELIVERED" vertex="1">
+          <mxGeometry height="40" width="93" x="20" y="1139" as="geometry" />
+        </mxCell>
+        <mxCell id="ZIJS9awZSaNgsHV7K2JO-43" parent="1" style="ellipse;shape=endState;fillColor=strokeColor;fontColor=light-dark(#333333,#cccccc);" value="" vertex="1">
+          <mxGeometry height="14" width="14" x="270" y="1277" as="geometry" />
+        </mxCell>
+        <mxCell id="ZIJS9awZSaNgsHV7K2JO-44" edge="1" parent="1" source="ZIJS9awZSaNgsHV7K2JO-38" style="startArrow=none;;fillColor=none;;exitX=0.24;exitY=1;entryX=0.49;entryY=0;rounded=0;" target="ZIJS9awZSaNgsHV7K2JO-40" value="Thủ kho xác nhận &#xa; (Bắt đầu nhặt sách &amp;amp; đóng gói)">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ZIJS9awZSaNgsHV7K2JO-45" edge="1" parent="1" source="ZIJS9awZSaNgsHV7K2JO-38" style="startArrow=none;;fillColor=none;;exitX=0.92;exitY=1;entryX=0.5;entryY=0;rounded=0;" target="ZIJS9awZSaNgsHV7K2JO-39" value="Khách yêu cầu hủy đơn &#xa; (Admin phê duyệt hủy)">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ZIJS9awZSaNgsHV7K2JO-46" edge="1" parent="1" source="ZIJS9awZSaNgsHV7K2JO-40" style="curved=1;startArrow=none;;fillColor=none;;exitX=0.49;exitY=1;entryX=0.5;entryY=0;rounded=0;" target="ZIJS9awZSaNgsHV7K2JO-41" value="Bàn giao cho Shipper &#xa; (Hệ thống chuyển đổi - Hold sang Sold)">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ZIJS9awZSaNgsHV7K2JO-47" edge="1" parent="1" source="ZIJS9awZSaNgsHV7K2JO-41" style="startArrow=none;;fillColor=none;;exitX=0.17;exitY=1;entryX=0.49;entryY=0;rounded=0;" target="ZIJS9awZSaNgsHV7K2JO-42" value="Khách nhận hàng thành công &#xa; (Ký nhận đối soát)">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ZIJS9awZSaNgsHV7K2JO-48" edge="1" parent="1" source="ZIJS9awZSaNgsHV7K2JO-41" style="curved=1;startArrow=none;;fillColor=none;;exitX=0.83;exitY=1;entryX=0.09;entryY=0;rounded=0;" target="ZIJS9awZSaNgsHV7K2JO-39" value="Giao hàng thất bại &#xa; (Shipper hoàn hàng về kho)">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="284" y="1078" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ZIJS9awZSaNgsHV7K2JO-49" edge="1" parent="1" source="ZIJS9awZSaNgsHV7K2JO-42" style="startArrow=none;;fillColor=none;;exitX=0.49;exitY=1;entryX=0;entryY=0.37;rounded=0;" target="ZIJS9awZSaNgsHV7K2JO-43" value="Hoàn tất đơn hàng (Hóa đơn lưu kho trữ)">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ZIJS9awZSaNgsHV7K2JO-50" edge="1" parent="1" source="ZIJS9awZSaNgsHV7K2JO-39" style="startArrow=none;;fillColor=none;;exitX=0.5;exitY=1;entryX=1;entryY=0.33;rounded=0;" target="ZIJS9awZSaNgsHV7K2JO-43" value="Release Stock (Cộng trả lại số lượng tồn kho sách)">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ZIJS9awZSaNgsHV7K2JO-51" edge="1" parent="1" source="ZIJS9awZSaNgsHV7K2JO-27" style="curved=1;startArrow=none;;fillColor=none;;exitX=0.5;exitY=1;entryX=0.5;entryY=0;rounded=0;" target="ZIJS9awZSaNgsHV7K2JO-28" value="Khách đặt đơn mới &#xa; (Hold Stock - Giữ tồn kho)">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ZIJS9awZSaNgsHV7K2JO-52" edge="1" parent="1" source="ZIJS9awZSaNgsHV7K2JO-28" style="startArrow=none;;fillColor=none;;exitX=0.41;exitY=1;entryX=0.5;entryY=0;rounded=0;" target="ZIJS9awZSaNgsHV7K2JO-38" value="Admin duyệt đơn &#xa; (Xác nhận thông tin hợp lệ)">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ZIJS9awZSaNgsHV7K2JO-53" edge="1" parent="1" source="ZIJS9awZSaNgsHV7K2JO-28" style="startArrow=none;;fillColor=none;;exitX=0.84;exitY=1;entryX=0.8;entryY=0;rounded=0;" target="ZIJS9awZSaNgsHV7K2JO-39" value="Admin từ chối đơn / Khách hủy đơn">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
