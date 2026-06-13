@@ -9,7 +9,6 @@ const User      = require('./models/User')
 const Category  = require('./models/Category')
 const Coupon    = require('./models/Coupon')
 const Product   = require('./models/Product')
-const Promotion = require('./models/Promotion')
 
 function normalizeVietnamese(str = '') {
   return str.toLowerCase().replace(/[đĐ]/g, 'd').normalize('NFD').replace(/[̀-ͯ]/g, '').trim()

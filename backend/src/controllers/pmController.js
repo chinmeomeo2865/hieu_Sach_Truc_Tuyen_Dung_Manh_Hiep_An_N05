@@ -1,6 +1,5 @@
 const Product     = require('../models/Product')
 const Category    = require('../models/Category')
-const Promotion   = require('../models/Promotion')
 const ActivityLog = require('../models/ActivityLog')
 
 async function log(action, description, userId, entity, entityId, metadata) {
@@ -10,12 +9,11 @@ async function log(action, description, userId, entity, entityId, metadata) {
 /* ── Dashboard stats ──────────────────────────────────────── */
 exports.getStats = async (req, res, next) => {
   try {
-    const [total, visible, hidden, outOfStock, activePromos, totalCats, lowStockCount, lowStockProducts, topCategories] = await Promise.all([
+    const [total, visible, hidden, outOfStock, totalCats, lowStockCount, lowStockProducts, topCategories] = await Promise.all([
       Product.countDocuments({}),
       Product.countDocuments({ visible: true }),
       Product.countDocuments({ visible: false }),
       Product.countDocuments({ stock: 0, visible: true }),
-      Promotion.countDocuments({ status: 'active' }),
       Category.countDocuments({}),
       Product.countDocuments({ visible: true, stock: { $lte: 10 } }),
       Product.find({ visible: true, stock: { $lte: 10 } }).sort({ stock: 1 }).limit(5).select('title author image stock'),
@@ -25,7 +23,7 @@ exports.getStats = async (req, res, next) => {
         { $limit: 5 },
       ]),
     ])
-    res.json({ success: true, data: { total, visible, hidden, outOfStock, activePromos, totalCats, lowStockCount, lowStockProducts, topCategories } })
+    res.json({ success: true, data: { total, visible, hidden, outOfStock, totalCats, lowStockCount, lowStockProducts, topCategories } })
   } catch (err) { next(err) }
 }
 
@@ -91,109 +89,6 @@ exports.deleteCategory = async (req, res, next) => {
     await cat.deleteOne()
     await log('delete_category', `Xóa danh mục "${cat.name}"`, req.user._id, 'category', cat._id)
     res.json({ success: true, message: 'Đã xóa danh mục' })
-  } catch (err) { next(err) }
-}
-
-/* ── Promotions ───────────────────────────────────────────── */
-exports.getPromotions = async (req, res, next) => {
-  try {
-    const promos = await Promotion.find()
-      .populate('products.product', 'title image price')
-      .sort({ createdAt: -1 })
-    // auto-update status based on dates
-    const now = new Date()
-    for (const p of promos) {
-      if (p.status === 'upcoming' && new Date(p.startDate) <= now && new Date(p.endDate) >= now) {
-        p.status = 'active'; await p.save()
-      } else if (p.status === 'active' && new Date(p.endDate) < now) {
-        p.status = 'ended'; await p.save()
-      }
-    }
-    res.json({ success: true, data: promos })
-  } catch (err) { next(err) }
-}
-
-exports.createPromotion = async (req, res, next) => {
-  try {
-    const { name, description, type, value, startDate, endDate, productIds } = req.body
-    if (!name || !type || value === undefined || !startDate || !endDate) {
-      return res.status(400).json({ success: false, message: 'Thiếu thông tin bắt buộc' })
-    }
-    if (new Date(endDate) <= new Date(startDate)) {
-      return res.status(400).json({ success: false, message: 'Ngày kết thúc phải sau ngày bắt đầu' })
-    }
-    if (type === 'percent' && (value <= 0 || value >= 100)) {
-      return res.status(400).json({ success: false, message: 'Phần trăm giảm phải từ 1–99%' })
-    }
-
-    const products = []
-    for (const pid of (productIds || [])) {
-      const p = await Product.findById(pid)
-      if (p) products.push({ product: p._id, originalPrice: p.price })
-    }
-
-    const now = new Date()
-    const start = new Date(startDate)
-    const status = start <= now ? 'active' : 'upcoming'
-
-    const promo = await Promotion.create({
-      name, description, type, value, startDate, endDate, products, status, createdBy: req.user._id,
-    })
-
-    if (status === 'active') {
-      for (const item of products) {
-        const discounted = type === 'percent'
-          ? Math.round(item.originalPrice * (1 - value / 100))
-          : Math.max(0, item.originalPrice - value)
-        await Product.findByIdAndUpdate(item.product, {
-          originalPrice: item.originalPrice,
-          price: discounted,
-          badge: 'sale',
-        })
-      }
-    }
-
-    await log('create_promotion', `Tạo khuyến mãi "${promo.name}"`, req.user._id, 'promotion', promo._id)
-    res.status(201).json({ success: true, data: promo })
-  } catch (err) { next(err) }
-}
-
-exports.endPromotion = async (req, res, next) => {
-  try {
-    const promo = await Promotion.findById(req.params.id)
-    if (!promo) return res.status(404).json({ success: false, message: 'Không tìm thấy khuyến mãi' })
-    if (promo.status === 'ended') {
-      return res.status(400).json({ success: false, message: 'Khuyến mãi đã kết thúc' })
-    }
-    // restore prices
-    for (const item of promo.products) {
-      await Product.findByIdAndUpdate(item.product, {
-        price: item.originalPrice,
-        $unset: { originalPrice: '' },
-        badge: null,
-      })
-    }
-    promo.status = 'ended'
-    promo.endDate = new Date()
-    await promo.save()
-    await log('end_promotion', `Kết thúc khuyến mãi "${promo.name}"`, req.user._id, 'promotion', promo._id)
-    res.json({ success: true, message: 'Đã kết thúc khuyến mãi' })
-  } catch (err) { next(err) }
-}
-
-exports.deletePromotion = async (req, res, next) => {
-  try {
-    const promo = await Promotion.findById(req.params.id)
-    if (!promo) return res.status(404).json({ success: false, message: 'Không tìm thấy khuyến mãi' })
-    if (promo.status === 'active') {
-      for (const item of promo.products) {
-        await Product.findByIdAndUpdate(item.product, {
-          price: item.originalPrice, $unset: { originalPrice: '' }, badge: null,
-        })
-      }
-    }
-    await promo.deleteOne()
-    res.json({ success: true, message: 'Đã xóa khuyến mãi' })
   } catch (err) { next(err) }
 }
 

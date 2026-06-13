@@ -77,7 +77,6 @@ function StatCard({ icon, label, value, valueColor = 'text-[#1A1A1A]', rows, to 
 
 const QUICK_ACTIONS = [
   { to: '/pm/products?new=1', label: 'Thêm sách mới', icon: 'book' },
-  { to: '/pm/promotions?new=1', label: 'Tạo khuyến mãi', icon: 'tag' },
   { to: '/pm/categories?new=1', label: 'Thêm danh mục', icon: 'folder' },
   { to: '/pm/visibility?filter=out', label: 'Xử lý sách hết hàng', icon: 'alert' },
 ]
@@ -114,7 +113,7 @@ export default function PMDashboard() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-[#EAE6DF] pb-3 mb-5">
         <div>
           <h2 className="font-display text-[14.5px] font-bold text-[#1A1A1A] uppercase tracking-wider">Tổng quan quản lý sản phẩm</h2>
-          <p className="text-[11px] text-[#9B9389] mt-0.5">Tình trạng kho sách, danh mục và chiến dịch khuyến mãi</p>
+          <p className="text-[11px] text-[#9B9389] mt-0.5">Tình trạng kho sách và danh mục sản phẩm</p>
         </div>
       </div>
 
@@ -141,10 +140,10 @@ export default function PMDashboard() {
               ]}
             />
             <StatCard
-              icon="layers" label="Danh mục & khuyến mãi" value={`${totalCats} danh mục`} to="/pm/categories"
+              icon="layers" label="Danh mục sản phẩm" value={`${totalCats} danh mục`} to="/pm/categories"
               rows={[
-                { label: 'Khuyến mãi đang chạy', value: stats.activePromos, color: stats.activePromos > 0 ? 'text-emerald-600' : '' },
                 { label: 'Trung bình sách / danh mục', value: avgPerCat },
+                { label: 'Tổng đầu sách', value: total },
               ]}
             />
           </>
