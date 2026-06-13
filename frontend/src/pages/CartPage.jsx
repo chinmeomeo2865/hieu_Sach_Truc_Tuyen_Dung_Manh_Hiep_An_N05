@@ -1,7 +1,10 @@
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { api }           from '../services/api'
 import { useCartStore }  from '../store/cartStore'
 import { useAuthStore }  from '../store/authStore'
 import { useToastStore } from '../store/toastStore'
+import { CouponBox }     from '../components/ui/CouponBox'
 import { formatPrice }   from '../utils/format'
 
 function QtyControl({ qty, stock, onDecrease, onIncrease }) {
@@ -31,9 +34,24 @@ export default function CartPage() {
   const showToast  = useToastStore(s => s.show)
   const navigate   = useNavigate()
 
+  const [couponResult, setCouponResult] = useState(null)
+  const [shipConfig, setShipConfig] = useState({ shippingFee: 0, freeShippingThreshold: 0 })
+
+  useEffect(() => {
+    api.get('/api/settings/public')
+      .then(r => setShipConfig({ shippingFee: r.data.shippingFee || 0, freeShippingThreshold: r.data.freeShippingThreshold || 0 }))
+      .catch(() => {})
+  }, [])
+
   const subtotal    = items.reduce((sum, i) => sum + i.price * i.qty, 0)
   const totalQty    = items.reduce((sum, i) => sum + i.qty, 0)
   const hasOutOfStock = items.some(i => (i.stock ?? 999) === 0)
+
+  const baseShipping = (shipConfig.freeShippingThreshold > 0 && subtotal >= shipConfig.freeShippingThreshold)
+    ? 0 : shipConfig.shippingFee
+  const discount     = couponResult?.discount ?? 0
+  const shipDiscount = Math.min(couponResult?.shipDiscount ?? 0, baseShipping)
+  const total        = Math.max(0, subtotal + baseShipping - discount - shipDiscount)
 
   function handleCheckout() {
     if (!isAuth) {
@@ -139,20 +157,39 @@ export default function CartPage() {
           <div className="bg-surface-warm border border-divider-lt rounded-sm p-6 space-y-4">
             <h2 className="font-display font-semibold text-lg text-ink">Tóm tắt đơn hàng</h2>
 
+            {/* Coupon */}
+            <div className="pb-4 border-b border-divider-lt">
+              <CouponBox subtotal={subtotal} result={couponResult} onResult={setCouponResult} />
+            </div>
+
             <div className="space-y-2 text-sm">
               <div className="flex justify-between text-muted">
                 <span>Tạm tính ({totalQty} sản phẩm)</span>
                 <span>{formatPrice(subtotal)}</span>
               </div>
+              {discount > 0 && (
+                <div className="flex justify-between text-emerald-600 font-medium">
+                  <span>Giảm giá ({couponResult.code})</span>
+                  <span>−{formatPrice(discount)}</span>
+                </div>
+              )}
               <div className="flex justify-between text-muted">
                 <span>Phí vận chuyển</span>
-                <span className="text-accent font-medium">Miễn phí</span>
+                {baseShipping === 0
+                  ? <span className="text-accent font-medium">Miễn phí</span>
+                  : <span>{formatPrice(baseShipping)}</span>}
               </div>
+              {shipDiscount > 0 && (
+                <div className="flex justify-between text-emerald-600 font-medium">
+                  <span>Hỗ trợ vận chuyển ({couponResult.code})</span>
+                  <span>−{formatPrice(shipDiscount)}</span>
+                </div>
+              )}
             </div>
 
             <div className="pt-3 border-t border-divider-lt flex justify-between font-semibold text-ink">
               <span>Tổng cộng</span>
-              <span className="font-display text-lg">{formatPrice(subtotal)}</span>
+              <span className="font-display text-lg">{formatPrice(total)}</span>
             </div>
 
             {hasOutOfStock && (

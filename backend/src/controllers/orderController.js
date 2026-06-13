@@ -2,8 +2,9 @@ const Order   = require('../models/Order')
 const Cart    = require('../models/Cart')
 const Product = require('../models/Product')
 const Coupon  = require('../models/Coupon')
+const CouponRedemption = require('../models/CouponRedemption')
 const User    = require('../models/User')
-const { calcDiscount } = require('./couponController')
+const { calcDiscount, evaluateCoupon, getShippingFee } = require('./couponController')
 const { createNotification } = require('./notificationController')
 const emailService = require('../services/emailService')
 
@@ -103,26 +104,29 @@ const createOrder = async (req, res, next) => {
 
     const subtotal = cart.items.reduce((sum, i) => sum + i.price * i.qty, 0)
 
+    /* Phí ship theo Settings (miễn nếu đạt ngưỡng) */
+    const shippingFee = await getShippingFee(subtotal)
+
     /* Validate coupon nếu có */
     let discount = 0
+    let shipDiscount = 0
     let appliedCoupon = null
     if (couponCode) {
       const coupon = await Coupon.findOne({ code: couponCode.trim().toUpperCase() })
-      const now = new Date()
-      if (!coupon || !coupon.active || now < coupon.startDate || now > coupon.endDate) {
-        return res.status(400).json({ success: false, message: 'Mã giảm giá không hợp lệ hoặc đã hết hạn' })
+      if (!coupon) {
+        return res.status(400).json({ success: false, message: 'Mã giảm giá không tồn tại' })
       }
-      if (coupon.maxUses > 0 && coupon.usedCount >= coupon.maxUses) {
-        return res.status(400).json({ success: false, message: 'Mã giảm giá đã được sử dụng hết' })
+      const check = await evaluateCoupon(coupon, { subtotal, userId: req.user._id })
+      if (!check.ok) {
+        return res.status(400).json({ success: false, message: check.message })
       }
-      if (subtotal < coupon.minOrderAmount) {
-        return res.status(400).json({ success: false, message: `Đơn tối thiểu ${coupon.minOrderAmount.toLocaleString('vi-VN')}₫ để dùng mã này` })
-      }
-      discount = calcDiscount(coupon, subtotal)
+      const d = calcDiscount(coupon, subtotal, shippingFee)
+      discount     = d.discount
+      shipDiscount = d.shipDiscount
       appliedCoupon = coupon
     }
 
-    const total = subtotal - discount
+    const total = Math.max(0, subtotal + shippingFee - discount - shipDiscount)
 
     let orderCode
     let attempts = 0
@@ -149,15 +153,21 @@ const createOrder = async (req, res, next) => {
       paymentStatus: 'UNPAID',
       address,
       total,
+      shippingFee,
       discount,
+      shipDiscount,
       couponCode: appliedCoupon?.code,
       note,
       statusHistory: [{ status: 'PENDING', changedBy: req.user._id }],
     })
 
-    /* Tăng usedCount của coupon */
+    /* Tăng usedCount + ghi nhận lượt dùng per-user */
     if (appliedCoupon) {
       await Coupon.findByIdAndUpdate(appliedCoupon._id, { $inc: { usedCount: 1 } })
+      await CouponRedemption.create({
+        coupon: appliedCoupon._id, user: req.user._id, order: order._id,
+        code: appliedCoupon.code, discount, shipDiscount,
+      })
     }
 
     /* Clear cart */

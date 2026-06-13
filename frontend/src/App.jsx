@@ -31,6 +31,7 @@ import AdminSettingsPage    from './pages/admin/AdminSettingsPage'
 import AdminRoute           from './components/admin/AdminRoute'
 import AdminReviewsPage    from './pages/admin/AdminReviewsPage'
 import AdminArticlesPage   from './pages/admin/AdminArticlesPage'
+import AdminCouponsPage    from './pages/admin/AdminCouponsPage'
 import BlogPage            from './pages/BlogPage'
 import BlogDetailPage      from './pages/BlogDetailPage'
 import NotificationsPage   from './pages/NotificationsPage'
@@ -41,7 +42,6 @@ import PMDashboard          from './pages/pm/PMDashboard'
 import PMCategoriesPage     from './pages/pm/PMCategoriesPage'
 import PMProductsPage       from './pages/pm/PMProductsPage'
 import PMVisibilityPage     from './pages/pm/PMVisibilityPage'
-import PMPromotionsPage     from './pages/pm/PMPromotionsPage'
 import PMActivityPage       from './pages/pm/PMActivityPage'
 import WarehouseDashboard    from './pages/warehouse/WarehouseDashboard'
 import WarehouseOrdersPage   from './pages/warehouse/WarehouseOrdersPage'
@@ -106,7 +106,6 @@ export default function App() {
         <Route path="/pm/categories" element={<PMRoute><PMCategoriesPage /></PMRoute>} />
         <Route path="/pm/products"   element={<PMRoute><PMProductsPage /></PMRoute>} />
         <Route path="/pm/visibility" element={<PMRoute><PMVisibilityPage /></PMRoute>} />
-        <Route path="/pm/promotions" element={<PMRoute><PMPromotionsPage /></PMRoute>} />
         <Route path="/pm/activity"   element={<PMRoute><PMActivityPage /></PMRoute>} />
 
         {/* Warehouse */}
@@ -126,6 +125,7 @@ export default function App() {
         <Route path="/admin/settings"   element={<AdminRoute><AdminSettingsPage /></AdminRoute>} />
         <Route path="/admin/reviews"    element={<AdminRoute><AdminReviewsPage /></AdminRoute>} />
         <Route path="/admin/articles"   element={<AdminRoute><AdminArticlesPage /></AdminRoute>} />
+        <Route path="/admin/coupons"    element={<AdminRoute><AdminCouponsPage /></AdminRoute>} />
       </Routes>
     </BrowserRouter>
   )
