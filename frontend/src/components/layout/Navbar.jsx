@@ -5,9 +5,9 @@ import { useCartStore }      from '../../store/cartStore'
 import { useWishlistStore }  from '../../store/wishlistStore'
 import { useUIStore }        from '../../store/uiStore'
 import { useAuthStore }      from '../../store/authStore'
+import { useNotificationStore } from '../../store/notificationStore'
 import { MobileMenu }        from './MobileMenu'
 import { SearchIcon, HeartIcon, CartIcon, UserIcon, MenuIcon, ArrowUpIcon } from '../ui/icons'
-import { api }               from '../../services/api'
 
 function NavLink({ href, children }) {
   const cls = "relative text-[11px] font-medium tracking-label uppercase text-muted pb-0.5 transition-colors hover:text-ink group"
@@ -50,12 +50,12 @@ export function Navbar({ links = [], categories = [] }) {
   const clearCart      = useCartStore(s => s.clear)
   const navigate       = useNavigate()
 
-  const [unreadCount, setUnreadCount] = useState(0)
+  const unreadCount  = useNotificationStore(s => s.unread)
+  const setUnread    = useNotificationStore(s => s.setUnread)
+  const fetchUnread  = useNotificationStore(s => s.fetchUnread)
   useEffect(() => {
-    if (!token) { setUnreadCount(0); return }
-    api.get('/api/notifications')
-      .then(r => setUnreadCount(r.unreadCount || 0))
-      .catch(() => {})
+    if (!token) { setUnread(0); return }
+    fetchUnread()
   }, [token])
 
   function handleLogout() {

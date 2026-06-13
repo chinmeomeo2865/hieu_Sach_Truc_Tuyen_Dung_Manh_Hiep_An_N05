@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuthStore }  from '../store/authStore'
 import { useToastStore } from '../store/toastStore'
+import { useNotificationStore } from '../store/notificationStore'
 import { api }           from '../services/api'
 
 const TYPE_ICON = {
@@ -22,14 +23,18 @@ export default function NotificationsPage() {
   const showToast = useToastStore(s => s.show)
   const navigate  = useNavigate()
 
+  const unreadCount  = useNotificationStore(s => s.unread)
+  const setUnread    = useNotificationStore(s => s.setUnread)
+  const markAllRead  = useNotificationStore(s => s.markAllRead)
+  const decrement    = useNotificationStore(s => s.decrement)
+
   const [notifications, setNotifications] = useState([])
-  const [unreadCount,   setUnreadCount]   = useState(0)
   const [loading,       setLoading]       = useState(true)
 
   useEffect(() => {
     if (!isAuth) { navigate('/auth/login', { replace: true, state: { from: '/notifications' } }); return }
     api.get('/api/notifications')
-      .then(r => { setNotifications(r.data); setUnreadCount(r.unreadCount) })
+      .then(r => { setNotifications(r.data); setUnread(r.unreadCount) })
       .catch(() => showToast({ message: 'Không tải được thông báo', type: 'error' }))
       .finally(() => setLoading(false))
   }, [isAuth])
@@ -38,7 +43,7 @@ export default function NotificationsPage() {
     try {
       await api.put('/api/notifications/read-all')
       setNotifications(ns => ns.map(n => ({ ...n, read: true })))
-      setUnreadCount(0)
+      markAllRead()
     } catch {}
   }
 
@@ -46,7 +51,7 @@ export default function NotificationsPage() {
     try {
       await api.put(`/api/notifications/${id}/read`)
       setNotifications(ns => ns.map(n => n._id === id ? { ...n, read: true } : n))
-      setUnreadCount(c => Math.max(0, c - 1))
+      decrement()
     } catch {}
   }
 
