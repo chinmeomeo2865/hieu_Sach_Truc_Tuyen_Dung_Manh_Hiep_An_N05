@@ -1,0 +1,149 @@
+<mxfile host="Electron">
+  <diagram name="Trang-1" id="-QqgtkDclwuwnx3777fw">
+    <mxGraphModel dx="1131" dy="682" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="lD-XOqBnWqI6Mt-w9HUp-1" parent="1" style="rounded=1;whiteSpace=wrap;arcSize=50;strokeWidth=2;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="Bat dau dat hang" vertex="1">
+          <mxGeometry height="39" width="150" x="230" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="lD-XOqBnWqI6Mt-w9HUp-2" parent="1" style="whiteSpace=wrap;strokeWidth=2;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="Khach hang them sach vao gio hang &amp; bam Thanh toan" vertex="1">
+          <mxGeometry height="78" width="260" x="175" y="109" as="geometry" />
+        </mxCell>
+        <mxCell id="lD-XOqBnWqI6Mt-w9HUp-3" parent="1" style="whiteSpace=wrap;strokeWidth=2;fillColor=#fff2cc;strokeColor=#d6b656;" value="Chon dia chi nhan hang &amp; chon phuong thuc Online" vertex="1">
+          <mxGeometry height="78" width="260" x="175" y="237" as="geometry" />
+        </mxCell>
+        <mxCell id="lD-XOqBnWqI6Mt-w9HUp-4" parent="1" style="whiteSpace=wrap;strokeWidth=2;fillColor=#f8cecc;strokeColor=#b85450;" value="Khach hang xac nhan dat hang" vertex="1">
+          <mxGeometry height="78" width="260" x="175" y="365" as="geometry" />
+        </mxCell>
+        <mxCell id="lD-XOqBnWqI6Mt-w9HUp-5" parent="1" style="rhombus;strokeWidth=2;whiteSpace=wrap;fillColor=#d5e8d4;strokeColor=#82b366;" value="Kiem tra ton kho?" vertex="1">
+          <mxGeometry height="186" width="186" x="212" y="493" as="geometry" />
+        </mxCell>
+        <mxCell id="lD-XOqBnWqI6Mt-w9HUp-6" parent="1" style="whiteSpace=wrap;strokeWidth=2;fillColor=#e1d5e7;strokeColor=#9673a6;" value="Hien thi thong bao het hang &amp; cap nhat gio" vertex="1">
+          <mxGeometry height="78" width="260" x="20" y="753" as="geometry" />
+        </mxCell>
+        <mxCell id="lD-XOqBnWqI6Mt-w9HUp-7" parent="1" style="rounded=1;whiteSpace=wrap;arcSize=50;strokeWidth=2;fillColor=#d5e8d4;strokeColor=#82b366;" value="Ket thuc loi" vertex="1">
+          <mxGeometry height="39" width="112" x="94" y="901" as="geometry" />
+        </mxCell>
+        <mxCell id="lD-XOqBnWqI6Mt-w9HUp-8" parent="1" style="whiteSpace=wrap;strokeWidth=2;fillColor=#e1d5e7;strokeColor=#9673a6;" value="Khoi tao don hang trang thai PENDING &amp; UNPAID" vertex="1">
+          <mxGeometry height="78" width="260" x="330" y="753" as="geometry" />
+        </mxCell>
+        <mxCell id="lD-XOqBnWqI6Mt-w9HUp-9" parent="1" style="whiteSpace=wrap;strokeWidth=2;fillColor=#ffe6cc;strokeColor=#d79b00;" value="Goi API PayOS tao link thanh toan QR" vertex="1">
+          <mxGeometry height="78" width="260" x="330" y="881" as="geometry" />
+        </mxCell>
+        <mxCell id="lD-XOqBnWqI6Mt-w9HUp-10" parent="1" style="whiteSpace=wrap;strokeWidth=2;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="Chuyen huong khach sang trang quet ma QR" vertex="1">
+          <mxGeometry height="78" width="260" x="330" y="1009" as="geometry" />
+        </mxCell>
+        <mxCell id="lD-XOqBnWqI6Mt-w9HUp-11" parent="1" style="rhombus;strokeWidth=2;whiteSpace=wrap;fillColor=#e1d5e7;strokeColor=#9673a6;" value="Khach quet ma thanh toan thanh cong?" vertex="1">
+          <mxGeometry height="278" width="278" x="321" y="1137" as="geometry" />
+        </mxCell>
+        <mxCell id="lD-XOqBnWqI6Mt-w9HUp-12" parent="1" style="whiteSpace=wrap;strokeWidth=2;fillColor=#ffe6cc;strokeColor=#d79b00;" value="Huy don hang sau 15 phut hoac khi khach chu dong huy" vertex="1">
+          <mxGeometry height="102" width="260" x="175" y="1489" as="geometry" />
+        </mxCell>
+        <mxCell id="lD-XOqBnWqI6Mt-w9HUp-13" parent="1" style="rounded=1;whiteSpace=wrap;arcSize=50;strokeWidth=2;fillColor=#d5e8d4;strokeColor=#82b366;" value="Ket thuc - Huy don" vertex="1">
+          <mxGeometry height="39" width="165" x="222" y="1661" as="geometry" />
+        </mxCell>
+        <mxCell id="lD-XOqBnWqI6Mt-w9HUp-14" parent="1" style="whiteSpace=wrap;strokeWidth=2;fillColor=#ffe6cc;strokeColor=#d79b00;" value="PayOS gui Webhook xac nhan thanh toan thanh cong" vertex="1">
+          <mxGeometry height="102" width="260" x="485" y="1489" as="geometry" />
+        </mxCell>
+        <mxCell id="lD-XOqBnWqI6Mt-w9HUp-15" parent="1" style="whiteSpace=wrap;strokeWidth=2;fillColor=#f8cecc;strokeColor=#b85450;" value="He thong cap nhat don sang PAID &amp; CONFIRMED" vertex="1">
+          <mxGeometry height="78" width="260" x="485" y="1641" as="geometry" />
+        </mxCell>
+        <mxCell id="lD-XOqBnWqI6Mt-w9HUp-16" parent="1" style="whiteSpace=wrap;strokeWidth=2;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="Gui email xac nhan &amp; thong bao cho thu kho chuan bi hang" vertex="1">
+          <mxGeometry height="102" width="260" x="485" y="1769" as="geometry" />
+        </mxCell>
+        <mxCell id="lD-XOqBnWqI6Mt-w9HUp-17" parent="1" style="whiteSpace=wrap;strokeWidth=2;fillColor=#fff2cc;strokeColor=#d6b656;" value="Thu kho dong goi &amp; van chuyen hang cho khach" vertex="1">
+          <mxGeometry height="78" width="260" x="485" y="1921" as="geometry" />
+        </mxCell>
+        <mxCell id="lD-XOqBnWqI6Mt-w9HUp-18" parent="1" style="rounded=1;whiteSpace=wrap;arcSize=50;strokeWidth=2;fillColor=#d5e8d4;strokeColor=#82b366;" value="Ket thuc thanh cong" vertex="1">
+          <mxGeometry height="39" width="176" x="527" y="2049" as="geometry" />
+        </mxCell>
+        <mxCell id="lD-XOqBnWqI6Mt-w9HUp-19" edge="1" parent="1" source="lD-XOqBnWqI6Mt-w9HUp-1" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;rounded=0;" target="lD-XOqBnWqI6Mt-w9HUp-2" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lD-XOqBnWqI6Mt-w9HUp-20" edge="1" parent="1" source="lD-XOqBnWqI6Mt-w9HUp-2" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;rounded=0;" target="lD-XOqBnWqI6Mt-w9HUp-3" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lD-XOqBnWqI6Mt-w9HUp-21" edge="1" parent="1" source="lD-XOqBnWqI6Mt-w9HUp-3" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;rounded=0;" target="lD-XOqBnWqI6Mt-w9HUp-4" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lD-XOqBnWqI6Mt-w9HUp-22" edge="1" parent="1" source="lD-XOqBnWqI6Mt-w9HUp-4" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;rounded=0;" target="lD-XOqBnWqI6Mt-w9HUp-5" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lD-XOqBnWqI6Mt-w9HUp-23" edge="1" parent="1" source="lD-XOqBnWqI6Mt-w9HUp-5" style="curved=1;startArrow=none;endArrow=block;exitX=0;exitY=0.92;entryX=0.5;entryY=0.01;rounded=0;" target="lD-XOqBnWqI6Mt-w9HUp-6" value="Khong du so luong">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="150" y="716" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lD-XOqBnWqI6Mt-w9HUp-24" edge="1" parent="1" source="lD-XOqBnWqI6Mt-w9HUp-6" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1.01;entryX=0.5;entryY=0;rounded=0;" target="lD-XOqBnWqI6Mt-w9HUp-7" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lD-XOqBnWqI6Mt-w9HUp-25" edge="1" parent="1" source="lD-XOqBnWqI6Mt-w9HUp-5" style="curved=1;startArrow=none;endArrow=block;exitX=1;exitY=0.92;entryX=0.5;entryY=0.01;rounded=0;" target="lD-XOqBnWqI6Mt-w9HUp-8" value="Du ton kho">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="460" y="716" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lD-XOqBnWqI6Mt-w9HUp-26" edge="1" parent="1" source="lD-XOqBnWqI6Mt-w9HUp-8" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1.01;entryX=0.5;entryY=0.01;rounded=0;" target="lD-XOqBnWqI6Mt-w9HUp-9" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lD-XOqBnWqI6Mt-w9HUp-27" edge="1" parent="1" source="lD-XOqBnWqI6Mt-w9HUp-9" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1.01;entryX=0.5;entryY=0.01;rounded=0;" target="lD-XOqBnWqI6Mt-w9HUp-10" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lD-XOqBnWqI6Mt-w9HUp-28" edge="1" parent="1" source="lD-XOqBnWqI6Mt-w9HUp-10" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1.01;entryX=0.5;entryY=0;rounded=0;" target="lD-XOqBnWqI6Mt-w9HUp-11" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lD-XOqBnWqI6Mt-w9HUp-29" edge="1" parent="1" source="lD-XOqBnWqI6Mt-w9HUp-11" style="startArrow=none;endArrow=block;exitX=0.06;exitY=1;entryX=0.5;entryY=0;rounded=0;" target="lD-XOqBnWqI6Mt-w9HUp-12" value="Khong thanh toan / Huy">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="lD-XOqBnWqI6Mt-w9HUp-30" edge="1" parent="1" source="lD-XOqBnWqI6Mt-w9HUp-12" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;rounded=0;" target="lD-XOqBnWqI6Mt-w9HUp-13" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lD-XOqBnWqI6Mt-w9HUp-31" edge="1" parent="1" source="lD-XOqBnWqI6Mt-w9HUp-11" style="startArrow=none;endArrow=block;exitX=0.94;exitY=1;entryX=0.5;entryY=0;rounded=0;" target="lD-XOqBnWqI6Mt-w9HUp-14" value="Xac nhan thanh cong">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="lD-XOqBnWqI6Mt-w9HUp-32" edge="1" parent="1" source="lD-XOqBnWqI6Mt-w9HUp-14" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0.01;rounded=0;" target="lD-XOqBnWqI6Mt-w9HUp-15" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lD-XOqBnWqI6Mt-w9HUp-33" edge="1" parent="1" source="lD-XOqBnWqI6Mt-w9HUp-15" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1.01;entryX=0.5;entryY=0;rounded=0;" target="lD-XOqBnWqI6Mt-w9HUp-16" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lD-XOqBnWqI6Mt-w9HUp-34" edge="1" parent="1" source="lD-XOqBnWqI6Mt-w9HUp-16" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0.01;rounded=0;" target="lD-XOqBnWqI6Mt-w9HUp-17" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lD-XOqBnWqI6Mt-w9HUp-35" edge="1" parent="1" source="lD-XOqBnWqI6Mt-w9HUp-17" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1.01;entryX=0.5;entryY=0.01;rounded=0;" target="lD-XOqBnWqI6Mt-w9HUp-18" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
