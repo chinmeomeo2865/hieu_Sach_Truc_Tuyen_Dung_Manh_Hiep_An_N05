@@ -177,7 +177,7 @@ exports.importStock = async (req, res, next) => {
 
     await log('import_stock',
       `Nhập kho "${product.title}": +${quantity} (${stockBefore} → ${product.stock})`,
-      req.user._id, 'product', product._id, { quantity, supplier })
+      req.user._id, 'product', product._id, { quantity, notes })
 
     res.json({ success: true, data: { product, stockBefore, stockAfter: product.stock } })
   } catch (err) { next(err) }
@@ -211,7 +211,7 @@ exports.exportStock = async (req, res, next) => {
 
     await log('export_stock',
       `Xuất kho "${product.title}": -${qty} (${stockBefore} → ${product.stock})`,
-      req.user._id, 'product', product._id, { quantity: qty, reason })
+      req.user._id, 'product', product._id, { quantity: qty, reason, notes })
 
     res.json({ success: true, data: { product, stockBefore, stockAfter: product.stock } })
   } catch (err) { next(err) }
@@ -247,7 +247,16 @@ exports.submitAudit = async (req, res, next) => {
       results.push({ product: product._id, title: product.title, diff, stockBefore, stockAfter: product.stock })
     }
 
-    await log('submit_audit', `Kiểm kê kho: ${items.length} sản phẩm`, req.user._id, null, null, { count: items.length })
+    const adjustments = results
+      .filter(r => r.diff !== 0)
+      .map(r => {
+        const item = items.find(it => String(it.productId) === String(r.product))
+        return { title: r.title, diff: r.diff, reason: item?.reason || 'Kiểm kê' }
+      })
+
+    await log('submit_audit',
+      `Kiểm kê kho: ${items.length} sản phẩm, ${adjustments.length} điều chỉnh`,
+      req.user._id, null, null, { count: items.length, adjustments })
 
     res.json({ success: true, data: results })
   } catch (err) { next(err) }
@@ -279,20 +288,56 @@ exports.getReturns = async (req, res, next) => {
     const page   = Math.max(1, parseInt(req.query.page) || 1)
     const limit  = Math.min(50, parseInt(req.query.limit) || 20)
     const status = req.query.status
+    const search = req.query.search?.trim()
+    const date   = req.query.date // today | 7days | 30days
 
     const filter = { status: { $in: ['CANCELLED', 'RETURNED'] }, returnProcessed: { $ne: true } }
     if (status && ['CANCELLED', 'RETURNED'].includes(status)) filter.status = status
 
-    const [orders, total] = await Promise.all([
+    if (search) {
+      filter.$or = [
+        { orderCode:       { $regex: search, $options: 'i' } },
+        { 'address.name':  { $regex: search, $options: 'i' } },
+        { 'address.phone': { $regex: search, $options: 'i' } },
+      ]
+    }
+
+    if (['today', '7days', '30days'].includes(date)) {
+      const start = new Date()
+      if (date === 'today') start.setHours(0, 0, 0, 0)
+      if (date === '7days')  start.setDate(start.getDate() - 7)
+      if (date === '30days') start.setDate(start.getDate() - 30)
+      filter.updatedAt = { $gte: start }
+    }
+
+    const [orders, total, countAgg] = await Promise.all([
       Order.find(filter)
         .populate('user', 'name email phone')
         .sort({ updatedAt: -1 })
         .skip((page - 1) * limit)
         .limit(limit),
       Order.countDocuments(filter),
+      Order.aggregate([
+        { $match: { status: { $in: ['CANCELLED', 'RETURNED'] } } },
+        { $group: {
+          _id: '$status',
+          total:   { $sum: 1 },
+          pending: { $sum: { $cond: [{ $ne: ['$returnProcessed', true] }, 1, 0] } },
+        } },
+      ]),
     ])
 
-    res.json({ success: true, data: orders, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } })
+    const byStatus = countAgg.reduce((acc, c) => ({ ...acc, [c._id]: c }), {})
+    const counts = {
+      CANCELLED:        byStatus.CANCELLED?.total   || 0,
+      RETURNED:         byStatus.RETURNED?.total    || 0,
+      pendingCancelled: byStatus.CANCELLED?.pending || 0,
+      pendingReturned:  byStatus.RETURNED?.pending  || 0,
+    }
+    counts.total   = counts.CANCELLED + counts.RETURNED
+    counts.pending = counts.pendingCancelled + counts.pendingReturned
+
+    res.json({ success: true, data: orders, counts, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } })
   } catch (err) { next(err) }
 }
 

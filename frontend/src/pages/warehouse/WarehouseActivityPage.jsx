@@ -64,6 +64,45 @@ function dateLabel(dateStr) {
   return d.toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' })
 }
 
+/* ─── Chi tiết ghi chú / lý do từ metadata ──────────────────── */
+function LogMeta({ metadata }) {
+  const m = metadata || {}
+  const note   = m.notes
+  const reason = m.reason
+  const adjustments = Array.isArray(m.adjustments) ? m.adjustments : []
+  if (!note && !reason && !adjustments.length) return null
+
+  return (
+    <div className="mt-2 rounded-lg border border-[#EAE6DF] bg-[#FAF8F5] px-3 py-2 space-y-1">
+      {reason && (
+        <p className="text-[11px] text-[#615C56]">
+          <span className="font-semibold text-[#8E877F]">Lý do:</span> {reason}
+        </p>
+      )}
+      {note && (
+        <p className="text-[11px] text-[#615C56]">
+          <span className="font-semibold text-[#8E877F]">Ghi chú:</span> {note}
+        </p>
+      )}
+      {adjustments.length > 0 && (
+        <ul className="space-y-1 pt-0.5">
+          {adjustments.map((a, i) => (
+            <li key={i} className="text-[11px] flex items-start gap-1.5">
+              <span className={`font-bold shrink-0 font-display ${a.diff < 0 ? 'text-red-600' : 'text-emerald-600'}`}>
+                {a.diff > 0 ? '+' : ''}{a.diff}
+              </span>
+              <span className="min-w-0 text-[#615C56]">
+                <span className="text-[#1A1A1A] font-medium">{a.title}</span>
+                {a.reason && <span className="text-[#9B9389]"> — {a.reason}</span>}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
+
 /* ─── Sidebar stat box ───────────────────────────────────────── */
 function StatBox({ icon, label, value, accent }) {
   return (
@@ -113,7 +152,10 @@ export default function WarehouseActivityPage() {
     const q = search.trim().toLowerCase()
     return logs.filter(l =>
       l.description?.toLowerCase().includes(q) ||
-      l.performedBy?.name?.toLowerCase().includes(q)
+      l.performedBy?.name?.toLowerCase().includes(q) ||
+      l.metadata?.notes?.toLowerCase().includes(q) ||
+      l.metadata?.reason?.toLowerCase().includes(q) ||
+      l.metadata?.adjustments?.some(a => a.reason?.toLowerCase().includes(q))
     )
   }, [logs, search])
 
@@ -224,6 +266,7 @@ export default function WarehouseActivityPage() {
                           <div className="flex items-start justify-between gap-3 pt-1">
                             <div className="min-w-0">
                               <p className="text-[12.5px] text-[#1A1A1A] font-medium leading-snug">{l.description}</p>
+                              <LogMeta metadata={l.metadata} />
                               <p className="text-[11px] text-[#9B9389] mt-1 flex items-center flex-wrap gap-1.5">
                                 <span className="font-medium text-[#615C56]">{l.performedBy?.name || 'Hệ thống'}</span>
                                 {l.performedBy?.role && (
