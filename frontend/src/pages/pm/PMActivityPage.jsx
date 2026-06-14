@@ -134,24 +134,88 @@ export default function PMActivityPage() {
   const [stats,        setStats]        = useState({ total: 0, today: 0, byEntity: {} })
   const [entityFilter, setEntityFilter] = useState('')
   const [search,       setSearch]       = useState('')
+  const [datePreset,      setDatePreset]      = useState('all')
+  const [customStartDate, setCustomStartDate] = useState('')
+  const [customEndDate,   setCustomEndDate]   = useState('')
 
   const fetchLogs = useCallback(async () => {
     setLoading(true)
     try {
       const params = new URLSearchParams({ page: String(page), limit: '20' })
       if (entityFilter) params.set('entity', entityFilter)
+
+      if (datePreset !== 'all') {
+        if (datePreset === 'custom') {
+          if (customStartDate) {
+            const s = new Date(customStartDate + 'T00:00:00')
+            if (!isNaN(s.getTime())) params.set('startDate', s.toISOString())
+          }
+          if (customEndDate) {
+            const e = new Date(customEndDate + 'T23:59:59.999')
+            if (!isNaN(e.getTime())) params.set('endDate', e.toISOString())
+          }
+        } else {
+          const now = new Date()
+          let startDaysAgo = 0
+          let endDaysAgo = 0
+
+          if (datePreset === 'today') {
+            startDaysAgo = 0
+            endDaysAgo = 0
+          } else if (datePreset === 'yesterday') {
+            startDaysAgo = 1
+            endDaysAgo = 1
+          } else if (datePreset === '7days') {
+            startDaysAgo = 6
+            endDaysAgo = 0
+          } else if (datePreset === '30days') {
+            startDaysAgo = 29
+            endDaysAgo = 0
+          }
+
+          const s = new Date()
+          s.setDate(now.getDate() - startDaysAgo)
+          s.setHours(0, 0, 0, 0)
+
+          const e = new Date()
+          e.setDate(now.getDate() - endDaysAgo)
+          e.setHours(23, 59, 59, 999)
+
+          params.set('startDate', s.toISOString())
+          params.set('endDate', e.toISOString())
+        }
+      }
+
       const res = await api.get(`/api/pm/activity?${params}`)
       setLogs(res.data)
       setPagination(res.pagination || {})
       setStats(res.stats || { total: 0, today: 0, byEntity: {} })
     } catch (e) { showToast({ message: e.message, type: 'error' }) }
     finally { setLoading(false) }
-  }, [page, entityFilter])
+  }, [page, entityFilter, datePreset, customStartDate, customEndDate])
 
   useEffect(() => { fetchLogs() }, [fetchLogs])
 
   function handleFilter(key) {
     setEntityFilter(key)
+    setPage(1)
+  }
+
+  function handleDatePresetChange(val) {
+    setDatePreset(val)
+    if (val !== 'custom') {
+      setCustomStartDate('')
+      setCustomEndDate('')
+    }
+    setPage(1)
+  }
+
+  function handleCustomDateChange(type, val) {
+    if (type === 'start') {
+      setCustomStartDate(val)
+    } else {
+      setCustomEndDate(val)
+    }
     setPage(1)
   }
 
@@ -213,10 +277,55 @@ export default function PMActivityPage() {
 
         {/* Timeline */}
         <div className="flex-1 min-w-0">
-          <div className="relative mb-4 max-w-sm">
-            <Icon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#9B9389]" />
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Tìm theo nội dung, người thực hiện…"
-              className="w-full pl-9 pr-3 py-2.5 border border-[#EAE6DF] rounded-lg text-[12.5px] bg-white placeholder:text-[#9B9389] focus:outline-none focus:border-[#1A1A1A] transition-colors"/>
+          <div className="flex flex-col md:flex-row md:items-center gap-3 mb-4">
+            {/* Search Box */}
+            <div className="relative flex-1 max-w-md">
+              <Icon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#9B9389]" />
+              <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Tìm theo nội dung, người thực hiện…"
+                className="w-full pl-9 pr-3 py-2.5 border border-[#EAE6DF] rounded-lg text-[12.5px] bg-white placeholder:text-[#9B9389] focus:outline-none focus:border-[#1A1A1A] transition-colors"/>
+            </div>
+
+            {/* Date Filter Controls */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <div className="relative">
+                <select 
+                  value={datePreset} 
+                  onChange={e => handleDatePresetChange(e.target.value)}
+                  className="pl-3 pr-8 py-2.5 border border-[#EAE6DF] rounded-lg text-[12.5px] bg-white text-[#615C56] focus:outline-none focus:border-[#1A1A1A] transition-colors cursor-pointer appearance-none font-medium"
+                  style={{ 
+                    backgroundImage: `url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%238E877F' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E")`, 
+                    backgroundPosition: 'right 0.5rem center', 
+                    backgroundSize: '1.25rem', 
+                    backgroundRepeat: 'no-repeat' 
+                  }}
+                >
+                  <option value="all">Tất cả thời gian</option>
+                  <option value="today">Hôm nay</option>
+                  <option value="yesterday">Hôm qua</option>
+                  <option value="7days">7 ngày qua</option>
+                  <option value="30days">30 ngày qua</option>
+                  <option value="custom">Tùy chọn khoảng ngày...</option>
+                </select>
+              </div>
+
+              {datePreset === 'custom' && (
+                <div className="flex items-center gap-1.5 animate-fadeIn">
+                  <input 
+                    type="date" 
+                    value={customStartDate} 
+                    onChange={e => handleCustomDateChange('start', e.target.value)}
+                    className="px-2.5 py-1.5 border border-[#EAE6DF] rounded-lg text-[12px] bg-white text-[#1A1A1A] focus:outline-none focus:border-[#1A1A1A] transition-colors font-medium cursor-pointer"
+                  />
+                  <span className="text-[11px] text-[#9B9389] font-medium">đến</span>
+                  <input 
+                    type="date" 
+                    value={customEndDate} 
+                    onChange={e => handleCustomDateChange('end', e.target.value)}
+                    className="px-2.5 py-1.5 border border-[#EAE6DF] rounded-lg text-[12px] bg-white text-[#1A1A1A] focus:outline-none focus:border-[#1A1A1A] transition-colors font-medium cursor-pointer"
+                  />
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="bg-white border border-[#EAE6DF] rounded-xl shadow-sm overflow-hidden">

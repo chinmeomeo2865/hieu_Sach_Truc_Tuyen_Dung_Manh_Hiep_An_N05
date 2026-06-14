@@ -162,7 +162,7 @@ PAYOS_CHECKSUM_KEY=...
 - **API sắp xếp thông minh** — Sắp xếp mặc định: `inStock → weight → createdAt`. Khi khách hàng chọn bộ lọc (giá, đánh giá…) thì bỏ qua weight, sắp xếp thuần theo tiêu chí đã chọn.
 - **Banner trang chủ động** — `settingsController.getPublicSettings` trả về `banners[]` active. Cấp quyền PM truy cập Settings route.
 - **Sửa lỗi double-replenishment** — Gỡ bỏ logic tự động cộng lại tồn kho khi customer hủy đơn tại `orderController.cancelOrder`. Thủ kho quyết định hoàn/xuất kho. Cron auto-cancel đơn quá hạn gán `returnProcessed = true` để không xuất hiện trong hàng đợi xử lý hoàn trả.
-- **Bộ lọc ngày Nhật ký hoạt động (Date Filter)** — Nhận thêm query parameters `startDate` và `endDate`, tối ưu hóa truy vấn `$gte` / `$lte` theo trường `createdAt` (sử dụng index có sẵn).
+- **Bộ lọc ngày Nhật ký hoạt động (Date Filter) cho Thủ kho & Thủ thư** — Nhận thêm query parameters `startDate` và `endDate` tại cả `warehouseController.js` và `pmController.js`, tối ưu hóa truy vấn `$gte` / `$lte` theo trường `createdAt` (sử dụng index có sẵn).
 
 ### Frontend
 - **Tồn kho thông minh trên UI** — Nhãn 3 trạng thái (Còn hàng / Chỉ còn X cuốn / Hết hàng) trên BookCard, FeaturedCard, SearchModal, QuickViewModal, BookDetailPage, Bestsellers. Khóa nút mua khi hết hàng.
@@ -173,7 +173,7 @@ PAYOS_CHECKSUM_KEY=...
 - **Yêu thích auto-cleanup** — Tự động loại bỏ sách đã bị xóa khỏi DB ra khỏi wishlist store.
 - **Fix Navbar overlay z-index** — Hạ z-index header wrapper từ `z-[100]` → `z-30` để các modal chi tiết đơn hàng (z-50) không bị che khuất.
 - **Trọng số hiển thị (Display Weight)** — Thêm ô nhập `weight` trên form PM + Admin Products, cho phép đẩy sách lên đầu trang.
-- **Bộ lọc ngày thao tác Thủ kho** — Thêm Dropdown bộ lọc nhanh kết hợp với ô chọn ngày tùy biến (với hiệu ứng `animate-fadeIn` mượt mà), giúp thủ kho dễ dàng đối soát ca trực và sai lệch tồn kho.
+- **Bộ lọc ngày thao tác Thủ kho & Thủ thư** — Thêm Dropdown bộ lọc nhanh kết hợp với ô chọn ngày tùy biến (với hiệu ứng `animate-fadeIn` mượt mà) tại cả `WarehouseActivityPage.jsx` và `PMActivityPage.jsx`, giúp đối soát ca trực và sai lệch số liệu dễ dàng hơn.
 
 ## Việc còn lại
 
