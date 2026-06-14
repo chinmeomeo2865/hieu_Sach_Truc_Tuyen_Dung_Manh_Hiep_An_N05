@@ -13,8 +13,9 @@ const CITIES = [
 ]
 
 export default function CheckoutPage() {
-  const items      = useCartStore(s => s.items)
-  const clearCart  = useCartStore(s => s.clear)
+  const allItems   = useCartStore(s => s.items)
+  const items      = allItems.filter(i => i.selected !== false)
+  const clearSelected = useCartStore(s => s.clearSelected)
   const isAuth     = useAuthStore(s => !!s.token)
   const user       = useAuthStore(s => s.user)
   const showToast  = useToastStore(s => s.show)
@@ -113,7 +114,7 @@ export default function CheckoutPage() {
       }
 
       // 3b. COD — clear cart + redirect
-      clearCart()
+      clearSelected()
       showToast({ message: 'Đặt hàng thành công! Cảm ơn bạn 🎉', type: 'success' })
       navigate('/account/orders')
     } catch (err) {

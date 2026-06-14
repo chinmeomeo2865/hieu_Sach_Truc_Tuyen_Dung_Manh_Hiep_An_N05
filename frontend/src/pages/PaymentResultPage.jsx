@@ -5,19 +5,19 @@ import { api } from '../services/api'
 
 export default function PaymentResultPage() {
   const [searchParams] = useSearchParams()
-  const clearCart = useCartStore(s => s.clear)
+  const clearSelected = useCartStore(s => s.clearSelected)
   const status  = searchParams.get('status')
   const orderId = searchParams.get('orderId')
   const [order, setOrder] = useState(null)
 
   useEffect(() => {
     if (status === 'success') {
-      clearCart()
+      clearSelected()
       if (orderId) {
         api.get(`/api/orders/${orderId}`).then(r => setOrder(r.data)).catch(() => {})
       }
     }
-  }, [status, orderId, clearCart])
+  }, [status, orderId, clearSelected])
 
   if (status === 'success') return (
     <div className="max-w-[480px] mx-auto px-4 py-20 text-center">

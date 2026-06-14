@@ -6,6 +6,7 @@ import { useAuthStore }                 from '../../store/authStore'
 import { useCartStore }                 from '../../store/cartStore'
 import { useToastStore }                from '../../store/toastStore'
 import { formatPrice }                  from '../../utils/format'
+import ConfirmModal                     from '../../components/ui/ConfirmModal'
 
 /* ─── Constants ─────────────────────────────────────────────── */
 
@@ -820,14 +821,20 @@ export default function AccountPage() {
     navigate('/cart')
   }
 
+  const [cancelTargetId, setCancelTargetId] = useState(null)
+  const [canceling, setCanceling] = useState(false)
+
   async function handleCancel(orderId) {
-    if (!confirm('Bạn có chắc muốn hủy đơn này?')) return
+    setCanceling(true)
     try {
       await api.put(`/api/orders/${orderId}/cancel`)
       setOrders(prev => prev.map(o => o._id === orderId ? { ...o, status: 'CANCELLED' } : o))
-      showToast({ message: 'Đã hủy đơn hàng', type: 'info' })
+      showToast({ message: 'Bạn đã hủy đơn thành công', type: 'success' })
     } catch (err) {
       showToast({ message: err.message, type: 'error' })
+    } finally {
+      setCanceling(false)
+      setCancelTargetId(null)
     }
   }
 
@@ -888,7 +895,7 @@ export default function AccountPage() {
                 reviewedKeys={reviewedKeys}
                 onViewDetail={setDetailOrder}
                 onReorder={handleReorder}
-                onCancel={handleCancel}
+                onCancel={setCancelTargetId}
                 onReview={setReviewTarget}
               />
             ))}
@@ -914,6 +921,18 @@ export default function AccountPage() {
           />
         )}
       </AnimatePresence>
+
+      <ConfirmModal
+        open={!!cancelTargetId}
+        onConfirm={() => handleCancel(cancelTargetId)}
+        onCancel={() => setCancelTargetId(null)}
+        title="Hủy đơn hàng"
+        message="Bạn có chắc chắn muốn hủy đơn hàng này không? Hành động này không thể hoàn tác."
+        confirmText="Hủy đơn"
+        cancelText="Đóng"
+        variant="danger"
+        loading={canceling}
+      />
     </div>
   )
 }

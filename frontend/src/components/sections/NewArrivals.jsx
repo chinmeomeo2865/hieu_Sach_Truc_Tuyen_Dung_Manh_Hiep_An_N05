@@ -23,7 +23,7 @@ export function NewArrivals({
 
           <div className="flex gap-3.5 overflow-x-auto scrollbar-hide pb-2 md:grid md:grid-cols-3 lg:grid-cols-6 md:gap-4 md:overflow-visible md:pb-0">
             {books.map((book) => (
-              <div key={book.id} className="flex-shrink-0 w-[180px] md:w-auto snap-start">
+              <div key={book.id || book._id} className="flex-shrink-0 w-[180px] md:w-auto snap-start flex flex-col h-full">
                 <BookCard book={book} />
               </div>
             ))}

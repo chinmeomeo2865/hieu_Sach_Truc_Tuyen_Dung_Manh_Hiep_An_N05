@@ -15,7 +15,7 @@ exports.getStats = async (req, res, next) => {
     const today = new Date(); today.setHours(0, 0, 0, 0)
 
     const [pendingPacking, lowStock, returns, importedToday, recentActivity] = await Promise.all([
-      Order.countDocuments({ status: { $in: ['CONFIRMED', 'PACKING'] } }),
+      Order.countDocuments({ status: { $in: ['PENDING', 'CONFIRMED', 'PACKING'] } }),
       Product.countDocuments({ stock: { $lte: 10, $gt: 0 }, visible: true }),
       Order.countDocuments({ status: { $in: ['CANCELLED', 'RETURNED'] }, updatedAt: { $gte: today } }),
       InventoryTransaction.countDocuments({ type: 'import', createdAt: { $gte: today } }),
@@ -38,7 +38,7 @@ exports.getWarehouseOrders = async (req, res, next) => {
     const search = req.query.search?.trim()
     const date   = req.query.date // today | 7days | 30days
 
-    const ACTIVE = ['CONFIRMED', 'PACKING', 'SHIPPING']
+    const ACTIVE = ['PENDING', 'CONFIRMED', 'PACKING', 'SHIPPING']
     const ALL    = [...ACTIVE, 'DELIVERED']
 
     const filter = { status: { $in: ACTIVE } }
@@ -69,7 +69,7 @@ exports.getWarehouseOrders = async (req, res, next) => {
     const [orders, total, countAgg] = await Promise.all([
       Order.aggregate([
         { $match: filter },
-        { $addFields: { statusRank: { $indexOfArray: [['PACKING', 'CONFIRMED', 'SHIPPING', 'DELIVERED'], '$status'] } } },
+        { $addFields: { statusRank: { $indexOfArray: [['PENDING', 'PACKING', 'CONFIRMED', 'SHIPPING', 'DELIVERED'], '$status'] } } },
         { $sort: sortStage },
         { $skip: (page - 1) * limit },
         { $limit: limit },

@@ -1,8 +1,9 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { api }          from '../../services/api'
 import { useToastStore } from '../../store/toastStore'
 import { formatPrice }  from '../../utils/format'
 import AdminLayout      from '../../components/admin/AdminLayout'
+import ConfirmModal     from '../../components/ui/ConfirmModal'
 
 const STATUS_LABEL = {
   PENDING:   { text: 'Chờ xác nhận',  color: 'bg-yellow-50 text-yellow-700 border-yellow-200' },
@@ -135,6 +136,26 @@ export default function AdminOrdersPage() {
   // Checkbox selections
   const [selectedOrderIds, setSelectedOrderIds] = useState([])
 
+  // Confirm modal state
+  const [confirmModal, setConfirmModal] = useState({ open: false, title: '', message: '', variant: 'danger', confirmText: 'Xác nhận' })
+  const pendingAction = useRef(null)
+
+  function askConfirm({ title, message, variant = 'danger', confirmText = 'Xác nhận' }, action) {
+    pendingAction.current = action
+    setConfirmModal({ open: true, title, message, variant, confirmText })
+  }
+
+  function handleConfirm() {
+    setConfirmModal(prev => ({ ...prev, open: false }))
+    pendingAction.current?.()
+    pendingAction.current = null
+  }
+
+  function handleConfirmCancel() {
+    setConfirmModal(prev => ({ ...prev, open: false }))
+    pendingAction.current = null
+  }
+
   const fetchOrders = useCallback(async (status, pg, search, payment, date) => {
     setLoading(true)
     try {
@@ -170,6 +191,42 @@ export default function AdminOrdersPage() {
     } catch {}
   }, [])
 
+  // Polling: silent refresh every 15s
+  const isPolling = useRef(false)
+  const POLL_INTERVAL = 5000
+
+  const silentFetch = useCallback(async () => {
+    try {
+      const qs = new URLSearchParams({ page, limit: LIMIT })
+      if (statusFilter !== 'all') qs.set('status', statusFilter)
+      if (searchTerm) qs.set('search', searchTerm)
+      if (paymentFilter !== 'all') qs.set('payment', paymentFilter)
+      if (filterDate) qs.set('date', filterDate)
+      
+      const [ordersRes, statsRes] = await Promise.all([
+        api.get(`/api/orders/admin/all?${qs}`),
+        api.get('/api/orders/admin/all?limit=1000'),
+      ])
+      setOrders(ordersRes.data)
+      setPagination(ordersRes.pagination || null)
+      const all = statsRes.data
+      setStats({
+        all:       all.length,
+        PENDING:   all.filter(o => o.status === 'PENDING').length,
+        CONFIRMED: all.filter(o => o.status === 'CONFIRMED').length,
+        PACKING:   all.filter(o => o.status === 'PACKING').length,
+        SHIPPING:  all.filter(o => o.status === 'SHIPPING').length,
+        DELIVERED: all.filter(o => o.status === 'DELIVERED').length,
+        CANCELLED: all.filter(o => o.status === 'CANCELLED').length,
+      })
+    } catch {}
+  }, [page, statusFilter, searchTerm, paymentFilter, filterDate])
+
+  useEffect(() => {
+    const id = setInterval(() => { silentFetch() }, POLL_INTERVAL)
+    return () => clearInterval(id)
+  }, [silentFetch])
+
   useEffect(() => { fetchStats() }, [fetchStats])
 
   useEffect(() => {
@@ -198,64 +255,81 @@ export default function AdminOrdersPage() {
   }
 
   async function handleCancel(orderId) {
-    if (!confirm('Xác nhận hủy đơn hàng này?')) return
-    setAction(orderId)
-    try {
-      await api.put(`/api/orders/${orderId}/cancel`)
-      setOrders(prev => prev.map(o => o._id === orderId ? { ...o, status: 'CANCELLED' } : o))
-      showToast({ message: 'Đã hủy đơn hàng', type: 'info' })
-      fetchStats()
-    } catch (err) {
-      showToast({ message: err.message, type: 'error' })
-    } finally {
-      setAction(null)
-    }
+    const order = orders.find(o => o._id === orderId)
+    askConfirm({
+      title: 'Hủy đơn hàng',
+      message: `Bạn có chắc muốn hủy đơn ${order?.orderCode || '#' + orderId.slice(-8).toUpperCase()}? Hành động này không thể hoàn tác và tồn kho sẽ được hoàn lại.`,
+      variant: 'danger',
+      confirmText: 'Hủy đơn hàng',
+    }, async () => {
+      setAction(orderId)
+      try {
+        await api.put(`/api/orders/${orderId}/cancel`)
+        setOrders(prev => prev.map(o => o._id === orderId ? { ...o, status: 'CANCELLED' } : o))
+        showToast({ message: 'Đã hủy đơn hàng', type: 'info' })
+        fetchStats()
+      } catch (err) {
+        showToast({ message: err.message, type: 'error' })
+      } finally {
+        setAction(null)
+      }
+    })
   }
 
   // Bulk status update action
-  const handleBulkStatusChange = async (nextStatus) => {
+  const handleBulkStatusChange = (nextStatus) => {
     const validOrders = orders.filter(o => selectedOrderIds.includes(o._id) && NEXT_ACTION[o.status]?.next === nextStatus)
     if (validOrders.length === 0) {
       showToast({ message: 'Không có đơn hàng nào hợp lệ được chọn cho hành động này!', type: 'warning' })
       return
     }
-    if (!confirm(`Xác nhận cập nhật trạng thái cho ${validOrders.length} đơn hàng đã chọn?`)) return
-    
-    setLoading(true)
-    try {
-      await Promise.all(validOrders.map(o => api.put(`/api/orders/${o._id}/status`, { status: nextStatus })))
-      showToast({ message: `Đã cập nhật trạng thái thành công cho ${validOrders.length} đơn hàng!`, type: 'success' })
-      fetchOrders(statusFilter, page, searchTerm, paymentFilter, filterDate)
-      fetchStats()
-      setSelectedOrderIds([])
-    } catch (err) {
-      showToast({ message: err.message, type: 'error' })
-    } finally {
-      setLoading(false)
-    }
+    askConfirm({
+      title: 'Xác nhận hàng loạt',
+      message: `Cập nhật trạng thái cho ${validOrders.length} đơn hàng đã chọn sang "Đã xác nhận"?`,
+      variant: 'info',
+      confirmText: `Xác nhận ${validOrders.length} đơn`,
+    }, async () => {
+      setLoading(true)
+      try {
+        await Promise.all(validOrders.map(o => api.put(`/api/orders/${o._id}/status`, { status: nextStatus })))
+        showToast({ message: `Đã cập nhật trạng thái thành công cho ${validOrders.length} đơn hàng!`, type: 'success' })
+        fetchOrders(statusFilter, page, searchTerm, paymentFilter, filterDate)
+        fetchStats()
+        setSelectedOrderIds([])
+      } catch (err) {
+        showToast({ message: err.message, type: 'error' })
+      } finally {
+        setLoading(false)
+      }
+    })
   }
 
   // Bulk cancel action
-  const handleBulkCancel = async () => {
+  const handleBulkCancel = () => {
     const validOrders = orders.filter(o => selectedOrderIds.includes(o._id) && CAN_CANCEL.includes(o.status))
     if (validOrders.length === 0) {
       showToast({ message: 'Không có đơn hàng nào có thể hủy được chọn!', type: 'warning' })
       return
     }
-    if (!confirm(`Xác nhận hủy ${validOrders.length} đơn hàng đã chọn?`)) return
-    
-    setLoading(true)
-    try {
-      await Promise.all(validOrders.map(o => api.put(`/api/orders/${o._id}/cancel`)))
-      showToast({ message: `Đã hủy thành công ${validOrders.length} đơn hàng!`, type: 'info' })
-      fetchOrders(statusFilter, page, searchTerm, paymentFilter, filterDate)
-      fetchStats()
-      setSelectedOrderIds([])
-    } catch (err) {
-      showToast({ message: err.message, type: 'error' })
-    } finally {
-      setLoading(false)
-    }
+    askConfirm({
+      title: 'Hủy hàng loạt',
+      message: `Bạn có chắc muốn hủy ${validOrders.length} đơn hàng đã chọn? Tồn kho sẽ được hoàn lại cho tất cả đơn bị hủy.`,
+      variant: 'danger',
+      confirmText: `Hủy ${validOrders.length} đơn`,
+    }, async () => {
+      setLoading(true)
+      try {
+        await Promise.all(validOrders.map(o => api.put(`/api/orders/${o._id}/cancel`)))
+        showToast({ message: `Đã hủy thành công ${validOrders.length} đơn hàng!`, type: 'info' })
+        fetchOrders(statusFilter, page, searchTerm, paymentFilter, filterDate)
+        fetchStats()
+        setSelectedOrderIds([])
+      } catch (err) {
+        showToast({ message: err.message, type: 'error' })
+      } finally {
+        setLoading(false)
+      }
+    })
   }
 
   // Individual print invoice
@@ -928,6 +1002,15 @@ export default function AdminOrdersPage() {
           </div>
         </div>
       )}
+      <ConfirmModal
+        open={confirmModal.open}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        variant={confirmModal.variant}
+        confirmText={confirmModal.confirmText}
+        onConfirm={handleConfirm}
+        onCancel={handleConfirmCancel}
+      />
     </AdminLayout>
   )
 }

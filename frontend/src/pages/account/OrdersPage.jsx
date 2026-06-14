@@ -6,6 +6,7 @@ import { useCartStore }        from '../../store/cartStore'
 import { useToastStore }       from '../../store/toastStore'
 import { ReviewForm }          from '../../components/ui/ReviewForm'
 import { formatPrice }         from '../../utils/format'
+import ConfirmModal            from '../../components/ui/ConfirmModal'
 
 const STATUS_LABEL = {
   PENDING:    { text: 'Chờ xác nhận',  color: 'bg-yellow-50 text-yellow-700 border-yellow-200' },
@@ -71,16 +72,22 @@ export default function OrdersPage() {
     navigate('/cart')
   }
 
+  const [cancelTargetId, setCancelTargetId] = useState(null)
+  const [canceling, setCanceling] = useState(false)
+
   async function handleCancel(orderId) {
-    if (!confirm('Bạn có chắc muốn hủy đơn này?')) return
+    setCanceling(true)
     try {
       await api.put(`/api/orders/${orderId}/cancel`)
       setOrders(prev => prev.map(o =>
         o._id === orderId ? { ...o, status: 'CANCELLED' } : o
       ))
-      showToast({ message: 'Đã hủy đơn hàng', type: 'info' })
+      showToast({ message: 'Bạn đã hủy đơn thành công', type: 'success' })
     } catch (err) {
       showToast({ message: err.message, type: 'error' })
+    } finally {
+      setCanceling(false)
+      setCancelTargetId(null)
     }
   }
 
@@ -182,7 +189,7 @@ export default function OrdersPage() {
                 <div className="px-5 py-3 border-t border-divider-lt flex justify-end gap-4">
                   {['PENDING', 'CONFIRMED'].includes(order.status) && (
                     <button
-                      onClick={() => handleCancel(order._id)}
+                      onClick={() => setCancelTargetId(order._id)}
                       className="text-xs text-red-500 hover:text-red-700 font-medium underline underline-offset-2 transition-colors"
                     >
                       Hủy đơn
@@ -202,6 +209,18 @@ export default function OrdersPage() {
           ))}
         </div>
       )}
+
+      <ConfirmModal
+        open={!!cancelTargetId}
+        onConfirm={() => handleCancel(cancelTargetId)}
+        onCancel={() => setCancelTargetId(null)}
+        title="Hủy đơn hàng"
+        message="Bạn có chắc chắn muốn hủy đơn hàng này không? Hành động này không thể hoàn tác."
+        confirmText="Hủy đơn"
+        cancelText="Đóng"
+        variant="danger"
+        loading={canceling}
+      />
     </div>
   )
 }

@@ -4,6 +4,7 @@ import { useWishlistStore }    from '../../store/wishlistStore'
 import { useToastStore }       from '../../store/toastStore'
 import { api }                 from '../../services/api'
 import { BookCard }            from '../../components/ui/BookCard'
+import ConfirmModal            from '../../components/ui/ConfirmModal'
 
 export default function WishlistPage() {
   const ids       = useWishlistStore(s => s.ids)
@@ -30,17 +31,34 @@ export default function WishlistPage() {
         const cached = books.find(b => (b._id || b.id) === id)
         return cached
           ? Promise.resolve(cached)
-          : api.get(`/api/products/${id}`).then(r => r.data).catch(() => null)
+          : api.get(`/api/products/${id}`)
+              .then(r => r.data)
+              .catch(err => {
+                if (err.status === 404) {
+                  return { __deletedId: id }
+                }
+                return null
+              })
       })
     )
-      .then(results => setBooks(results.filter(Boolean)))
+      .then(results => {
+        const validBooks = results.filter(b => b && !b.__deletedId)
+        setBooks(validBooks)
+
+        // Tự động dọn dẹp các ID sách đã bị xóa khỏi cơ sở dữ liệu
+        const deletedIds = results.filter(b => b && b.__deletedId).map(b => b.__deletedId)
+        if (deletedIds.length > 0) {
+          const newIds = ids.filter(id => !deletedIds.includes(id))
+          useWishlistStore.setState({ ids: newIds })
+        }
+      })
       .finally(() => setLoading(false))
   }, [ids.join(',')])
 
+  const [showClearModal, setShowClearModal] = useState(false)
+
   function handleClearAll() {
-    if (!confirm('Xóa tất cả sách khỏi danh sách yêu thích?')) return
-    clearAll()
-    showToast({ message: 'Đã xóa tất cả sách yêu thích', type: 'info' })
+    setShowClearModal(true)
   }
 
   /* Empty state */
@@ -120,6 +138,20 @@ export default function WishlistPage() {
           </Link>
         </div>
       )}
+      <ConfirmModal
+        open={showClearModal}
+        onConfirm={() => {
+          clearAll()
+          showToast({ message: 'Đã xóa tất cả sách yêu thích', type: 'info' })
+          setShowClearModal(false)
+        }}
+        onCancel={() => setShowClearModal(false)}
+        title="Xóa danh sách yêu thích"
+        message="Bạn có chắc chắn muốn xóa toàn bộ sách khỏi tủ sách yêu thích không? Hành động này không thể hoàn tác."
+        confirmText="Xóa tất cả"
+        cancelText="Đóng"
+        variant="danger"
+      />
     </div>
   )
 }

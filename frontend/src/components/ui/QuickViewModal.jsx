@@ -95,9 +95,13 @@ export function QuickViewModal() {
           <div className="p-6 md:p-8 flex flex-col gap-4">
             <div className="flex items-center gap-2 flex-wrap">
               {book.badge && <Badge type={book.badge} label={book.badge === 'sale' && book.originalPrice ? `-${Math.round((1 - book.price / book.originalPrice) * 100)}%` : undefined} />}
-              {book.stock && (
-                <span className="text-[10px] font-medium text-green-600">● Còn {book.stock} quyển</span>
-              )}
+              <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${
+                book.stock > 10 ? 'text-green-700 bg-green-50' :
+                book.stock > 0 ? 'text-amber-700 bg-amber-50' :
+                'text-red-600 bg-red-50'
+              }`}>
+                {book.stock > 10 ? '● Còn hàng' : book.stock > 0 ? `● Chỉ còn ${book.stock} cuốn` : '● Hết hàng'}
+              </span>
             </div>
 
             <div>
@@ -125,10 +129,11 @@ export function QuickViewModal() {
             <div className="flex gap-3 mt-auto pt-4 border-t border-divider-lt">
               <button
                 onClick={handleAddCart}
-                className="flex-1 flex items-center justify-center gap-2 bg-ink text-white text-[11px] font-semibold tracking-label uppercase py-3 rounded-sm hover:bg-ink-80 active:scale-95 transition-all"
+                disabled={book.stock <= 0}
+                className="flex-1 flex items-center justify-center gap-2 bg-ink text-white text-[11px] font-semibold tracking-label uppercase py-3 rounded-sm hover:bg-ink-80 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <PlusIcon />
-                Thêm vào giỏ hàng
+                {book.stock <= 0 ? 'Hết hàng' : 'Thêm vào giỏ hàng'}
               </button>
               <button
                 onClick={handleWishlist}

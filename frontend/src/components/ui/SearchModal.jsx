@@ -155,7 +155,16 @@ export function SearchModal() {
 
                       {/* Info */}
                       <div className="flex-1 min-w-0">
-                        <p className="text-[9px] font-semibold tracking-label-lg uppercase text-accent">{book.category}</p>
+                        <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                          <p className="text-[9px] font-semibold tracking-label-lg uppercase text-accent leading-none">{book.category}</p>
+                          <span className={`text-[8px] font-semibold px-1 py-0.2 rounded leading-none ${
+                            book.stock > 10 ? 'text-green-700 bg-green-50' :
+                            book.stock > 0 ? 'text-amber-700 bg-amber-50' :
+                            'text-red-600 bg-red-50'
+                          }`}>
+                            {book.stock > 10 ? 'Còn hàng' : book.stock > 0 ? `Còn ${book.stock}` : 'Hết hàng'}
+                          </span>
+                        </div>
                         <p className="text-sm font-display font-semibold text-ink leading-snug truncate">{book.title}</p>
                         <p className="text-xs text-muted">{book.author}</p>
                         <p className="text-sm font-bold text-ink mt-0.5">{formatPrice(book.price)}</p>
@@ -164,8 +173,9 @@ export function SearchModal() {
                       {/* Add to cart */}
                       <button
                         onClick={(e) => handleAddCart(e, book)}
-                        aria-label={`Thêm ${book.title} vào giỏ`}
-                        className="flex-shrink-0 w-8 h-8 rounded-lg bg-ink text-white flex items-center justify-center hover:bg-ink-80 active:scale-95 transition-all"
+                        disabled={book.stock <= 0}
+                        aria-label={book.stock <= 0 ? 'Hết hàng' : `Thêm ${book.title} vào giỏ`}
+                        className="flex-shrink-0 w-8 h-8 rounded-lg bg-ink text-white flex items-center justify-center hover:bg-ink-80 active:scale-95 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
                       >
                         <PlusIcon />
                       </button>

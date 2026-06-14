@@ -62,14 +62,38 @@ exports.updateCategory = async (req, res, next) => {
     const { name, description, image } = req.body
     const cat = await Category.findById(req.params.id)
     if (!cat) return res.status(404).json({ success: false, message: 'Không tìm thấy danh mục' })
-    if (name && name.trim() !== cat.name) {
-      const exists = await Category.findOne({ name: name.trim(), _id: { $ne: cat._id } })
+
+    const oldSlug = cat.slug
+    let newSlug = oldSlug
+    const nameChanged = name && name.trim() !== cat.name
+
+    if (nameChanged) {
+      const trimmedName = name.trim()
+      const exists = await Category.findOne({ name: trimmedName, _id: { $ne: cat._id } })
       if (exists) return res.status(409).json({ success: false, message: 'Tên danh mục đã tồn tại' })
-      cat.name = name.trim()
+      
+      newSlug = trimmedName.toLowerCase()
+        .normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[đĐ]/g, 'd')
+        .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+      
+      const slugExists = await Category.findOne({ slug: newSlug, _id: { $ne: cat._id } })
+      if (slugExists) return res.status(409).json({ success: false, message: 'Slug của danh mục đã tồn tại' })
+
+      cat.name = trimmedName
+      cat.slug = newSlug
     }
     if (description !== undefined) cat.description = description
     if (image !== undefined) cat.image = image
     await cat.save()
+
+    // Đồng bộ sang bảng Product nếu slug hoặc name thay đổi
+    if (oldSlug !== newSlug || nameChanged) {
+      await Product.updateMany(
+        { categorySlug: oldSlug },
+        { category: cat.name, categorySlug: newSlug }
+      )
+    }
+
     await log('update_category', `Sửa danh mục "${cat.name}"`, req.user._id, 'category', cat._id)
     res.json({ success: true, data: cat })
   } catch (err) { next(err) }

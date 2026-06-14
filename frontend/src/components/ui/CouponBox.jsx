@@ -21,7 +21,14 @@ export function CouponBox({ subtotal, result, onResult }) {
   const [input, setInput]     = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError]     = useState('')
+  const [coupons, setCoupons] = useState([])
   const wasApplied = useRef(false)
+
+  useEffect(() => {
+    api.get('/api/coupons/active')
+      .then(r => setCoupons(r.data || []))
+      .catch(() => {})
+  }, [])
 
   /* Tự áp / kiểm lại mã đã lưu khi subtotal đổi */
   useEffect(() => {
@@ -104,6 +111,61 @@ export function CouponBox({ subtotal, result, onResult }) {
           <svg className="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10"/><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01"/></svg>
           {error}
         </p>
+      )}
+
+      {/* Quick selection of coupons */}
+      {coupons.length > 0 && (
+        <div className="mt-3.5 space-y-1.5 pt-3 border-t border-divider-lt">
+          <p className="text-[11px] text-muted font-medium">Chọn nhanh mã giảm giá:</p>
+          <div className="flex flex-wrap gap-2 pt-0.5 max-h-32 overflow-y-auto pr-1">
+            {coupons.map(c => {
+              const meetsMinAmount = subtotal >= (c.minOrderAmount || 0)
+              return (
+                <button
+                  key={c.code}
+                  type="button"
+                  onClick={() => {
+                    if (!isAuth) {
+                      openAuthPrompt({ title: 'Đăng nhập để dùng mã giảm giá', message: 'Bạn cần đăng nhập để áp dụng mã giảm giá.' })
+                      return
+                    }
+                    if (!meetsMinAmount) {
+                      showToast({ message: `Đơn hàng tối thiểu ${c.minOrderAmount.toLocaleString('vi-VN')}₫ để dùng mã này`, type: 'error' })
+                      return
+                    }
+                    setInput(c.code)
+                    setLoading(true)
+                    api.post('/api/coupons/validate', { code: c.code, subtotal })
+                      .then(res => {
+                        onResult(res.data)
+                        setCode(res.data.code)
+                        wasApplied.current = true
+                        showToast({ message: `Đã áp dụng mã ${res.data.code}`, type: 'success' })
+                      })
+                      .catch(err => {
+                        setError(err.message)
+                      })
+                      .finally(() => setLoading(false))
+                  }}
+                  className={`text-left text-[11px] font-semibold px-2 py-1.5 rounded border transition-all w-[calc(50%-4px)] flex flex-col justify-between ${
+                    meetsMinAmount
+                      ? 'border-emerald-600/30 text-emerald-700 bg-emerald-50/50 hover:bg-emerald-50 hover:border-emerald-600/60'
+                      : 'border-divider-lt text-subtle bg-surface-subtle/50 opacity-60 hover:opacity-100'
+                  }`}
+                >
+                  <span className="font-bold flex items-center justify-between w-full">
+                    <span>{c.code}</span>
+                    {!meetsMinAmount && <span className="text-[9px] font-normal text-accent bg-orange-50 px-1 py-0.2 rounded shrink-0">Chưa đủ ĐK</span>}
+                  </span>
+                  <span className="font-normal block text-[9px] text-ink-60 leading-tight mt-0.5">
+                    {c.type === 'percent' ? `Giảm ${c.value}%` : c.type === 'fixed' ? `Giảm ${c.value.toLocaleString('vi-VN')}₫` : 'Freeship'}
+                    {c.minOrderAmount > 0 && ` (Đơn từ ${Math.round(c.minOrderAmount / 1000)}k)`}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
       )}
     </div>
   )

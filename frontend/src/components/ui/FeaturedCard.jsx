@@ -61,9 +61,13 @@ export function FeaturedCard({ book }) {
       <div className="flex flex-col justify-center gap-2.5 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
           {book.badge && <Badge type={book.badge} />}
-          {book.stock && (
-            <span className="text-[10px] font-medium text-green-600">● Còn {book.stock} quyển</span>
-          )}
+          <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${
+            book.stock > 10 ? 'text-green-700 bg-green-50' :
+            book.stock > 0 ? 'text-amber-700 bg-amber-50' :
+            'text-red-600 bg-red-50'
+          }`}>
+            {book.stock > 10 ? '● Còn hàng' : book.stock > 0 ? `● Chỉ còn ${book.stock} cuốn` : '● Hết hàng'}
+          </span>
         </div>
 
         <div>
@@ -90,11 +94,12 @@ export function FeaturedCard({ book }) {
 
           <button
             onClick={handleAddCart}
+            disabled={book.stock <= 0}
             aria-label={`Thêm ${book.title} vào giỏ hàng`}
-            className="flex items-center gap-1.5 bg-ink text-white text-[10px] font-semibold tracking-label uppercase px-4 py-2 rounded-sm hover:bg-ink-80 active:scale-95 transition-all"
+            className="flex items-center gap-1.5 bg-ink text-white text-[10px] font-semibold tracking-label uppercase px-4 py-2 rounded-sm hover:bg-ink-80 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <PlusIcon className="w-3 h-3" />
-            Thêm vào giỏ
+            {book.stock <= 0 ? 'Hết hàng' : 'Thêm vào giỏ'}
           </button>
 
           <button

@@ -19,11 +19,16 @@ exports.getSettings = async (req, res, next) => {
   } catch (err) { next(err) }
 }
 
-/* GET /api/settings/public — cấu hình an toàn cho khách (phí ship, liên hệ) */
+/* GET /api/settings/public — cấu hình an toàn cho khách (phí ship, liên hệ, banners) */
 exports.getPublicSettings = async (req, res, next) => {
   try {
     let s = await Settings.findById('singleton')
     if (!s) s = await Settings.create(DEFAULT)
+    
+    const activeBanners = (s.banners || [])
+      .filter(b => b.active)
+      .sort((a, b) => (a.order || 0) - (b.order || 0))
+
     res.json({ success: true, data: {
       shippingFee:           s.shippingFee,
       freeShippingThreshold: s.freeShippingThreshold,
@@ -31,6 +36,7 @@ exports.getPublicSettings = async (req, res, next) => {
       hotline:               s.hotline,
       supportEmail:          s.supportEmail,
       socialLinks:           s.socialLinks,
+      banners:               activeBanners,
     }})
   } catch (err) { next(err) }
 }

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuthStore }  from '../../store/authStore'
 import { useToastStore } from '../../store/toastStore'
 import { api }           from '../../services/api'
+import ConfirmModal      from '../../components/ui/ConfirmModal'
 
 const CITIES = ['Hà Nội','TP. Hồ Chí Minh','Đà Nẵng','Hải Phòng','Cần Thơ','Huế','Nha Trang','Biên Hòa','Vũng Tàu','Thái Nguyên','Khác']
 
@@ -131,14 +132,17 @@ export default function AddressesPage() {
     }
   }
 
+  const [deleteTargetId, setDeleteTargetId] = useState(null)
+
   async function handleDelete(id) {
-    if (!confirm('Xóa địa chỉ này?')) return
     try {
       const res = await api.delete(`/api/auth/addresses/${id}`)
       setAddresses(res.data)
       showToast({ message: 'Đã xóa địa chỉ', type: 'success' })
     } catch (e) {
       showToast({ message: e.message, type: 'error' })
+    } finally {
+      setDeleteTargetId(null)
     }
   }
 
@@ -246,7 +250,7 @@ export default function AddressesPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                     </svg>
                   </button>
-                  <button onClick={() => handleDelete(addr._id)}
+                  <button onClick={() => setDeleteTargetId(addr._id)}
                     className="p-2 rounded-lg hover:bg-red-50 text-muted hover:text-red-500 transition-colors cursor-pointer"
                     aria-label="Xóa địa chỉ"
                   >
@@ -260,6 +264,16 @@ export default function AddressesPage() {
           ))}
         </div>
       )}
+      <ConfirmModal
+        open={!!deleteTargetId}
+        onConfirm={() => handleDelete(deleteTargetId)}
+        onCancel={() => setDeleteTargetId(null)}
+        title="Xóa địa chỉ nhận hàng"
+        message="Bạn có chắc chắn muốn xóa địa chỉ này? Hành động này không thể hoàn tác."
+        confirmText="Xóa địa chỉ"
+        cancelText="Đóng"
+        variant="danger"
+      />
     </div>
   )
 }

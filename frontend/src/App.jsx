@@ -44,6 +44,7 @@ import PMCategoriesPage     from './pages/pm/PMCategoriesPage'
 import PMProductsPage       from './pages/pm/PMProductsPage'
 import PMVisibilityPage     from './pages/pm/PMVisibilityPage'
 import PMActivityPage       from './pages/pm/PMActivityPage'
+import PMSettingsPage       from './pages/pm/PMSettingsPage'
 import WarehouseDashboard    from './pages/warehouse/WarehouseDashboard'
 import WarehouseOrdersPage   from './pages/warehouse/WarehouseOrdersPage'
 import WarehouseInventoryPage from './pages/warehouse/WarehouseInventoryPage'
@@ -61,7 +62,7 @@ import {
 function MainLayout({ children }) {
   return (
     <>
-      <div className="fixed top-0 left-0 right-0 z-[100]">
+      <div className="fixed top-0 left-0 right-0 z-30">
         <AnnouncementBar message={ANNOUNCEMENT_MESSAGE} />
         <Navbar links={NAV_LINKS} categories={NAV_CATEGORIES} />
       </div>
@@ -110,6 +111,7 @@ export default function App() {
         <Route path="/pm/products"   element={<PMRoute><PMProductsPage /></PMRoute>} />
         <Route path="/pm/visibility" element={<PMRoute><PMVisibilityPage /></PMRoute>} />
         <Route path="/pm/activity"   element={<PMRoute><PMActivityPage /></PMRoute>} />
+        <Route path="/pm/settings"   element={<PMRoute><PMSettingsPage /></PMRoute>} />
 
         {/* Warehouse */}
         <Route path="/warehouse"           element={<WarehouseRoute><WarehouseDashboard /></WarehouseRoute>} />

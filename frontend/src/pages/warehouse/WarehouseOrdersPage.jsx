@@ -29,6 +29,7 @@ function Icon({ name, className = 'w-3.5 h-3.5' }) {
 
 /* ─── Cấu hình trạng thái ───────────────────────────────────── */
 const STATUS_CFG = {
+  PENDING:   { label: 'Chờ Admin duyệt', badge: 'bg-gray-50 text-gray-500 border-gray-200/50' },
   CONFIRMED: { label: 'Chờ đóng gói',  badge: 'bg-amber-50 text-amber-700 border-amber-200/50' },
   PACKING:   { label: 'Đang đóng gói', badge: 'bg-violet-50 text-violet-700 border-violet-200/50' },
   SHIPPING:  { label: 'Đang giao',     badge: 'bg-sky-50 text-sky-700 border-sky-200/50' },
@@ -159,6 +160,7 @@ function Timeline({ order }) {
 function OrderDetail({ order, onUpdate, onClose }) {
   const showToast = useToastStore(s => s.show)
   const [updating, setUpdating] = useState(false)
+  const isPending = order.status === 'PENDING'
   const nextCfg = NEXT_STATUS[order.status]
 
   async function advance() {
@@ -208,7 +210,21 @@ function OrderDetail({ order, onUpdate, onClose }) {
             {/* Timeline */}
             <div>
               <p className="text-[10px] font-bold uppercase tracking-wider text-[#615C56] mb-4">Tiến trình đơn hàng</p>
-              <Timeline order={order} />
+              {isPending ? (
+                <div className="flex items-center gap-3 p-3.5 bg-gray-50 border border-gray-200 rounded-lg">
+                  <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center shrink-0">
+                    <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-[12px] font-semibold text-gray-700">Đơn đang chờ Admin xác nhận</p>
+                    <p className="text-[11px] text-gray-500 mt-0.5">Sau khi Admin duyệt, bạn có thể bắt đầu đóng gói đơn hàng này.</p>
+                  </div>
+                </div>
+              ) : (
+                <Timeline order={order} />
+              )}
             </div>
 
             <div className="grid md:grid-cols-5 gap-5 items-start">
@@ -264,7 +280,7 @@ function OrderDetail({ order, onUpdate, onClose }) {
           </div>
         </div>
 
-        {nextCfg && (
+        {nextCfg && !isPending && (
           <div className="px-6 py-4 border-t border-[#EAE6DF] shrink-0">
             <button onClick={advance} disabled={updating}
               className="w-full py-3 bg-[#1A1A1A] text-white text-[13px] font-semibold rounded-lg hover:bg-[#333] transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
@@ -298,6 +314,7 @@ function OrderStat({ icon, label, value, accent = 'text-[#1A1A1A]', active, onCl
 
 const TABS = [
   { status: '',          label: 'Cần xử lý',     countKey: 'active' },
+  { status: 'PENDING',   label: 'Chờ Admin duyệt', countKey: 'PENDING' },
   { status: 'CONFIRMED', label: 'Chờ đóng gói',  countKey: 'CONFIRMED' },
   { status: 'PACKING',   label: 'Đang đóng gói', countKey: 'PACKING' },
   { status: 'SHIPPING',  label: 'Đang giao',     countKey: 'SHIPPING' },
@@ -346,6 +363,23 @@ export default function WarehouseOrdersPage() {
 
   useEffect(() => { fetchOrders() }, [fetchOrders])
   useEffect(() => { setPage(1); setCheckedIds([]) }, [activeStatus, dateFilter])
+
+  // Polling: silent refresh every 15s
+  useEffect(() => {
+    const id = setInterval(async () => {
+      try {
+        const params = new URLSearchParams({ page, limit: 20 })
+        if (activeStatus) params.set('status', activeStatus)
+        if (search) params.set('search', search)
+        if (dateFilter) params.set('date', dateFilter)
+        const res = await api.get(`/api/warehouse/orders?${params}`)
+        setOrders(res.data)
+        setCounts(res.counts || {})
+        setPagination(res.pagination || {})
+      } catch {}
+    }, 5000)
+    return () => clearInterval(id)
+  }, [page, activeStatus, search, dateFilter])
 
   function handleSearch(e) {
     const val = e.target.value
@@ -421,9 +455,12 @@ export default function WarehouseOrdersPage() {
 
       {/* Stat strip */}
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-        className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-5">
+        className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-5">
         <OrderStat icon="clipboard" label="Tổng đơn" value={counts.total ?? '—'}
           active={false} onClick={() => setSearchParams({})} />
+        <OrderStat icon="clipboard" label="Chờ Admin" value={counts.PENDING ?? 0}
+          accent={counts.PENDING > 0 ? 'text-gray-500' : 'text-[#1A1A1A]'}
+          active={activeStatus === 'PENDING'} onClick={() => setSearchParams({ status: 'PENDING' })} />
         <OrderStat icon="clipboard" label="Chờ xử lý" value={counts.CONFIRMED ?? 0}
           accent={counts.CONFIRMED > 0 ? 'text-amber-600' : 'text-[#1A1A1A]'}
           active={activeStatus === 'CONFIRMED'} onClick={() => setSearchParams({ status: 'CONFIRMED' })} />
@@ -583,20 +620,32 @@ export default function WarehouseOrdersPage() {
                       <td className="px-3 py-2.5"><StatusBadge status={o.status} /></td>
                       <td className="px-3 py-2.5 pr-5" onClick={e => e.stopPropagation()}>
                         <div className="flex gap-1.5 justify-end items-center">
-                          {nextCfg && (
-                            <button onClick={() => advanceOrder(o)} disabled={advancingId === o._id}
-                              className="px-2.5 py-1.5 text-[10.5px] font-semibold bg-[#1A1A1A] text-white rounded-lg hover:bg-[#333] disabled:opacity-50 transition-colors whitespace-nowrap">
-                              {advancingId === o._id ? '…' : nextCfg.label}
-                            </button>
+                          {o.status === 'PENDING' ? (
+                            <>
+                              <span className="px-2.5 py-1.5 text-[10px] font-semibold text-gray-400 italic whitespace-nowrap">Chờ Admin duyệt</span>
+                              <button onClick={() => setSelected(o)} title="Xem chi tiết"
+                                className="w-7 h-7 flex items-center justify-center border border-[#EAE6DF] rounded-lg text-[#615C56] hover:border-[#1A1A1A] hover:text-[#1A1A1A] transition-colors">
+                                <Icon name="eye" />
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              {nextCfg && (
+                                <button onClick={() => advanceOrder(o)} disabled={advancingId === o._id}
+                                  className="px-2.5 py-1.5 text-[10.5px] font-semibold bg-[#1A1A1A] text-white rounded-lg hover:bg-[#333] disabled:opacity-50 transition-colors whitespace-nowrap">
+                                  {advancingId === o._id ? '…' : nextCfg.label}
+                                </button>
+                              )}
+                              <button onClick={() => setSelected(o)} title="Xem chi tiết"
+                                className="w-7 h-7 flex items-center justify-center border border-[#EAE6DF] rounded-lg text-[#615C56] hover:border-[#1A1A1A] hover:text-[#1A1A1A] transition-colors">
+                                <Icon name="eye" />
+                              </button>
+                              <button onClick={() => printOrders([o])} title="In phiếu giao hàng"
+                                className="w-7 h-7 flex items-center justify-center border border-[#EAE6DF] rounded-lg text-[#615C56] hover:border-[#1A1A1A] hover:text-[#1A1A1A] transition-colors">
+                                <Icon name="printer" />
+                              </button>
+                            </>
                           )}
-                          <button onClick={() => setSelected(o)} title="Xem chi tiết"
-                            className="w-7 h-7 flex items-center justify-center border border-[#EAE6DF] rounded-lg text-[#615C56] hover:border-[#1A1A1A] hover:text-[#1A1A1A] transition-colors">
-                            <Icon name="eye" />
-                          </button>
-                          <button onClick={() => printOrders([o])} title="In phiếu giao hàng"
-                            className="w-7 h-7 flex items-center justify-center border border-[#EAE6DF] rounded-lg text-[#615C56] hover:border-[#1A1A1A] hover:text-[#1A1A1A] transition-colors">
-                            <Icon name="printer" />
-                          </button>
                         </div>
                       </td>
                     </tr>

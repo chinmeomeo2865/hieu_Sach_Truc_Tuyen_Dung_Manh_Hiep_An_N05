@@ -37,6 +37,7 @@ const startAutoCancelJob = () => {
         
         // 2. Update status and history
         order.status = 'CANCELLED'
+        order.returnProcessed = true
         order.statusHistory.push({
           status: 'CANCELLED',
           changedAt: new Date(),

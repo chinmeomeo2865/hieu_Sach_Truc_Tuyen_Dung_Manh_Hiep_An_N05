@@ -102,6 +102,9 @@ const createOrder = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Một số sách vừa hết hàng, vui lòng kiểm tra lại giỏ' })
     }
 
+    // Đồng bộ lại inStock cho các sản phẩm vừa hết hàng
+    await Product.updateMany({ stock: 0, inStock: true }, { inStock: false })
+
     const subtotal = cart.items.reduce((sum, i) => sum + i.price * i.qty, 0)
 
     /* Phí ship theo Settings (miễn nếu đạt ngưỡng) */
@@ -200,15 +203,8 @@ const cancelOrder = async (req, res, next) => {
       })
     }
 
-    /* Restore stock */
-    await Product.bulkWrite(
-      order.items.map(item => ({
-        updateOne: {
-          filter: { _id: item.product },
-          update: { $inc: { stock: item.qty } },
-        },
-      }))
-    )
+    // Không tự động hoàn stock ở đây nữa.
+    // Việc hoàn stock sẽ do Thủ kho quyết định khi xử lý hoàn/hủy đơn hàng tại Warehouse dashboard.
 
     order.status = 'CANCELLED'
     if (order.payment === 'ONLINE' && order.paymentStatus === 'PAID') {
@@ -257,6 +253,9 @@ const updateStatus = async (req, res, next) => {
           },
         }))
       )
+
+      // Đồng bộ lại inStock cho các sản phẩm vừa có hàng trở lại
+      await Product.updateMany({ stock: { $gt: 0 }, inStock: false }, { inStock: true })
     }
 
     order.status = status

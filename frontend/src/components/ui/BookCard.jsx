@@ -45,7 +45,7 @@ export function BookCard({ book }) {
   return (
     <article
       onClick={() => openQuickView(book)}
-      className="group bg-white border border-divider-lt rounded-lg overflow-hidden flex flex-col cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-card-h hover:border-divider"
+      className="group bg-white border border-divider-lt rounded-lg overflow-hidden flex flex-col cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-card-h hover:border-divider h-full"
     >
       {/* Media */}
       <div className="relative aspect-book bg-surface-subtle overflow-hidden">
@@ -80,10 +80,11 @@ export function BookCard({ book }) {
         {/* Quick add */}
         <button
           onClick={handleAddCart}
+          disabled={book.stock <= 0}
           aria-label={`Thêm ${book.title} vào giỏ hàng`}
-          className="absolute bottom-0 left-0 right-0 bg-ink/88 text-white text-[10px] font-semibold tracking-label uppercase py-2.5 text-center translate-y-full transition-transform duration-300 group-hover:translate-y-0"
+          className="absolute bottom-0 left-0 right-0 bg-ink/88 text-white text-[10px] font-semibold tracking-label uppercase py-2.5 text-center translate-y-full transition-transform duration-300 group-hover:translate-y-0 disabled:bg-subtle disabled:text-ink/40 disabled:cursor-not-allowed"
         >
-          + Thêm vào giỏ hàng
+          {book.stock <= 0 ? 'Hết hàng' : '+ Thêm vào giỏ hàng'}
         </button>
       </div>
 
@@ -92,11 +93,23 @@ export function BookCard({ book }) {
         <p className="text-[9px] font-semibold tracking-label-lg uppercase text-accent mb-1.5">{book.category}</p>
         <h3 className="font-display font-semibold text-[0.92rem] leading-snug text-ink mb-1 line-clamp-2">{book.title}</h3>
         <p className="text-[11px] text-muted mb-2.5">{book.author}</p>
-        {book.reviewCount > 0 && (
-          <StarRating rating={book.rating} reviewCount={book.reviewCount} className="pb-3" />
-        )}
+        
+        <div className="flex items-center justify-between gap-1 mb-3 mt-auto">
+          {book.reviewCount > 0 ? (
+            <StarRating rating={book.rating} reviewCount={book.reviewCount} />
+          ) : (
+            <div />
+          )}
+          <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded ${
+            book.stock > 10 ? 'text-green-700 bg-green-50' :
+            book.stock > 0 ? 'text-amber-700 bg-amber-50' :
+            'text-red-600 bg-red-50'
+          }`}>
+            {book.stock > 10 ? 'Còn hàng' : book.stock > 0 ? `Chỉ còn ${book.stock}` : 'Hết hàng'}
+          </span>
+        </div>
 
-        <div className="flex items-center justify-between gap-2 pt-3 border-t border-divider-lt mt-auto">
+        <div className="flex items-center justify-between gap-2 pt-3 border-t border-divider-lt">
           <div>
             <span className="block text-sm font-bold text-ink">{formatPrice(book.price)}</span>
             {book.originalPrice && (
@@ -105,8 +118,9 @@ export function BookCard({ book }) {
           </div>
           <button
             onClick={handleAddCart}
-            aria-label={`Thêm ${book.title} vào giỏ`}
-            className="w-8 h-8 rounded-lg bg-ink text-white flex items-center justify-center flex-shrink-0 hover:bg-ink-80 active:scale-95 transition-all"
+            disabled={book.stock <= 0}
+            aria-label={book.stock <= 0 ? 'Hết hàng' : `Thêm ${book.title} vào giỏ`}
+            className="w-8 h-8 rounded-lg bg-ink text-white flex items-center justify-center flex-shrink-0 hover:bg-ink-80 active:scale-95 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
           >
             <PlusIcon />
           </button>

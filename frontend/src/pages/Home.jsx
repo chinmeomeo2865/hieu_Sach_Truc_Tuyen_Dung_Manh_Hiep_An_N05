@@ -43,11 +43,29 @@ export default function Home() {
       .catch(() => {})
   }, [])
 
+  const [banners, setBanners] = useState([])
+  useEffect(() => {
+    api.get('/api/settings/public')
+      .then(r => {
+        if (r.data?.banners?.length) {
+          setBanners(r.data.banners)
+        }
+      })
+      .catch(() => {})
+  }, [])
+
+  const heroImages = banners.length > 0
+    ? banners.slice(0, 3).map((b, i) => ({
+        src: b.imageUrl,
+        tall: i === 0
+      }))
+    : HERO_IMAGES
+
   return (
     <>
       <Hero
         stats={HERO_STATS}
-        images={HERO_IMAGES}
+        images={heroImages}
       />
 
       <TrustBar items={TRUST_ITEMS} />
@@ -70,6 +88,7 @@ export default function Home() {
           title="Mới về"
           subtitle="Những đầu sách mới nhất vừa được bổ sung"
           linkText="Xem tất cả"
+          linkHref="/books?sort=newest"
         />
       </div>
 

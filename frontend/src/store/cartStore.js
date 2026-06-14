@@ -46,6 +46,22 @@ export const useCartStore = create(
       },
 
       clear() { set({ items: [] }) },
+
+      clearSelected() {
+        set({ items: get().items.filter(i => i.selected === false) })
+      },
+
+      toggleSelect(id) {
+        set({
+          items: get().items.map(i => i.id === id ? { ...i, selected: !(i.selected !== false) } : i)
+        })
+      },
+
+      selectAll(selected = true) {
+        set({
+          items: get().items.map(i => ({ ...i, selected }))
+        })
+      },
     }),
     {
       name: 'chin-cart',

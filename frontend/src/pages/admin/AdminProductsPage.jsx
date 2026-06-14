@@ -35,6 +35,7 @@ const EMPTY_FORM = {
   title: '', author: '', price: '', originalPrice: '',
   category: '', categorySlug: '', description: '',
   image: '', stock: 0, badge: '', featured: false, visible: true,
+  weight: 0,
 }
 
 /* ─── StatCard ─── */
@@ -76,6 +77,7 @@ function ProductModal({ book, onClose, onSaved, showToast }) {
     badge:         book.badge         || '',
     featured:      book.featured      || false,
     visible:       book.visible       ?? true,
+    weight:        book.weight        ?? 0,
   } : { ...EMPTY_FORM })
 
   const [saving,       setSaving]       = useState(false)
@@ -125,6 +127,7 @@ function ProductModal({ book, onClose, onSaved, showToast }) {
         originalPrice: form.originalPrice !== '' ? Number(form.originalPrice) : undefined,
         stock:         Number(form.stock),
         badge:         form.badge || null,
+        weight:        form.weight !== '' ? Number(form.weight) : 0,
       }
       if (isEdit) {
         await api.put(`/api/products/${book._id}`, body)
@@ -249,13 +252,20 @@ function ProductModal({ book, onClose, onSaved, showToast }) {
               placeholder="Giới thiệu ngắn về sách…" />
           </Field>
 
-          {/* badge + featured + visible */}
+          {/* badge + weight + featured + visible */}
           <div className="flex flex-wrap gap-6 items-end">
-            <div className="w-40">
+            <div className="w-36">
               <Field label="Badge">
                 <select value={form.badge} onChange={e => set('badge', e.target.value)} className={INPUT_CLS}>
                   {BADGE_OPTS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                 </select>
+              </Field>
+            </div>
+            <div className="w-36">
+              <Field label="Trọng số hiển thị">
+                <input type="number" min="0" value={form.weight}
+                  onChange={e => set('weight', e.target.value)}
+                  className={INPUT_CLS} placeholder="0" />
               </Field>
             </div>
             <label className="flex items-center gap-2 cursor-pointer select-none pb-0.5">

@@ -42,16 +42,37 @@ const BADGE_UI = {
   best: 'bg-amber-50 text-amber-700 border-amber-200/50',
   sale: 'bg-red-50 text-red-600 border-red-200/50',
 }
-const EMPTY = { title:'', author:'', price:'', originalPrice:'', category:'', categorySlug:'', description:'', image:'', stock:0, badge:'', featured:false, visible:true }
+const EMPTY = { title:'', author:'', price:'', originalPrice:'', category:'', categorySlug:'', description:'', image:'', images: [], isbn: '', publisher: '', pages: '', coverType: '', stock:0, badge:'', featured:false, visible:true, status: 'active', weight: 0 }
 
 const FIELD_LABEL = 'block text-[10px] font-bold uppercase tracking-wider text-[#615C56] mb-1.5'
 
 function ProductModal({ book, cats, onClose, onSaved }) {
   const showToast = useToastStore(s => s.show)
   const isEdit    = !!book
-  const [form, setForm]     = useState(isEdit ? { title:book.title||'', author:book.author||'', price:book.price??'', originalPrice:book.originalPrice??'', category:book.category||'', categorySlug:book.categorySlug||'', description:book.description||'', image:book.image||'', stock:book.stock??0, badge:book.badge||'', featured:book.featured||false, visible:book.visible??true } : { ...EMPTY })
+  const [form, setForm]     = useState(isEdit ? { 
+    title:book.title||'', 
+    author:book.author||'', 
+    price:book.price??'', 
+    originalPrice:book.originalPrice??'', 
+    category:book.category||'', 
+    categorySlug:book.categorySlug||'', 
+    description:book.description||'', 
+    image:book.image||'', 
+    images:book.images||[], 
+    isbn:book.isbn||'', 
+    publisher:book.publisher||'', 
+    pages:book.pages??'', 
+    coverType:book.coverType||'', 
+    stock:book.stock??0, 
+    badge:book.badge||'', 
+    featured:book.featured||false, 
+    visible:book.visible??true,
+    status:book.status||'active',
+    weight:book.weight??0
+  } : { ...EMPTY })
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
+  const [newImgUrl, setNewImgUrl] = useState('')
 
   const set = f => e => {
     const val = e.target.type === 'checkbox' ? e.target.checked : e.target.type === 'number' ? (e.target.value === '' ? '' : Number(e.target.value)) : e.target.value
@@ -62,11 +83,20 @@ function ProductModal({ book, cats, onClose, onSaved }) {
     const cat = cats.find(c => c.slug === e.target.value)
     setForm(p => ({ ...p, category: cat?.name || '', categorySlug: cat?.slug || '' }))
   }
+  function handleAddImage() {
+    if (!newImgUrl.trim()) return
+    setForm(p => ({ ...p, images: [...(p.images || []), newImgUrl.trim()] }))
+    setNewImgUrl('')
+  }
+  function handleRemoveImage(idx) {
+    setForm(p => ({ ...p, images: (p.images || []).filter((_, i) => i !== idx) }))
+  }
   function validate() {
     const e = {}
     if (!form.title.trim()) e.title = 'Tên sách là bắt buộc'
     if (!form.author.trim()) e.author = 'Tác giả là bắt buộc'
     if (form.price === '' || Number(form.price) < 0) e.price = 'Giá không hợp lệ'
+    if (form.pages !== '' && Number(form.pages) < 0) e.pages = 'Số trang không hợp lệ'
     if (!form.categorySlug) e.category = 'Chọn thể loại'
     return e
   }
@@ -76,7 +106,15 @@ function ProductModal({ book, cats, onClose, onSaved }) {
     if (Object.keys(errs).length) { setErrors(errs); return }
     setLoading(true)
     try {
-      const payload = { ...form, price: Number(form.price), originalPrice: form.originalPrice ? Number(form.originalPrice) : undefined, stock: Number(form.stock), badge: form.badge || null }
+      const payload = { 
+        ...form, 
+        price: Number(form.price), 
+        originalPrice: form.originalPrice ? Number(form.originalPrice) : undefined, 
+        stock: Number(form.stock), 
+        pages: form.pages !== '' ? Number(form.pages) : undefined,
+        weight: form.weight !== '' ? Number(form.weight) : 0,
+        badge: form.badge || null 
+      }
       if (isEdit) await api.put(`/api/products/${book._id}`, payload)
       else        await api.post('/api/products', payload)
       showToast({ message: isEdit ? 'Đã cập nhật sách' : 'Đã thêm sách mới', type: 'success' })
@@ -133,6 +171,28 @@ function ProductModal({ book, cats, onClose, onSaved }) {
                   <input type="number" min="0" value={form.originalPrice} onChange={set('originalPrice')} placeholder="100000 (nếu đang sale)" className={iCls('originalPrice')}/>
                 </div>
                 <div>
+                  <label className={FIELD_LABEL}>Mã ISBN</label>
+                  <input value={form.isbn} onChange={set('isbn')} placeholder="978-604-..." className={iCls('isbn')}/>
+                </div>
+                <div>
+                  <label className={FIELD_LABEL}>Nhà xuất bản</label>
+                  <input value={form.publisher} onChange={set('publisher')} placeholder="NXB Trẻ, Kim Đồng..." className={iCls('publisher')}/>
+                </div>
+                <div>
+                  <label className={FIELD_LABEL}>Số trang</label>
+                  <input type="number" min="0" value={form.pages} onChange={set('pages')} placeholder="250" className={iCls('pages')}/>
+                  <Err field="pages"/>
+                </div>
+                <div>
+                  <label className={FIELD_LABEL}>Hình thức bìa</label>
+                  <select value={form.coverType} onChange={set('coverType')} className={iCls('coverType')}>
+                    <option value="">Chọn loại bìa...</option>
+                    <option value="Bìa mềm">Bìa mềm</option>
+                    <option value="Bìa cứng">Bìa cứng</option>
+                    <option value="Khác">Khác</option>
+                  </select>
+                </div>
+                <div>
                   <label className={FIELD_LABEL}>Tồn kho</label>
                   <input type="number" min="0" value={form.stock} onChange={set('stock')} className={iCls('stock')}/>
                 </div>
@@ -142,30 +202,68 @@ function ProductModal({ book, cats, onClose, onSaved }) {
                     {BADGE_OPTS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                   </select>
                 </div>
+                <div>
+                  <label className={FIELD_LABEL}>Trạng thái kinh doanh</label>
+                  <select value={form.status} onChange={set('status')} className={iCls('status')}>
+                    <option value="active">Đang bán (Active)</option>
+                    <option value="draft">Bản nháp (Draft)</option>
+                    <option value="archived">Lưu trữ/Ngừng bán (Archived)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className={FIELD_LABEL}>Trọng số hiển thị</label>
+                  <input type="number" min="0" value={form.weight} onChange={set('weight')} placeholder="0" className={iCls('weight')}/>
+                  <Err field="weight"/>
+                </div>
                 <div className="col-span-2">
-                  <label className={FIELD_LABEL}>URL ảnh bìa</label>
+                  <label className={FIELD_LABEL}>URL ảnh bìa chính</label>
                   <input value={form.image} onChange={set('image')} placeholder="https://…" className={iCls('image')}/>
                 </div>
+
+                {/* Gallery album */}
+                <div className="col-span-2 border-t border-[#EAE6DF] pt-4">
+                  <label className={FIELD_LABEL}>Album ảnh bổ sung (Gallery)</label>
+                  {form.images && form.images.length > 0 && (
+                    <div className="flex flex-wrap gap-2.5 mb-3">
+                      {form.images.map((img, idx) => (
+                        <div key={idx} className="w-16 h-20 rounded-lg border border-[#EAE6DF] bg-[#FAF8F5] relative overflow-hidden group">
+                          <img src={img} alt="" className="w-full h-full object-cover"/>
+                          <button type="button" onClick={() => handleRemoveImage(idx)}
+                            className="absolute inset-0 bg-red-600/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-[11px] font-bold">
+                            Xóa
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <div className="flex gap-2">
+                    <input value={newImgUrl} onChange={e => setNewImgUrl(e.target.value)} placeholder="Nhập URL ảnh bổ sung..." className="flex-1 px-3 py-2 border border-[#EAE6DF] rounded-lg text-[12.5px] bg-[#FAF8F5] focus:bg-white focus:outline-none focus:border-[#1A1A1A] transition-colors"/>
+                    <button type="button" onClick={handleAddImage} className="px-4 py-2 bg-[#615C56] text-white text-[12px] font-bold uppercase tracking-wider rounded-lg hover:bg-[#1A1A1A] transition-colors">
+                      Thêm
+                    </button>
+                  </div>
+                </div>
+
                 <div className="col-span-2">
                   <label className={FIELD_LABEL}>Mô tả</label>
                   <textarea value={form.description} onChange={set('description')} rows={3} placeholder="Giới thiệu về cuốn sách…"
                     className="w-full px-3.5 py-2.5 border border-[#EAE6DF] rounded-lg text-[13px] bg-white focus:outline-none focus:border-[#1A1A1A] resize-none transition-colors"/>
                 </div>
-                <div className="flex items-center gap-5">
+                <div className="flex items-center gap-5 col-span-2">
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input type="checkbox" checked={form.featured} onChange={set('featured')} className="w-3.5 h-3.5 accent-[#1A1A1A] rounded"/>
                     <span className="text-[12px] font-medium text-[#1A1A1A]">Nổi bật</span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input type="checkbox" checked={form.visible} onChange={set('visible')} className="w-3.5 h-3.5 accent-[#1A1A1A] rounded"/>
-                    <span className="text-[12px] font-medium text-[#1A1A1A]">Hiển thị</span>
+                    <span className="text-[12px] font-medium text-[#1A1A1A]">Hiển thị công khai</span>
                   </label>
                 </div>
               </div>
             </div>
             <div className="px-6 py-4 border-t border-[#EAE6DF] shrink-0 flex gap-3">
               <button type="button" onClick={onClose} className="flex-1 py-2.5 border border-[#EAE6DF] rounded-lg text-[12px] font-semibold text-[#615C56] hover:border-[#9B9389] transition-colors">Hủy</button>
-              <button type="submit" disabled={loading} className="flex-1 py-2.5 bg-[#1A1A1A] text-white rounded-lg text-[12px] font-semibold hover:bg-[#333] disabled:opacity-50 transition-colors">
+              <button type="submit" disabled={loading} className="flex-1 py-2.5 bg-[#1A1A1A] text-white rounded-lg text-[12px] font-semibold hover:bg-black disabled:opacity-50 transition-colors">
                 {loading ? 'Đang lưu…' : isEdit ? 'Cập nhật' : 'Thêm sách'}
               </button>
             </div>
@@ -313,9 +411,18 @@ export default function PMProductsPage() {
                       <span className={`font-display text-[13px] font-bold ${p.stock === 0 ? 'text-red-600' : p.stock <= 10 ? 'text-amber-600' : 'text-[#1A1A1A]'}`}>{p.stock}</span>
                     </td>
                     <td className="px-3 py-2.5">
-                      <span className={`px-2 py-0.5 rounded text-[9.5px] font-bold uppercase tracking-wide border ${p.visible ? 'bg-emerald-50 text-emerald-700 border-emerald-200/50' : 'bg-[#FAF8F5] text-[#9B9389] border-[#EAE6DF]'}`}>
-                        {p.visible ? 'Đang hiện' : 'Đang ẩn'}
-                      </span>
+                      <div className="flex flex-col gap-1 items-start">
+                        <span className={`px-2 py-0.5 rounded text-[8.5px] font-bold uppercase tracking-wide border ${p.visible ? 'bg-emerald-50 text-emerald-700 border-emerald-200/50' : 'bg-[#FAF8F5] text-[#9B9389] border-[#EAE6DF]'}`}>
+                          {p.visible ? 'Hiện' : 'Ẩn'}
+                        </span>
+                        <span className={`px-2 py-0.5 rounded text-[8.5px] font-bold uppercase tracking-wide border ${
+                          p.status === 'active' ? 'bg-emerald-50 text-emerald-700 border-emerald-200/50' : 
+                          p.status === 'draft' ? 'bg-amber-50 text-amber-700 border-amber-200/50' : 
+                          'bg-red-50 text-red-600 border-red-200/50'
+                        }`}>
+                          {p.status === 'active' ? 'Đang bán' : p.status === 'draft' ? 'Bản nháp' : 'Lưu trữ'}
+                        </span>
+                      </div>
                     </td>
                     <td className="px-3 py-2.5 pr-5">
                       <div className="flex gap-1.5 justify-end">

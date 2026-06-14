@@ -78,9 +78,18 @@ function BestsellerRow({ book, rank }) {
           {book.title}
         </h3>
         <p className="text-[11px] text-muted mt-0.5">{book.author}</p>
-        {book.reviewCount > 0 && (
-          <StarRating rating={book.rating} reviewCount={book.reviewCount} className="mt-1" />
-        )}
+        <div className="flex items-center gap-3 mt-1.5 flex-wrap">
+          {book.reviewCount > 0 && (
+            <StarRating rating={book.rating} reviewCount={book.reviewCount} />
+          )}
+          <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded leading-none ${
+            book.stock > 10 ? 'text-green-700 bg-green-50' :
+            book.stock > 0 ? 'text-amber-700 bg-amber-50' :
+            'text-red-600 bg-red-50'
+          }`}>
+            {book.stock > 10 ? 'Còn hàng' : book.stock > 0 ? `Chỉ còn ${book.stock}` : 'Hết hàng'}
+          </span>
+        </div>
       </div>
 
       {/* Price + actions */}
@@ -102,8 +111,9 @@ function BestsellerRow({ book, rank }) {
 
         <button
           onClick={handleAddCart}
-          aria-label={`Thêm ${book.title} vào giỏ`}
-          className="w-8 h-8 rounded-sm bg-ink text-white flex items-center justify-center flex-shrink-0 hover:bg-ink-80 active:scale-95 transition-all"
+          disabled={book.stock <= 0}
+          aria-label={book.stock <= 0 ? 'Hết hàng' : `Thêm ${book.title} vào giỏ`}
+          className="w-8 h-8 rounded-sm bg-ink text-white flex items-center justify-center flex-shrink-0 hover:bg-ink-80 active:scale-95 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
         >
           <PlusIcon />
         </button>
