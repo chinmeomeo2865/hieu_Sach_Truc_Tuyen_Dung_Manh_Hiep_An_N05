@@ -22,7 +22,6 @@ import WishlistPage         from './pages/account/WishlistPage'
 import { AccountLayout }          from './components/layout/AccountLayout'
 import PlaceholderPage      from './pages/PlaceholderPage'
 import SupportPage          from './pages/SupportPage'
-import AdminLoginPage       from './pages/admin/AdminLoginPage'
 import AdminOrdersPage      from './pages/admin/AdminOrdersPage'
 import AdminUsersPage       from './pages/admin/AdminUsersPage'
 import AdminProductsPage    from './pages/admin/AdminProductsPage'
@@ -30,23 +29,21 @@ import AdminAccountsPage    from './pages/admin/AdminAccountsPage'
 import AdminAnalyticsPage   from './pages/admin/AdminAnalyticsPage'
 import AdminSettingsPage    from './pages/admin/AdminSettingsPage'
 import AdminRoute           from './components/admin/AdminRoute'
-import AdminCouponsPage     from './pages/admin/AdminCouponsPage'
 import AdminReviewsPage    from './pages/admin/AdminReviewsPage'
 import AdminArticlesPage   from './pages/admin/AdminArticlesPage'
+import AdminCouponsPage    from './pages/admin/AdminCouponsPage'
 import BlogPage            from './pages/BlogPage'
 import BlogDetailPage      from './pages/BlogDetailPage'
+import OffersPage          from './pages/OffersPage'
 import NotificationsPage   from './pages/NotificationsPage'
 import PaymentResultPage   from './pages/PaymentResultPage'
 import WarehouseRoute        from './components/warehouse/WarehouseRoute'
 import PMRoute              from './components/pm/PMRoute'
-import PMLoginPage          from './pages/pm/PMLoginPage'
 import PMDashboard          from './pages/pm/PMDashboard'
 import PMCategoriesPage     from './pages/pm/PMCategoriesPage'
 import PMProductsPage       from './pages/pm/PMProductsPage'
 import PMVisibilityPage     from './pages/pm/PMVisibilityPage'
-import PMPromotionsPage     from './pages/pm/PMPromotionsPage'
 import PMActivityPage       from './pages/pm/PMActivityPage'
-import WarehouseLoginPage    from './pages/warehouse/WarehouseLoginPage'
 import WarehouseDashboard    from './pages/warehouse/WarehouseDashboard'
 import WarehouseOrdersPage   from './pages/warehouse/WarehouseOrdersPage'
 import WarehouseInventoryPage from './pages/warehouse/WarehouseInventoryPage'
@@ -99,6 +96,7 @@ export default function App() {
           <Route path="wishlist" element={<WishlistPage />} />
         </Route>
         <Route path="/support"           element={<MainLayout><SupportPage /></MainLayout>} />
+        <Route path="/uu-dai"            element={<MainLayout><OffersPage /></MainLayout>} />
         <Route path="/blog"              element={<MainLayout><BlogPage /></MainLayout>} />
         <Route path="/blog/:id"          element={<MainLayout><BlogDetailPage /></MainLayout>} />
         <Route path="/notifications"     element={<MainLayout><NotificationsPage /></MainLayout>} />
@@ -107,16 +105,13 @@ export default function App() {
         <Route path="/auth/register"  element={<RegisterPage />} />
 
         {/* Product Manager */}
-        <Route path="/pm/login"      element={<PMLoginPage />} />
         <Route path="/pm"            element={<PMRoute><PMDashboard /></PMRoute>} />
         <Route path="/pm/categories" element={<PMRoute><PMCategoriesPage /></PMRoute>} />
         <Route path="/pm/products"   element={<PMRoute><PMProductsPage /></PMRoute>} />
         <Route path="/pm/visibility" element={<PMRoute><PMVisibilityPage /></PMRoute>} />
-        <Route path="/pm/promotions" element={<PMRoute><PMPromotionsPage /></PMRoute>} />
         <Route path="/pm/activity"   element={<PMRoute><PMActivityPage /></PMRoute>} />
 
         {/* Warehouse */}
-        <Route path="/warehouse/login"     element={<WarehouseLoginPage />} />
         <Route path="/warehouse"           element={<WarehouseRoute><WarehouseDashboard /></WarehouseRoute>} />
         <Route path="/warehouse/orders"    element={<WarehouseRoute><WarehouseOrdersPage /></WarehouseRoute>} />
         <Route path="/warehouse/inventory" element={<WarehouseRoute><WarehouseInventoryPage /></WarehouseRoute>} />
@@ -126,16 +121,15 @@ export default function App() {
         <Route path="/warehouse/activity"  element={<WarehouseRoute><WarehouseActivityPage /></WarehouseRoute>} />
 
         {/* Admin */}
-        <Route path="/admin/login"      element={<AdminLoginPage />} />
         <Route path="/admin/analytics"  element={<AdminRoute><AdminAnalyticsPage /></AdminRoute>} />
         <Route path="/admin/orders"     element={<AdminRoute><AdminOrdersPage /></AdminRoute>} />
         <Route path="/admin/products"   element={<AdminRoute><AdminProductsPage /></AdminRoute>} />
         <Route path="/admin/users"      element={<AdminRoute><AdminUsersPage /></AdminRoute>} />
         <Route path="/admin/accounts"   element={<AdminRoute><AdminAccountsPage /></AdminRoute>} />
         <Route path="/admin/settings"   element={<AdminRoute><AdminSettingsPage /></AdminRoute>} />
-        <Route path="/admin/coupons"    element={<AdminRoute><AdminCouponsPage /></AdminRoute>} />
         <Route path="/admin/reviews"    element={<AdminRoute><AdminReviewsPage /></AdminRoute>} />
         <Route path="/admin/articles"   element={<AdminRoute><AdminArticlesPage /></AdminRoute>} />
+        <Route path="/admin/coupons"    element={<AdminRoute><AdminCouponsPage /></AdminRoute>} />
       </Routes>
     </BrowserRouter>
   )

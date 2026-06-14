@@ -4,6 +4,7 @@ import { api }                 from '../services/api'
 import { useCartStore }        from '../store/cartStore'
 import { useAuthStore }        from '../store/authStore'
 import { useToastStore }       from '../store/toastStore'
+import { CouponBox }           from '../components/ui/CouponBox'
 import { formatPrice }         from '../utils/format'
 
 const CITIES = [
@@ -28,10 +29,8 @@ export default function CheckoutPage() {
   })
   const [loading,       setLoading]       = useState(false)
   const [paymentMethod, setPaymentMethod] = useState('COD')
-  const [couponInput,   setCouponInput]   = useState('')
-  const [couponResult,  setCouponResult]  = useState(null)  // { code, description, discount }
-  const [couponLoading, setCouponLoading] = useState(false)
-  const [couponError,   setCouponError]   = useState('')
+  const [couponResult,  setCouponResult]  = useState(null)  // { code, description, discount, shipDiscount }
+  const [shipConfig,    setShipConfig]    = useState({ shippingFee: 0, freeShippingThreshold: 0 })
 
   useEffect(() => {
     if (!isAuth) {
@@ -42,40 +41,24 @@ export default function CheckoutPage() {
     if (items.length === 0) navigate('/cart')
   }, [])
 
+  useEffect(() => {
+    api.get('/api/settings/public')
+      .then(r => setShipConfig({ shippingFee: r.data.shippingFee || 0, freeShippingThreshold: r.data.freeShippingThreshold || 0 }))
+      .catch(() => {})
+  }, [])
+
   function update(field) {
     return e => setForm(f => ({ ...f, [field]: e.target.value }))
   }
 
   const subtotal    = items.reduce((sum, i) => sum + i.price * i.qty, 0)
   const totalQty    = items.reduce((sum, i) => sum + i.qty, 0)
-  const discount    = couponResult?.discount ?? 0
-  const total       = subtotal - discount
-  const isFormValid = form.name.trim() && form.phone.trim() && form.street.trim()
-
-  async function applyCoupon() {
-    if (!couponInput.trim()) return
-    setCouponLoading(true)
-    setCouponError('')
-    try {
-      const res = await api.post('/api/coupons/validate', {
-        code: couponInput.trim(),
-        subtotal,
-      })
-      setCouponResult(res.data)
-      setCouponError('')
-    } catch (err) {
-      setCouponResult(null)
-      setCouponError(err.message || 'Mã không hợp lệ')
-    } finally {
-      setCouponLoading(false)
-    }
-  }
-
-  function removeCoupon() {
-    setCouponResult(null)
-    setCouponInput('')
-    setCouponError('')
-  }
+  const baseShipping = (shipConfig.freeShippingThreshold > 0 && subtotal >= shipConfig.freeShippingThreshold)
+    ? 0 : shipConfig.shippingFee
+  const discount     = couponResult?.discount ?? 0
+  const shipDiscount = Math.min(couponResult?.shipDiscount ?? 0, baseShipping)
+  const total        = Math.max(0, subtotal + baseShipping - discount - shipDiscount)
+  const isFormValid  = form.name.trim() && form.phone.trim() && form.street.trim()
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -240,54 +223,7 @@ export default function CheckoutPage() {
 
               {/* Coupon input */}
               <div className="pt-4 border-t border-divider-lt">
-                {couponResult ? (
-                  <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded-sm px-3 py-2.5">
-                    <div>
-                      <p className="text-xs font-semibold text-emerald-700 flex items-center gap-1">
-                        <span>✓</span> {couponResult.code}
-                      </p>
-                      <p className="text-[10px] text-emerald-600 mt-0.5">{couponResult.description}</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={removeCoupon}
-                      className="text-emerald-500 hover:text-emerald-700 transition-colors ml-3"
-                      aria-label="Xóa mã"
-                    >
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                      </svg>
-                    </button>
-                  </div>
-                ) : (
-                  <div className="space-y-1.5">
-                    <label className="block text-2xs font-semibold tracking-label-lg uppercase text-ink-60">Mã giảm giá</label>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={couponInput}
-                        onChange={e => { setCouponInput(e.target.value.toUpperCase()); setCouponError('') }}
-                        onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), applyCoupon())}
-                        placeholder="Nhập mã giảm giá…"
-                        className={`flex-1 border rounded-sm px-3 py-2 text-sm text-ink placeholder:text-subtle focus:outline-none focus:border-ink transition-colors ${couponError ? 'border-red-300' : 'border-divider'}`}
-                      />
-                      <button
-                        type="button"
-                        onClick={applyCoupon}
-                        disabled={couponLoading || !couponInput.trim()}
-                        className="px-3 py-2 border border-divider rounded-sm text-xs font-semibold text-ink hover:border-ink disabled:opacity-40 transition-colors whitespace-nowrap"
-                      >
-                        {couponLoading ? '…' : 'Áp dụng'}
-                      </button>
-                    </div>
-                    {couponError && (
-                      <p className="text-xs text-red-500 flex items-center gap-1">
-                        <svg className="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10"/><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01"/></svg>
-                        {couponError}
-                      </p>
-                    )}
-                  </div>
-                )}
+                <CouponBox subtotal={subtotal} result={couponResult} onResult={setCouponResult} />
               </div>
 
               <div className="pt-4 border-t border-divider-lt space-y-2 text-sm">
@@ -295,7 +231,7 @@ export default function CheckoutPage() {
                   <span>Tạm tính</span>
                   <span>{formatPrice(subtotal)}</span>
                 </div>
-                {couponResult && (
+                {discount > 0 && (
                   <div className="flex justify-between text-emerald-600 font-medium">
                     <span>Giảm giá ({couponResult.code})</span>
                     <span>−{formatPrice(discount)}</span>
@@ -303,8 +239,16 @@ export default function CheckoutPage() {
                 )}
                 <div className="flex justify-between text-muted">
                   <span>Phí vận chuyển</span>
-                  <span className="text-accent font-medium">Miễn phí</span>
+                  {baseShipping === 0
+                    ? <span className="text-accent font-medium">Miễn phí</span>
+                    : <span>{formatPrice(baseShipping)}</span>}
                 </div>
+                {shipDiscount > 0 && (
+                  <div className="flex justify-between text-emerald-600 font-medium">
+                    <span>Hỗ trợ vận chuyển ({couponResult.code})</span>
+                    <span>−{formatPrice(shipDiscount)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between font-semibold text-ink pt-2 border-t border-divider-lt">
                   <span>Tổng cộng</span>
                   <span className="font-display text-lg">{formatPrice(total)}</span>

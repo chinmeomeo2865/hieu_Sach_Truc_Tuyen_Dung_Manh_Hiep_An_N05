@@ -2,6 +2,7 @@ const router = require('express').Router()
 const { protect, authorize } = require('../middleware/auth')
 const cc = require('../controllers/couponController')
 
+router.get('/active', cc.getActive)
 router.post('/validate', protect, cc.validate)
 
 const admin = [protect, authorize('admin', 'product_manager')]

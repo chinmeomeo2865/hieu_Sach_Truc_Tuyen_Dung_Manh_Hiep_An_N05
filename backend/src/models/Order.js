@@ -28,7 +28,9 @@ const orderSchema = new mongoose.Schema({
   paymentStatus: { type: String, enum: ['UNPAID', 'PAID', 'REFUNDED'], default: 'UNPAID' },
   address:    { type: addressSchema, required: true },
   total:      { type: Number, required: true, min: 0 },
-  discount:   { type: Number, default: 0 },
+  shippingFee:  { type: Number, default: 0 },
+  discount:   { type: Number, default: 0 },     // giảm trên tiền hàng
+  shipDiscount: { type: Number, default: 0 },   // hỗ trợ phí ship (voucher freeship)
   couponCode: { type: String },
   note:       { type: String },
   statusHistory: [{

@@ -8,6 +8,7 @@
     "dev": "nodemon server.js",
     "seed": "node src/seed.js",
     "seed:articles": "node src/seedArticles.js",
+    "seed:coupons": "node src/seedCoupons.js",
     "migrate": "node src/migrate-production.js"
   },
   "dependencies": {
