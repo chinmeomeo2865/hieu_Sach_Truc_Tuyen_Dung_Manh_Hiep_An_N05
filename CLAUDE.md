@@ -155,16 +155,32 @@ PAYOS_CHECKSUM_KEY=...
 - Upload ảnh lưu local `uploads/covers/` — **mất khi Render redeploy**, cần migrate Cloudinary/S3 trước production thực sự.
 - `vercel.json` không dùng `framework` preset (React Router v7 làm Vercel detect sai, không inject `VITE_API_URL`).
 
+## Cập nhật ngày 14/06/2026
+
+### Backend
+- **Product Model mở rộng** — thêm `isbn`, `publisher`, `pages`, `coverType`, `images[]`, `status` (draft/active/archived), `inStock` (auto-sync qua pre-save hook), `weight` (trọng số hiển thị, mặc định 0). Tối ưu index `{ inStock: -1, status: 1 }`, `{ visible: 1, createdAt: -1 }`.
+- **API sắp xếp thông minh** — Sắp xếp mặc định: `inStock → weight → createdAt`. Khi khách hàng chọn bộ lọc (giá, đánh giá…) thì bỏ qua weight, sắp xếp thuần theo tiêu chí đã chọn.
+- **Banner trang chủ động** — `settingsController.getPublicSettings` trả về `banners[]` active. Cấp quyền PM truy cập Settings route.
+- **Sửa lỗi double-replenishment** — Gỡ bỏ logic tự động cộng lại tồn kho khi customer hủy đơn tại `orderController.cancelOrder`. Thủ kho quyết định hoàn/xuất kho. Cron auto-cancel đơn quá hạn gán `returnProcessed = true` để không xuất hiện trong hàng đợi xử lý hoàn trả.
+
+### Frontend
+- **Tồn kho thông minh trên UI** — Nhãn 3 trạng thái (Còn hàng / Chỉ còn X cuốn / Hết hàng) trên BookCard, FeaturedCard, SearchModal, QuickViewModal, BookDetailPage, Bestsellers. Khóa nút mua khi hết hàng.
+- **Giỏ hàng nâng cấp toàn diện** — Thanh freeship động, gợi ý sách (lọc trùng giỏ hàng), mua một phần giỏ hàng (checkbox từng sản phẩm + chọn tất cả), chọn nhanh mã giảm giá (CouponBox).
+- **ConfirmModal thiết kế riêng** — Thay thế toàn bộ `window.confirm` xấu bằng modal vintage premium (framer-motion, loading state) ở OrdersPage, WishlistPage, AddressesPage, AccountPage.
+- **PM Settings (Banner)** — Trang mới cho PM quản lý banner trang chủ (thêm/bật/tắt/xóa).
+- **Trang Khuyến mãi Vintage** — Redesign OffersPage với thẻ voucher đục lỗ, icon SVG riêng từng loại.
+- **Yêu thích auto-cleanup** — Tự động loại bỏ sách đã bị xóa khỏi DB ra khỏi wishlist store.
+- **Fix Navbar overlay z-index** — Hạ z-index header wrapper từ `z-[100]` → `z-30` để các modal chi tiết đơn hàng (z-50) không bị che khuất.
+- **Trọng số hiển thị (Display Weight)** — Thêm ô nhập `weight` trên form PM + Admin Products, cho phép đẩy sách lên đầu trang.
+
 ## Việc còn lại
 
 | Ưu tiên | Việc |
 |---|---|
-| 🔴 | Kiểm tra spacer height `h-[104px]` dưới header fixed trên production |
 | 🟡 | Activate Resend (verify domain, lấy API key) |
 | 🟡 | Test PayOS E2E đầy đủ (cả flow hủy) + test 4 role trên production |
 | 🟡 | Quyết định số phận trang `/support` (SupportModal đã thay thế) |
 | 🟢 | Migrate upload ảnh sang Cloudinary/S3 |
-| 🟢 | Đồng bộ NewArrivals về 8 sách như Bestsellers |
 | ⬜ | Dài hạn: migrate Next.js + PostgreSQL/Prisma + Supabase (sau khi tính năng ổn định) |
 
 ## Thông tin cửa hàng
