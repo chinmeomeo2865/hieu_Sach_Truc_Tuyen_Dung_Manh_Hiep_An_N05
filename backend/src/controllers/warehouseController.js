@@ -401,6 +401,26 @@ exports.getActivity = async (req, res, next) => {
       filter.action = req.query.action
     }
 
+    if (req.query.startDate || req.query.endDate) {
+      filter.createdAt = {}
+      if (req.query.startDate) {
+        const start = new Date(req.query.startDate)
+        if (!isNaN(start.getTime())) {
+          filter.createdAt.$gte = start
+        }
+      }
+      if (req.query.endDate) {
+        const end = new Date(req.query.endDate)
+        if (!isNaN(end.getTime())) {
+          end.setHours(23, 59, 59, 999)
+          filter.createdAt.$lte = end
+        }
+      }
+      if (Object.keys(filter.createdAt).length === 0) {
+        delete filter.createdAt
+      }
+    }
+
     const startOfToday = new Date()
     startOfToday.setHours(0, 0, 0, 0)
 
