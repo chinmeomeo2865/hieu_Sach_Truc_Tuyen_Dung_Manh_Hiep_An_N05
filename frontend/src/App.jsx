@@ -34,6 +34,7 @@ import AdminArticlesPage   from './pages/admin/AdminArticlesPage'
 import AdminCouponsPage    from './pages/admin/AdminCouponsPage'
 import BlogPage            from './pages/BlogPage'
 import BlogDetailPage      from './pages/BlogDetailPage'
+import OffersPage          from './pages/OffersPage'
 import NotificationsPage   from './pages/NotificationsPage'
 import PaymentResultPage   from './pages/PaymentResultPage'
 import WarehouseRoute        from './components/warehouse/WarehouseRoute'
@@ -94,6 +95,7 @@ export default function App() {
           <Route path="wishlist" element={<WishlistPage />} />
         </Route>
         <Route path="/support"           element={<MainLayout><SupportPage /></MainLayout>} />
+        <Route path="/uu-dai"            element={<MainLayout><OffersPage /></MainLayout>} />
         <Route path="/blog"              element={<MainLayout><BlogPage /></MainLayout>} />
         <Route path="/blog/:id"          element={<MainLayout><BlogDetailPage /></MainLayout>} />
         <Route path="/notifications"     element={<MainLayout><NotificationsPage /></MainLayout>} />

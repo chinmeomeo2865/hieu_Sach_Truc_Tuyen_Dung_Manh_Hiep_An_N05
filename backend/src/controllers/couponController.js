@@ -89,6 +89,34 @@ exports.validate = async (req, res, next) => {
   } catch (err) { next(err) }
 }
 
+/* GET /api/coupons/active — public: voucher đang hiệu lực cho khách xem */
+exports.getActive = async (req, res, next) => {
+  try {
+    const now = new Date()
+    const coupons = await Coupon.find({
+      active: true,
+      startDate: { $lte: now },
+      endDate:   { $gte: now },
+    }).sort({ createdAt: -1 })
+
+    const list = coupons
+      .filter(c => !(c.maxUses > 0 && c.usedCount >= c.maxUses))
+      .map(c => ({
+        code:            c.code,
+        description:     c.description,
+        type:            c.type,
+        value:           c.value,
+        maxDiscount:     c.maxDiscount,
+        maxShipDiscount: c.maxShipDiscount,
+        minOrderAmount:  c.minOrderAmount,
+        firstOrderOnly:  c.firstOrderOnly,
+        perUserLimit:    c.perUserLimit,
+        endDate:         c.endDate,
+      }))
+    res.json({ success: true, data: list })
+  } catch (err) { next(err) }
+}
+
 /* ── Admin CRUD ───────────────────────────────────────────── */
 
 const EDITABLE = [
