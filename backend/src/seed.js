@@ -4,6 +4,7 @@ const mongoose = require('mongoose')
 const Product  = require('./models/Product')
 const Category = require('./models/Category')
 const User     = require('./models/User')
+const Settings = require('./models/Settings')
 
 const OL  = (isbn) => `https://covers.openlibrary.org/b/isbn/${isbn}-L.jpg`
 const YT  = (id)   => `https://www.youtube.com/watch?v=${id}`
@@ -203,6 +204,44 @@ async function seed() {
   await User.deleteMany({ email: ADMIN.email })
   const admin = await User.create(ADMIN)
   console.log(`✅  Admin created: ${admin.email}`)
+
+  // Seed Settings và Banners mẫu
+  const BANNERS_SEED = [
+    {
+      title: "Ngày Hội Sách Văn Học Chiết Khấu 30%",
+      imageUrl: "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?auto=format&fit=crop&w=1200&h=500&q=80",
+      link: "/books?category=van-hoc",
+      order: 1,
+      active: true
+    },
+    {
+      title: "Tuyển Tập Sách Thiếu Nhi Mới Nhất 2026",
+      imageUrl: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&w=1200&h=500&q=80",
+      link: "/books?category=thieu-nhi",
+      order: 2,
+      active: true
+    },
+    {
+      title: "Không Gian Văn Hóa Đọc Mới — Hiệu Sách Chin",
+      imageUrl: "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=1200&h=500&q=80",
+      link: "/offers",
+      order: 3,
+      active: true
+    }
+  ]
+
+  await Settings.deleteMany({})
+  const settingsDoc = await Settings.create({
+    _id: 'singleton',
+    shippingFee: 0,
+    freeShippingThreshold: 250000,
+    siteName: 'Hiệu Sách Chin',
+    supportEmail: '23011987@st.phenikaa-uni.edu.vn',
+    hotline: '0383 687 670',
+    socialLinks: { facebook: '', instagram: '', tiktok: '' },
+    banners: BANNERS_SEED
+  })
+  console.log(`✅  Seeded settings with ${settingsDoc.banners.length} banners`)
 
   await mongoose.disconnect()
   console.log('Done.')

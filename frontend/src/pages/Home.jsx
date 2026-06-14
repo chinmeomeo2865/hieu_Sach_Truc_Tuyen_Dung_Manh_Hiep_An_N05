@@ -57,7 +57,8 @@ export default function Home() {
   const heroImages = banners.length > 0
     ? banners.slice(0, 3).map((b, i) => ({
         src: b.imageUrl,
-        tall: i === 0
+        tall: i === 0,
+        link: b.link
       }))
     : HERO_IMAGES
 

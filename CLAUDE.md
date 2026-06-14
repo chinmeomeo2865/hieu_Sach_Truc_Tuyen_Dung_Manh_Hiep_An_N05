@@ -174,6 +174,7 @@ PAYOS_CHECKSUM_KEY=...
 - **Fix Navbar overlay z-index** — Hạ z-index header wrapper từ `z-[100]` → `z-30` để các modal chi tiết đơn hàng (z-50) không bị che khuất.
 - **Trọng số hiển thị (Display Weight)** — Thêm ô nhập `weight` trên form PM + Admin Products, cho phép đẩy sách lên đầu trang.
 - **Bộ lọc ngày thao tác Thủ kho & Thủ thư** — Thêm Dropdown bộ lọc nhanh kết hợp với ô chọn ngày tùy biến (với hiệu ứng `animate-fadeIn` mượt mà) tại cả `WarehouseActivityPage.jsx` và `PMActivityPage.jsx`, giúp đối soát ca trực và sai lệch số liệu dễ dàng hơn.
+- **Điều hướng Banner trang chủ** — Bọc các ảnh banner hiển thị trên Hero slider bằng React Router `Link`, cho phép người dùng click để điều hướng trực tiếp đến các trang chuyên mục hoặc ưu đãi đã cấu hình.
 
 ## Việc còn lại
 

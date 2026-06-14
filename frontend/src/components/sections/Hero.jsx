@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { ArrowRightIcon } from '../ui/icons'
 
 const DEFAULT_CTA = {
@@ -77,21 +78,31 @@ export function Hero({
           {images.length > 0 && (
             <div
               className="hidden lg:grid grid-cols-2 grid-rows-2 gap-2.5 py-9 pl-8 overflow-hidden min-h-0"
-              aria-hidden="true"
             >
-              {images.map(({ src, tall }, i) => (
-                <div
-                  key={src}
-                  className={`overflow-hidden rounded-lg bg-surface-subtle group ${tall ? 'row-span-2' : ''}`}
-                >
+              {images.map(({ src, tall, link }, i) => {
+                const imgEl = (
                   <img
                     src={src}
                     alt=""
                     loading={i === 0 ? 'eager' : 'lazy'}
                     className="w-full h-full object-cover transition-transform duration-460 group-hover:scale-[1.04]"
                   />
-                </div>
-              ))}
+                )
+                return (
+                  <div
+                    key={src + i}
+                    className={`overflow-hidden rounded-lg bg-surface-subtle group ${tall ? 'row-span-2' : ''}`}
+                  >
+                    {link ? (
+                      <Link to={link} className="block w-full h-full cursor-pointer">
+                        {imgEl}
+                      </Link>
+                    ) : (
+                      imgEl
+                    )}
+                  </div>
+                )
+              })}
             </div>
           )}
 
