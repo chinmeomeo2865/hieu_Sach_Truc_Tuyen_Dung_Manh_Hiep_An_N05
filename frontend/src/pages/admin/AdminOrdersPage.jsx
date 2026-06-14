@@ -734,25 +734,33 @@ export default function AdminOrdersPage() {
             </table>
           </div>
 
-          {/* Inline Expanded Detail Drawer */}
+          {/* Order Detail Modal */}
           {expanded && (
             (() => {
               const order = orders.find(o => o._id === expanded)
               if (!order) return null
               return (
-                <div className="bg-[#FAF8F5] border-t border-[#EAE6DF] px-6 py-5 select-text animate-slideDown">
-                  <div className="flex items-center justify-between border-b border-[#EAE6DF] pb-2.5 mb-4">
-                    <p className="font-display text-[12.5px] font-bold uppercase tracking-wider text-[#1A1A1A]">
-                      Chi tiết sách & Giao nhận đơn hàng
-                    </p>
-                    <button 
-                      onClick={() => setExpanded(null)}
-                      className="text-xs font-bold text-[#615C56] hover:text-[#1A1A1A]"
-                    >
-                      Đóng ✕
-                    </button>
-                  </div>
-                  
+                <>
+                  <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-[2px] animate-fadeIn" onClick={() => setExpanded(null)} />
+                  <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+                    <div className="bg-white rounded-xl border border-[#EAE6DF] shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden pointer-events-auto animate-slideDown select-text">
+                      <div className="flex items-center justify-between px-6 py-4 border-b border-[#EAE6DF] shrink-0">
+                        <div>
+                          <p className="font-display text-[13px] font-bold uppercase tracking-wider text-[#1A1A1A]">
+                            Chi tiết đơn {order.orderCode || `#${order._id.slice(-8).toUpperCase()}`}
+                          </p>
+                          <p className="text-[10.5px] text-[#8E877F] mt-0.5">{new Date(order.createdAt).toLocaleString('vi-VN')}</p>
+                        </div>
+                        <button
+                          onClick={() => setExpanded(null)}
+                          className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#FAF8F5] text-[#8E877F] hover:text-[#1A1A1A] transition-colors"
+                          aria-label="Đóng"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                      </div>
+
+                      <div className="flex-1 overflow-y-auto px-6 py-5">
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {/* Column 1: Items List */}
                     <div>
@@ -771,9 +779,31 @@ export default function AdminOrdersPage() {
                           </div>
                         ))}
                       </div>
-                      <div className="mt-4 pt-3 border-t border-[#EAE6DF] flex justify-between items-center text-[12px]">
-                        <span className="text-[#615C56]">Tổng giá trị tiền hàng:</span>
-                        <span className="font-bold text-[#1A1A1A] text-[13px]">{formatPrice(order.total)}</span>
+                      <div className="mt-4 pt-3 border-t border-[#EAE6DF] space-y-1.5 text-[11.5px]">
+                        <div className="flex justify-between text-[#615C56]">
+                          <span>Tạm tính</span>
+                          <span>{formatPrice(order.items?.reduce((s, it) => s + it.price * it.qty, 0) || 0)}</span>
+                        </div>
+                        {order.discount > 0 && (
+                          <div className="flex justify-between text-emerald-600 font-medium">
+                            <span>Giảm giá{order.couponCode ? ` (${order.couponCode})` : ''}</span>
+                            <span>−{formatPrice(order.discount)}</span>
+                          </div>
+                        )}
+                        <div className="flex justify-between text-[#615C56]">
+                          <span>Phí vận chuyển</span>
+                          <span>{order.shippingFee ? formatPrice(order.shippingFee) : 'Miễn phí'}</span>
+                        </div>
+                        {order.shipDiscount > 0 && (
+                          <div className="flex justify-between text-emerald-600 font-medium">
+                            <span>Hỗ trợ vận chuyển</span>
+                            <span>−{formatPrice(order.shipDiscount)}</span>
+                          </div>
+                        )}
+                        <div className="flex justify-between font-bold text-[#1A1A1A] text-[13px] pt-1.5 border-t border-[#EAE6DF]">
+                          <span>Tổng thanh toán</span>
+                          <span>{formatPrice(order.total)}</span>
+                        </div>
                       </div>
                     </div>
 
@@ -818,7 +848,10 @@ export default function AdminOrdersPage() {
                       )}
                     </div>
                   </div>
-                </div>
+                      </div>
+                    </div>
+                  </div>
+                </>
               )
             })()
           )}
