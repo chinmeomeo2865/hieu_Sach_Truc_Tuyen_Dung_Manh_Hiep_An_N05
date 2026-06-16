@@ -113,6 +113,7 @@ export default function BookDetailPage() {
 
   const gallery = [...new Set([book.image, ...(book.images || [])].filter(Boolean))]
   const mainImg = activeImg || gallery[0] || book.image
+  const galleryIdx = Math.max(0, gallery.indexOf(mainImg))
 
   const specs = [
     { label: 'Nhà xuất bản', value: book.publisher },
@@ -138,10 +139,9 @@ export default function BookDetailPage() {
 
         {/* Cover + gallery ảnh bổ sung */}
         <div>
-          <div className="relative">
-            <div className="aspect-book bg-surface-subtle rounded-sm overflow-hidden shadow-md">
-              <img src={mainImg} alt={book.title} className="w-full h-full object-cover" />
-            </div>
+          <div className="relative aspect-book bg-white border border-divider-lt rounded-md overflow-hidden shadow-sm">
+            <img src={mainImg} alt={book.title} className="w-full h-full object-contain p-2" />
+
             {book.badge && (
               <div className="absolute top-3 left-3">
                 <Badge
@@ -150,18 +150,37 @@ export default function BookDetailPage() {
                 />
               </div>
             )}
+
+            {gallery.length > 1 && (
+              <>
+                <button
+                  onClick={() => setActiveImg(gallery[(galleryIdx - 1 + gallery.length) % gallery.length])}
+                  className="absolute left-2.5 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full bg-white text-ink border border-divider-lt shadow-sm hover:bg-ink hover:text-white hover:border-ink transition-colors"
+                  aria-label="Ảnh trước"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                </button>
+                <button
+                  onClick={() => setActiveImg(gallery[(galleryIdx + 1) % gallery.length])}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full bg-white text-ink border border-divider-lt shadow-sm hover:bg-ink hover:text-white hover:border-ink transition-colors"
+                  aria-label="Ảnh sau"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
+                </button>
+              </>
+            )}
           </div>
 
           {gallery.length > 1 && (
-            <div className="flex gap-2.5 mt-3 overflow-x-auto pb-1">
+            <div className="grid grid-cols-4 gap-2.5 mt-3">
               {gallery.map((src, i) => (
                 <button
                   key={i}
                   onClick={() => setActiveImg(src)}
-                  className={`shrink-0 w-14 h-[74px] rounded-sm overflow-hidden border-2 transition-colors ${src === mainImg ? 'border-ink' : 'border-divider-lt hover:border-divider'}`}
+                  className={`aspect-book rounded-md overflow-hidden border bg-white transition-all ${i === galleryIdx ? 'border-ink ring-1 ring-ink' : 'border-divider-lt opacity-60 hover:opacity-100 hover:border-divider'}`}
                   aria-label={`Ảnh ${i + 1}`}
                 >
-                  <img src={src} alt="" className="w-full h-full object-cover" />
+                  <img src={src} alt="" className="w-full h-full object-contain p-1" />
                 </button>
               ))}
             </div>

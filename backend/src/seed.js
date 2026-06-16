@@ -26,7 +26,7 @@ const PRODUCTS = [
     description: 'Kiệt tác bất hủ về nghệ thuật giao tiếp và tạo dựng mối quan hệ tốt đẹp giữa con người với con người.',
     image: OL('9780671723651'), trailer: YT('jXc7XF6ApAw'),
     isbn: '9786045880753', publisher: 'NXB Tổng hợp TP.HCM', pages: 320, coverType: 'Bìa mềm',
-    images: ['https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400', 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400'],
+    images: [],
     inStock: true, status: 'active'
   },
   {
@@ -36,7 +36,7 @@ const PRODUCTS = [
     description: 'Bí quyết xây dựng thói quen tốt và loại bỏ thói quen xấu bằng cách thực hiện những thay đổi 1% mỗi ngày.',
     image: OL('9780735211292'), trailer: YT('9kWQvF-Whik'),
     isbn: '9780735211292', publisher: 'NXB Thế Giới', pages: 350, coverType: 'Bìa mềm',
-    images: ['https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400'],
+    images: [],
     inStock: true, status: 'active'
   },
   {
@@ -46,7 +46,7 @@ const PRODUCTS = [
     description: 'Chương trình rèn luyện bản thân mang tính cách mạng nhằm cải thiện hiệu suất công việc và nâng cao tinh thần lãnh đạo.',
     image: OL('9780743269513'), trailer: YT('ktlTxC4YBwE'),
     isbn: '9786043653137', publisher: 'NXB Tổng hợp TP.HCM', pages: 496, coverType: 'Bìa mềm',
-    images: ['https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400'],
+    images: [],
     inStock: true, status: 'active'
   },
 
@@ -58,7 +58,7 @@ const PRODUCTS = [
     description: 'Hành trình đầy chất thơ của chàng chăn cừu Santiago đi tìm kho báu và lẽ sống của cuộc đời mình.',
     image: OL('9780061122415'), trailer: YT('He4moNnEnIg'),
     isbn: '9786045626245', publisher: 'NXB Hội Nhà Văn', pages: 228, coverType: 'Bìa mềm',
-    images: ['https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400'],
+    images: [],
     inStock: true, status: 'active'
   },
   {
@@ -68,7 +68,7 @@ const PRODUCTS = [
     description: 'Bản hùng ca bất hủ ca ngợi ý chí kiên cường và phẩm giá của con người trước nghịch cảnh số phận.',
     image: OL('9780684801223'), trailer: YT('n23E3eN4b2g'),
     isbn: '9786046985440', publisher: 'NXB Văn Học', pages: 160, coverType: 'Bìa mềm',
-    images: ['https://images.unsplash.com/photo-1474932430478-367dbb6832c1?w=400'],
+    images: [],
     inStock: true, status: 'active'
   },
   {
@@ -78,7 +78,7 @@ const PRODUCTS = [
     description: 'Triết lý sống sâu sắc được nhân hóa qua lăng kính của cậu bé tóc vàng đến từ hành tinh B612.',
     image: OL('9780156012195'), trailer: YT('bqB_1E4lajI'),
     isbn: '9786042183245', publisher: 'NXB Kim Đồng', pages: 102, coverType: 'Bìa cứng',
-    images: ['https://images.unsplash.com/photo-1541963463532-d68292c34b19?w=400'],
+    images: [],
     inStock: true, status: 'active'
   },
 
@@ -90,7 +90,7 @@ const PRODUCTS = [
     description: 'Lối tư duy tự do theo triết học Adler giúp bạn giải phóng bản thân khỏi các xiềng xích định kiến xã hội.',
     image: `https://salt.tikicdn.com/cache/280x280/ts/product/78/b3/13/de903c0ebaa38ba594634a009072ce7d.jpeg`, trailer: YT('5z7UjnFiZpc'),
     isbn: '9786045645543', publisher: 'NXB Lao Động', pages: 336, coverType: 'Bìa mềm',
-    images: ['https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?w=400'],
+    images: [],
     inStock: true, status: 'active'
   },
   {
@@ -100,7 +100,7 @@ const PRODUCTS = [
     description: 'Cuốn sách hướng dẫn thiền định và giải phóng tâm trí, đưa con người trở về trọn vẹn trong khoảnh khắc hiện tại.',
     image: OL('9781577314806'), trailer: YT('8ShTlFKhMXc'),
     isbn: '9786045885239', publisher: 'NXB Tổng hợp TP.HCM', pages: 304, coverType: 'Bìa mềm',
-    images: ['https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?w=400'],
+    images: [],
     inStock: true, status: 'active'
   },
   {
@@ -110,7 +110,7 @@ const PRODUCTS = [
     description: 'Những ghi chép suy tư triết lý Stoicism về nghệ thuật sống bình thản và trí tuệ của vị Hoàng đế La Mã cổ đại.',
     image: OL('9780812968255'), trailer: YT('Auuk1y4DRgk'),
     isbn: '9786043564551', publisher: 'NXB Thế Giới', pages: 412, coverType: 'Bìa cứng',
-    images: ['https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?w=400'],
+    images: [],
     inStock: true, status: 'active'
   },
 
@@ -122,7 +122,7 @@ const PRODUCTS = [
     description: 'Tác phẩm nghiên cứu lịch sử đột phá, tái hiện tiến trình tiến hóa của loài người từ tiền sử đến hiện đại.',
     image: OL('9780062316097'), trailer: YT('hfbI14Mr3wQ'),
     isbn: '9786045638514', publisher: 'NXB Thế Giới', pages: 560, coverType: 'Bìa mềm',
-    images: ['https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=400'],
+    images: [],
     inStock: true, status: 'active'
   },
   {
@@ -132,7 +132,7 @@ const PRODUCTS = [
     description: 'Cuốn sách khám phá nguồn gốc và số phận của vũ trụ, giải thích các khái niệm hố đen và Big Bang một cách đơn giản.',
     image: OL('9780553380163'), trailer: YT('WenHLfTF7u4'),
     isbn: '9786049832247', publisher: 'NXB Trẻ', pages: 296, coverType: 'Bìa mềm',
-    images: ['https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=400'],
+    images: [],
     inStock: true, status: 'active'
   },
   {
@@ -142,7 +142,7 @@ const PRODUCTS = [
     description: 'Một nghiên cứu đồ sộ giải thích các nguyên nhân khách quan địa lý định hình thế giới hiện tại.',
     image: OL('9780393354324'), trailer: YT('NMrDNpzSMgk'),
     isbn: '9786045882348', publisher: 'NXB Thế Giới', pages: 712, coverType: 'Bìa mềm',
-    images: ['https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=400'],
+    images: [],
     inStock: true, status: 'active'
   },
 
@@ -154,7 +154,7 @@ const PRODUCTS = [
     description: 'Cuốn tự truyện nhân văn kể về tuổi thơ đầy cảm hứng của Totto-chan dưới mái trường Tomoe đột phá.',
     image: OL('9780870116957'), trailer: YT('f-tRSG3Rm5c'),
     isbn: '9786046923456', publisher: 'NXB Văn Học', pages: 356, coverType: 'Bìa mềm',
-    images: ['https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400'],
+    images: [],
     inStock: true, status: 'active'
   },
   {
@@ -164,7 +164,7 @@ const PRODUCTS = [
     description: 'Tác phẩm đầu tiên mở ra thế giới phù thủy kỳ vĩ đầy lôi cuốn của cậu bé mồ côi Harry Potter.',
     image: OL('9780590353427'), trailer: YT('VyHV0BRtdxo'),
     isbn: '9786041135438', publisher: 'NXB Trẻ', pages: 360, coverType: 'Bìa cứng',
-    images: ['https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400'],
+    images: [OL('9780747532699'), OL('9780439708180'), OL('9781408855652')],
     inStock: true, status: 'active'
   },
   {
@@ -174,7 +174,7 @@ const PRODUCTS = [
     description: 'Chuyến phiêu lưu đầy bất ngờ của cậu bé Charlie Bucket trong vương quốc kẹo ngọt của ngài Willy Wonka.',
     image: OL('9780142410318'), trailer: YT('V6ZYhCeBnvQ'),
     isbn: '9786042103184', publisher: 'NXB Kim Đồng', pages: 200, coverType: 'Bìa mềm',
-    images: ['https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400'],
+    images: [],
     inStock: true, status: 'active'
   }
 ]
