@@ -20,7 +20,8 @@ const getProducts = async (req, res, next) => {
     if (featured === 'true') filter.featured = true
 
     let sortOption
-    if (!sort || sort === 'newest') {
+    if (!sort || sort === 'newest' || sort === 'featured') {
+      // Mặc định / "Nổi bật": ưu tiên còn hàng → trọng số hiển thị → mới nhất
       sortOption = { inStock: -1, weight: -1, createdAt: -1 }
     } else {
       const sortMap = {
@@ -107,6 +108,12 @@ const updateProduct = async (req, res, next) => {
 
     if (req.body.stock !== undefined) {
       req.body.inStock = newStock > 0
+    }
+
+    // Hiện sách = đưa về trạng thái live: visible:true luôn kèm status 'active'
+    // (tránh kẹt ở 'archived' sau khi soft-delete khiến sách không lên trang chủ)
+    if (req.body.visible === true && !req.body.status) {
+      req.body.status = 'active'
     }
 
     const updatedProduct = await Product.findByIdAndUpdate(req.params.id, req.body, {

@@ -120,7 +120,9 @@ exports.deleteCategory = async (req, res, next) => {
 exports.toggleVisibility = async (req, res, next) => {
   try {
     const { productId, visible } = req.body
-    const product = await Product.findByIdAndUpdate(productId, { visible }, { new: true })
+    // Hiện sách = đưa về live (status 'active'); ẩn thì giữ nguyên status
+    const update = visible ? { visible: true, status: 'active' } : { visible: false }
+    const product = await Product.findByIdAndUpdate(productId, update, { new: true })
     if (!product) return res.status(404).json({ success: false, message: 'Không tìm thấy sản phẩm' })
     await log('toggle_visibility',
       `${visible ? 'Hiển thị' : 'Ẩn'} sản phẩm "${product.title}"`,
