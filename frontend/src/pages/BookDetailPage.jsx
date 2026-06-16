@@ -30,6 +30,7 @@ export default function BookDetailPage() {
 
   const [book,          setBook]          = useState(null)
   const [loading,       setLoading]       = useState(true)
+  const [activeImg,     setActiveImg]     = useState(null)
   const [qty,           setQty]           = useState(1)
   const [reviews,       setReviews]       = useState([])
   const [reviewMeta,    setReviewMeta]    = useState({ page: 1, totalPages: 1, total: 0 })
@@ -44,6 +45,7 @@ export default function BookDetailPage() {
 
   useEffect(() => {
     setLoading(true)
+    setActiveImg(null)
     setReviews([])
     setReviewMeta({ page: 1, totalPages: 1, total: 0 })
 
@@ -109,6 +111,16 @@ export default function BookDetailPage() {
     ? Math.round((1 - book.price / book.originalPrice) * 100)
     : null
 
+  const gallery = [...new Set([book.image, ...(book.images || [])].filter(Boolean))]
+  const mainImg = activeImg || gallery[0] || book.image
+
+  const specs = [
+    { label: 'Nhà xuất bản', value: book.publisher },
+    { label: 'Mã ISBN',      value: book.isbn },
+    { label: 'Số trang',     value: book.pages ? `${book.pages} trang` : '' },
+    { label: 'Loại bìa',     value: book.coverType },
+  ].filter(s => s.value)
+
   return (
     <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-10 py-10 md:py-14">
 
@@ -124,17 +136,34 @@ export default function BookDetailPage() {
       {/* Book info grid */}
       <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] lg:grid-cols-[340px_1fr] gap-10 lg:gap-16">
 
-        {/* Cover */}
-        <div className="relative">
-          <div className="aspect-book bg-surface-subtle rounded-sm overflow-hidden shadow-md">
-            <img src={book.image} alt={book.title} className="w-full h-full object-cover" />
+        {/* Cover + gallery ảnh bổ sung */}
+        <div>
+          <div className="relative">
+            <div className="aspect-book bg-surface-subtle rounded-sm overflow-hidden shadow-md">
+              <img src={mainImg} alt={book.title} className="w-full h-full object-cover" />
+            </div>
+            {book.badge && (
+              <div className="absolute top-3 left-3">
+                <Badge
+                  type={book.badge}
+                  label={book.badge === 'sale' && discount ? `-${discount}%` : undefined}
+                />
+              </div>
+            )}
           </div>
-          {book.badge && (
-            <div className="absolute top-3 left-3">
-              <Badge
-                type={book.badge}
-                label={book.badge === 'sale' && discount ? `-${discount}%` : undefined}
-              />
+
+          {gallery.length > 1 && (
+            <div className="flex gap-2.5 mt-3 overflow-x-auto pb-1">
+              {gallery.map((src, i) => (
+                <button
+                  key={i}
+                  onClick={() => setActiveImg(src)}
+                  className={`shrink-0 w-14 h-[74px] rounded-sm overflow-hidden border-2 transition-colors ${src === mainImg ? 'border-ink' : 'border-divider-lt hover:border-divider'}`}
+                  aria-label={`Ảnh ${i + 1}`}
+                >
+                  <img src={src} alt="" className="w-full h-full object-cover" />
+                </button>
+              ))}
             </div>
           )}
         </div>
@@ -199,6 +228,20 @@ export default function BookDetailPage() {
             <div className="mt-8 pt-8 border-t border-divider-lt">
               <h2 className="font-display font-semibold text-ink mb-3">Giới thiệu sách</h2>
               <p className="text-sm text-ink-60 leading-relaxed">{book.description}</p>
+            </div>
+          )}
+
+          {specs.length > 0 && (
+            <div className="mt-8 pt-8 border-t border-divider-lt">
+              <h2 className="font-display font-semibold text-ink mb-4">Thông số kỹ thuật</h2>
+              <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-0">
+                {specs.map(s => (
+                  <div key={s.label} className="flex justify-between gap-4 py-2 border-b border-divider-lt/70">
+                    <dt className="text-sm text-muted shrink-0">{s.label}</dt>
+                    <dd className="text-sm text-ink font-medium text-right">{s.value}</dd>
+                  </div>
+                ))}
+              </dl>
             </div>
           )}
 

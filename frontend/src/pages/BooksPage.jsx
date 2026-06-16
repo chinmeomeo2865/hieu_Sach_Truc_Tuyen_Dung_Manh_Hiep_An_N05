@@ -6,6 +6,7 @@ import { useProducts }       from '../hooks/useProducts'
 import { FILTER_TABS, ALL_BOOKS } from '../data/books'
 
 const SORT_OPTIONS = [
+  { value: 'featured',   label: 'Nổi bật' },
   { value: 'rating',     label: 'Đánh giá cao nhất' },
   { value: 'newest',     label: 'Mới nhất' },
   { value: 'price_asc',  label: 'Giá: Thấp → Cao' },
@@ -50,7 +51,7 @@ export default function BooksPage() {
   const [searchParams, setSearchParams] = useSearchParams()
 
   const category = searchParams.get('category') || 'all'
-  const sort     = searchParams.get('sort')     || 'rating'
+  const sort     = searchParams.get('sort')     || 'featured'
   const page     = parseInt(searchParams.get('page') || '1', 10)
   const [search, setSearch] = useState(searchParams.get('search') || '')
   const [inputVal, setInputVal] = useState(search)
