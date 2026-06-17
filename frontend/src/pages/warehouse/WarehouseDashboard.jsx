@@ -1,9 +1,102 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts'
 import WarehouseLayout from '../../components/warehouse/WarehouseLayout'
 import { api } from '../../services/api'
 import { formatPrice } from '../../utils/format'
+
+const PERIODS = [
+  { value: 'today',      label: 'Hôm nay'    },
+  { value: 'yesterday',  label: 'Hôm qua'    },
+  { value: '7days',      label: '7 ngày'     },
+  { value: '30days',     label: '30 ngày'    },
+  { value: 'this_month', label: 'Tháng này'  },
+  { value: 'last_month', label: 'Tháng trước'},
+  { value: 'custom',     label: 'Tùy chọn'   },
+]
+
+const WH_CHART = {
+  imports:   { color: '#2E4A3F', label: 'Nhập kho' },
+  exports:   { color: '#DC2626', label: 'Xuất kho' },
+  delivered: { color: '#3B82F6', label: 'Đơn đã giao' },
+}
+
+/* Badge so sánh kỳ trước */
+function CmpBadge({ pct }) {
+  if (pct === undefined || pct === null) return null
+  if (pct === 0) return <span className="inline-flex items-center text-[10px] font-bold text-[#9B9389]">— 0%</span>
+  const up = pct > 0
+  return (
+    <span className={`inline-flex items-center gap-0.5 text-[10px] font-bold ${up ? 'text-emerald-600' : 'text-red-600'}`} title="So với kỳ trước">
+      <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">{up ? <path d="M10 5l6 8H4l6-8z" /> : <path d="M10 15L4 7h12l-6 8z" />}</svg>
+      {Math.abs(pct)}%
+    </span>
+  )
+}
+
+/* Thẻ chỉ số vận hành có so sánh */
+function AnalyticsCard({ icon, label, value, unit, pct }) {
+  return (
+    <div className="bg-white rounded-lg border border-[#EAE6DF] p-4 shadow-sm">
+      <div className="flex items-center justify-between">
+        <span className="text-[10px] font-bold tracking-wider text-[#615C56] uppercase">{label}</span>
+        <div className="border border-[#EAE6DF] p-0.5 bg-[#FAF8F5] rounded text-[#615C56]"><Icon name={icon} /></div>
+      </div>
+      <div className="flex items-end gap-2 mt-2 mb-1">
+        <p className="font-display text-[22px] font-bold text-[#1A1A1A] leading-none">{value}<span className="text-[12px] font-semibold text-[#9B9389] ml-1">{unit}</span></p>
+        <span className="mb-0.5"><CmpBadge pct={pct} /></span>
+      </div>
+      <p className="text-[10px] text-[#9B9389]">so với kỳ trước</p>
+    </div>
+  )
+}
+
+/* Biểu đồ vận hành theo ngày */
+function WhChart({ data = [], metric = 'imports' }) {
+  const meta = WH_CHART[metric] || WH_CHART.imports
+  if (data.length < 2) return (
+    <div className="h-56 flex items-center justify-center text-[12px] text-[#9B9389]">Chưa đủ dữ liệu để vẽ biểu đồ (chọn khoảng nhiều ngày hơn)</div>
+  )
+  const fmtX = (t) => { if (!t) return ''; const p = t.split('-'); return p.length >= 3 ? `${p[2]}/${p[1]}` : t }
+  const Tip = ({ active, payload }) => {
+    if (active && payload && payload.length) {
+      const d = payload[0].payload
+      let ds = d._id
+      if (d._id?.includes('-')) { const p = d._id.split('-'); if (p.length >= 3) ds = `${p[2]}/${p[1]}/${p[0]}` }
+      return (
+        <div className="bg-[#1A1A1A] rounded-lg p-3 shadow-xl text-[11px] text-white">
+          <p className="font-bold border-b border-white/10 pb-1.5 mb-1.5 text-[#9B9389] uppercase tracking-wider">{ds}</p>
+          <div className="space-y-1">
+            <p className="flex justify-between gap-6"><span className="text-[#9B9389]">Nhập kho:</span><span className="font-bold">{d.imports || 0} cuốn</span></p>
+            <p className="flex justify-between gap-6"><span className="text-[#9B9389]">Xuất kho:</span><span className="font-bold">{d.exports || 0} cuốn</span></p>
+            <p className="flex justify-between gap-6"><span className="text-[#9B9389]">Đơn đã giao:</span><span className="font-bold">{d.delivered || 0}</span></p>
+          </div>
+        </div>
+      )
+    }
+    return null
+  }
+  return (
+    <div className="w-full h-56 text-[10px] font-medium text-[#8E877F]">
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+          <defs>
+            <linearGradient id="whGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor={meta.color} stopOpacity={0.25} />
+              <stop offset="95%" stopColor={meta.color} stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" stroke="#EAE6DF" vertical={false} />
+          <XAxis dataKey="_id" tickFormatter={fmtX} tickLine={false} axisLine={false} dy={8} stroke="#9B9389" minTickGap={20} />
+          <YAxis tickLine={false} axisLine={false} dx={-8} stroke="#9B9389" allowDecimals={false} />
+          <Tooltip content={<Tip />} cursor={{ stroke: meta.color, strokeWidth: 1, strokeDasharray: '3 3' }} />
+          <Area type="monotone" dataKey={metric} stroke={meta.color} strokeWidth={1.8} fillOpacity={1} fill="url(#whGrad)" />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  )
+}
 
 /* ─── Icons ──────────────────────────────────────────────── */
 const ICON_PATHS = {
@@ -78,6 +171,14 @@ export default function WarehouseDashboard() {
   const [pendingOrders, setPendingOrders] = useState([])
   const [loadingExtra, setLoadingExtra] = useState(true)
 
+  /* Phân tích vận hành theo thời gian */
+  const [period, setPeriod] = useState('30days')
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
+  const [analytics, setAnalytics] = useState(null)
+  const [loadingAna, setLoadingAna] = useState(true)
+  const [chartMetric, setChartMetric] = useState('imports')
+
   useEffect(() => {
     api.get('/api/warehouse/stats')
       .then(r => setStats(r.data))
@@ -96,15 +197,90 @@ export default function WarehouseDashboard() {
       .finally(() => setLoadingExtra(false))
   }, [])
 
+  useEffect(() => {
+    if (period === 'custom' && (!startDate || !endDate)) return
+    setLoadingAna(true)
+    let url = `/api/warehouse/analytics?period=${period}`
+    if (period === 'custom') url = `/api/warehouse/analytics?startDate=${startDate}&endDate=${endDate}`
+    api.get(url)
+      .then(r => setAnalytics(r.data))
+      .catch(() => {})
+      .finally(() => setLoadingAna(false))
+  }, [period, startDate, endDate])
+
+  const a = analytics?.summary
+  const ac = analytics?.comparison
+
   return (
     <WarehouseLayout title="Dashboard">
-      {/* Header */}
+      {/* Header + bộ lọc thời gian */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-[#EAE6DF] pb-3 mb-5">
         <div>
           <h2 className="font-display text-[14.5px] font-bold text-[#1A1A1A] uppercase tracking-wider">Tổng quan kho hàng</h2>
-          <p className="text-[11px] text-[#9B9389] mt-0.5">Tình trạng đơn hàng, tồn kho và hoạt động vận hành hôm nay</p>
+          <p className="text-[11px] text-[#9B9389] mt-0.5">Phân tích vận hành theo thời gian & tình trạng kho hiện tại</p>
+        </div>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 self-start md:self-auto">
+          {period === 'custom' && (
+            <div className="flex items-center gap-2">
+              <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)}
+                className="px-2.5 py-1 border border-[#EAE6DF] rounded-md text-[11px] bg-white text-[#1A1A1A] focus:outline-none focus:border-[#1A1A1A]" />
+              <span className="text-[10px] text-[#9B9389]">đến</span>
+              <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)}
+                className="px-2.5 py-1 border border-[#EAE6DF] rounded-md text-[11px] bg-white text-[#1A1A1A] focus:outline-none focus:border-[#1A1A1A]" />
+            </div>
+          )}
+          <div className="flex flex-wrap gap-1 p-0.5 bg-[#F2EFEA] rounded-lg">
+            {PERIODS.map(p => (
+              <button key={p.value} onClick={() => setPeriod(p.value)}
+                className={`px-3 py-1 rounded-md text-[11px] font-semibold transition-all ${period === p.value ? 'bg-white text-[#1A1A1A] shadow-sm' : 'text-[#8E877F] hover:text-[#1A1A1A]'}`}>
+                {p.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
+
+      {/* Phân tích vận hành — thẻ chỉ số có so sánh kỳ trước */}
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+        {loadingAna ? (
+          <><SkeletonStat /><SkeletonStat /><SkeletonStat /><SkeletonStat /></>
+        ) : (
+          <>
+            <AnalyticsCard icon="layers" label="Nhập kho"    value={(a?.imports ?? 0).toLocaleString('vi-VN')} unit="cuốn" pct={ac?.imports?.pct} />
+            <AnalyticsCard icon="layers" label="Xuất kho"    value={(a?.exports ?? 0).toLocaleString('vi-VN')} unit="cuốn" pct={ac?.exports?.pct} />
+            <AnalyticsCard icon="clipboard" label="Đơn đã giao" value={a?.delivered ?? 0} unit="đơn" pct={ac?.delivered?.pct} />
+            <AnalyticsCard icon="undo" label="Hoàn trả"     value={a?.returns ?? 0} unit="lượt" pct={ac?.returns?.pct} />
+          </>
+        )}
+      </motion.div>
+
+      {/* Biểu đồ vận hành theo ngày */}
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
+        className="bg-white rounded-xl border border-[#EAE6DF] p-5 shadow-sm mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+          <div>
+            <p className="font-display text-[13px] font-bold text-[#1A1A1A] uppercase tracking-wider">Biểu đồ vận hành theo ngày</p>
+            <p className="text-[11px] text-[#9B9389] mt-0.5">Di chuột để xem chi tiết từng ngày</p>
+          </div>
+          <div className="flex gap-1 p-0.5 bg-[#F2EFEA] rounded-lg self-start sm:self-auto">
+            {Object.entries(WH_CHART).map(([k, m]) => (
+              <button key={k} onClick={() => setChartMetric(k)}
+                className={`px-3 py-1 rounded-md text-[11px] font-semibold transition-all ${chartMetric === k ? 'bg-white text-[#1A1A1A] shadow-sm' : 'text-[#8E877F] hover:text-[#1A1A1A]'}`}>
+                {m.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        {loadingAna ? (
+          <div className="h-56 bg-[#FAF8F5] border border-[#EAE6DF] rounded-xl animate-pulse" />
+        ) : (
+          <WhChart data={analytics?.daily || []} metric={chartMetric} />
+        )}
+      </motion.div>
+
+      {/* Tình trạng hiện tại */}
+      <p className="font-display text-[12px] font-bold uppercase tracking-wider text-[#615C56] mb-3">Tình trạng kho hiện tại</p>
 
       {/* Stat cards */}
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}

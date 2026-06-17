@@ -5,6 +5,7 @@ const wh = require('../controllers/warehouseController')
 const guard = [protect, authorize('warehouse', 'admin')]
 
 router.get('/stats',                   guard, wh.getStats)
+router.get('/analytics',               guard, wh.getAnalytics)
 router.get('/orders',                  guard, wh.getWarehouseOrders)
 router.put('/orders/:id/status',       guard, wh.updateOrderStatus)
 router.get('/inventory',               guard, wh.getInventory)

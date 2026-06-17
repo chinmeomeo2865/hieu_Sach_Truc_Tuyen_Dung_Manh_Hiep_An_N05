@@ -2,12 +2,68 @@ const Product              = require('../models/Product')
 const Order                = require('../models/Order')
 const InventoryTransaction = require('../models/InventoryTransaction')
 const ActivityLog          = require('../models/ActivityLog')
+const { resolveRange, previousRange, pctChange, buildDailyFromSeries } = require('../utils/period')
 
 async function log(action, description, userId, entity, entityId, metadata) {
   await ActivityLog.create({ action, description, performedBy: userId, entity, entityId, metadata }).catch(() => {})
 }
 
 const WAREHOUSE_ACTIONS = ['import_stock', 'export_stock', 'update_order_status', 'process_return', 'submit_audit']
+
+/* ── Phân tích vận hành kho theo thời gian ────────────────────
+   4 chỉ số: nhập kho, xuất kho, đơn đã giao, hoàn trả — có so sánh kỳ trước. */
+async function warehouseSummary(startDate, endDate) {
+  const df = { createdAt: { $gte: startDate, $lte: endDate } }
+  const [imp, exp, delivered, returns] = await Promise.all([
+    InventoryTransaction.aggregate([{ $match: { type: 'import', ...df } }, { $group: { _id: null, qty: { $sum: '$quantity' } } }]),
+    InventoryTransaction.aggregate([{ $match: { type: 'export', ...df } }, { $group: { _id: null, qty: { $sum: { $abs: '$quantity' } } } }]),
+    ActivityLog.countDocuments({ action: 'update_order_status', 'metadata.newStatus': 'DELIVERED', ...df }),
+    ActivityLog.countDocuments({ action: 'process_return', ...df }),
+  ])
+  return { imports: imp[0]?.qty || 0, exports: exp[0]?.qty || 0, delivered, returns }
+}
+
+exports.getAnalytics = async (req, res, next) => {
+  try {
+    const { startDate: qStart, endDate: qEnd, period } = req.query
+    const { startDate, endDate, period: resolvedPeriod } = resolveRange({ period, qStart, qEnd })
+    const { prevStart, prevEnd } = previousRange(startDate, endDate)
+
+    const df   = { createdAt: { $gte: startDate, $lte: endDate } }
+    const dayG = { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } }
+
+    const [cur, prev, impDay, expDay, delDay] = await Promise.all([
+      warehouseSummary(startDate, endDate),
+      warehouseSummary(prevStart, prevEnd),
+      InventoryTransaction.aggregate([{ $match: { type: 'import', ...df } }, { $group: { _id: dayG, v: { $sum: '$quantity' } } }]),
+      InventoryTransaction.aggregate([{ $match: { type: 'export', ...df } }, { $group: { _id: dayG, v: { $sum: { $abs: '$quantity' } } } }]),
+      ActivityLog.aggregate([{ $match: { action: 'update_order_status', 'metadata.newStatus': 'DELIVERED', ...df } }, { $group: { _id: dayG, v: { $sum: 1 } } }]),
+    ])
+
+    const impMap = Object.fromEntries(impDay.map(d => [d._id, d.v]))
+    const expMap = Object.fromEntries(expDay.map(d => [d._id, d.v]))
+    const delMap = Object.fromEntries(delDay.map(d => [d._id, d.v]))
+    const daily  = buildDailyFromSeries(startDate, endDate, { imports: impMap, exports: expMap, delivered: delMap })
+
+    const cmp = (key) => ({ current: cur[key], previous: prev[key], pct: pctChange(cur[key], prev[key]) })
+
+    res.json({
+      success: true,
+      data: {
+        period: resolvedPeriod,
+        range: { startDate, endDate, prevStart, prevEnd },
+        summary: cur,
+        comparison: {
+          imports:   cmp('imports'),
+          exports:   cmp('exports'),
+          delivered: cmp('delivered'),
+          returns:   cmp('returns'),
+        },
+        daily,
+      },
+    })
+  } catch (err) { next(err) }
+}
 
 /* ── Dashboard stats ──────────────────────────────────────── */
 exports.getStats = async (req, res, next) => {
