@@ -14,11 +14,51 @@ import {
 } from 'recharts'
 
 const PERIODS = [
-  { value: 'today',  label: 'Hôm nay'  },
-  { value: '7days',  label: '7 ngày'   },
-  { value: '30days', label: '30 ngày'  },
-  { value: 'custom', label: 'Tùy chọn' },
+  { value: 'today',      label: 'Hôm nay'    },
+  { value: 'yesterday',  label: 'Hôm qua'    },
+  { value: '7days',      label: '7 ngày'     },
+  { value: '30days',     label: '30 ngày'    },
+  { value: 'this_month', label: 'Tháng này'  },
+  { value: 'last_month', label: 'Tháng trước'},
+  { value: 'custom',     label: 'Tùy chọn'   },
 ]
+
+/* Badge so sánh với kỳ trước */
+function CmpBadge({ pct }) {
+  if (pct === undefined || pct === null) return null
+  if (pct === 0) {
+    return <span className="inline-flex items-center text-[10px] font-bold text-[#9B9389]">— 0%</span>
+  }
+  const up = pct > 0
+  return (
+    <span className={`inline-flex items-center gap-0.5 text-[10px] font-bold ${up ? 'text-emerald-600' : 'text-red-600'}`} title="So với kỳ trước">
+      <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
+        {up
+          ? <path d="M10 5l6 8H4l6-8z" />
+          : <path d="M10 15L4 7h12l-6 8z" />}
+      </svg>
+      {Math.abs(pct)}%
+    </span>
+  )
+}
+
+/* Thẻ chỉ số có so sánh kỳ trước */
+function MetricCard({ label, icon, value, pct, footer, valueColor = 'text-[#1A1A1A]' }) {
+  return (
+    <div className="bg-white rounded-lg border border-[#EAE6DF] p-4 shadow-sm">
+      <div className="flex items-center justify-between">
+        <span className="text-[10px] font-bold tracking-wider text-[#615C56] uppercase">{label}</span>
+        <div className="border border-[#EAE6DF] p-0.5 bg-[#FAF8F5] rounded text-[#615C56]">{icon}</div>
+      </div>
+      <div className="flex items-end gap-2 mt-2 mb-1">
+        <p className={`font-display text-[22px] font-bold leading-none ${valueColor}`}>{value}</p>
+        {pct !== undefined && <span className="mb-0.5"><CmpBadge pct={pct} /></span>}
+      </div>
+      {pct !== undefined && <p className="text-[10px] text-[#9B9389]">so với kỳ trước</p>}
+      {footer && <div className="border-t border-[#EAE6DF] pt-2 mt-2 space-y-1">{footer}</div>}
+    </div>
+  )
+}
 
 const STATUS_LABEL = {
   PENDING:   'CHỜ XÁC NHẬN',
@@ -42,18 +82,23 @@ const STATUS_COLOR = {
 
 const STATUS_LIST_DISPLAY = ['PENDING', 'CONFIRMED', 'PACKING', 'SHIPPING', 'DELIVERED', 'CANCELLED']
 
-/* ─── Premium Area Chart (Recharts) ──────────────────────── */
-function LineChart({ data = [] }) {
+/* ─── Premium Area Chart (Recharts) — đa chỉ số ───────────── */
+const CHART_META = {
+  revenue:      { color: '#B08968', stroke: '#1A1A1A' },
+  orders:       { color: '#2E4A3F', stroke: '#2E4A3F' },
+  newCustomers: { color: '#3B82F6', stroke: '#3B82F6' },
+}
+
+function LineChart({ data = [], metric = 'revenue' }) {
+  const meta = CHART_META[metric] || CHART_META.revenue
   if (data.length < 2) return (
-    <div className="h-64 flex items-center justify-center text-[12px] text-[#9B9389]">Chưa đủ dữ liệu</div>
+    <div className="h-64 flex items-center justify-center text-[12px] text-[#9B9389]">Chưa đủ dữ liệu để vẽ biểu đồ (chọn khoảng nhiều ngày hơn)</div>
   )
 
   const formatYAxis = (tick) => {
-    if (tick >= 1000000) {
-      return `${(tick / 1000000).toFixed(1).replace(/\.0$/, '')}M`
-    }
-    if (tick >= 1000) {
-      return `${(tick / 1000).toFixed(0)}k`
+    if (metric === 'revenue') {
+      if (tick >= 1000000) return `${(tick / 1000000).toFixed(1).replace(/\.0$/, '')}M`
+      if (tick >= 1000) return `${(tick / 1000).toFixed(0)}k`
     }
     return tick
   }
@@ -87,7 +132,11 @@ function LineChart({ data = [] }) {
             </p>
             <p className="flex justify-between gap-6">
               <span className="text-[#9B9389]">Đơn hàng:</span>
-              <span className="font-bold text-white">{d.count || 0} đơn</span>
+              <span className="font-bold text-white">{d.orders || 0} đơn</span>
+            </p>
+            <p className="flex justify-between gap-6">
+              <span className="text-[#9B9389]">Khách mới:</span>
+              <span className="font-bold text-white">{d.newCustomers || 0}</span>
             </p>
           </div>
         </div>
@@ -104,35 +153,37 @@ function LineChart({ data = [] }) {
           margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
         >
           <defs>
-            <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#B08968" stopOpacity={0.2} />
-              <stop offset="95%" stopColor="#B08968" stopOpacity={0} />
+            <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor={meta.color} stopOpacity={0.25} />
+              <stop offset="95%" stopColor={meta.color} stopOpacity={0} />
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="#EAE6DF" vertical={false} />
-          <XAxis 
-            dataKey="_id" 
-            tickFormatter={formatXAxis} 
-            tickLine={false} 
-            axisLine={false} 
-            dy={8} 
+          <XAxis
+            dataKey="_id"
+            tickFormatter={formatXAxis}
+            tickLine={false}
+            axisLine={false}
+            dy={8}
             stroke="#9B9389"
+            minTickGap={20}
           />
-          <YAxis 
-            tickFormatter={formatYAxis} 
-            tickLine={false} 
-            axisLine={false} 
+          <YAxis
+            tickFormatter={formatYAxis}
+            tickLine={false}
+            axisLine={false}
             dx={-8}
             stroke="#9B9389"
+            allowDecimals={false}
           />
-          <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#B08968', strokeWidth: 1, strokeDasharray: '3 3' }} />
-          <Area 
-            type="monotone" 
-            dataKey="revenue" 
-            stroke="#1A1A1A" 
-            strokeWidth={1.8} 
-            fillOpacity={1} 
-            fill="url(#colorRevenue)" 
+          <Tooltip content={<CustomTooltip />} cursor={{ stroke: meta.color, strokeWidth: 1, strokeDasharray: '3 3' }} />
+          <Area
+            type="monotone"
+            dataKey={metric}
+            stroke={meta.stroke}
+            strokeWidth={1.8}
+            fillOpacity={1}
+            fill="url(#chartGrad)"
           />
         </AreaChart>
       </ResponsiveContainer>
@@ -161,6 +212,7 @@ export default function AdminAnalyticsPage() {
   const [endDate, setEndDate] = useState('')
   const [data, setData]    = useState(null)
   const [loading, setLoading] = useState(true)
+  const [chartMetric, setChartMetric] = useState('revenue')
 
   // Order detail modal states
   const [selectedOrderId, setSelectedOrderId] = useState(null)
@@ -315,7 +367,7 @@ export default function AdminAnalyticsPage() {
               />
             </div>
           )}
-          <div className="flex gap-1 p-0.5 bg-[#F2EFEA] rounded-lg">
+          <div className="flex flex-wrap gap-1 p-0.5 bg-[#F2EFEA] rounded-lg">
             {PERIODS.map(p => (
               <button
                 key={p.value}
@@ -331,110 +383,91 @@ export default function AdminAnalyticsPage() {
         </div>
       </div>
 
-      {/* Analytical stat cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+      {/* Analytical stat cards — 4 chỉ số chính + so sánh kỳ trước */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-3">
         {loading ? (
-          <>
-            <SkeletonCard />
-            <SkeletonCard />
-            <SkeletonCard />
-          </>
+          <><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /></>
         ) : (
           <>
-            {/* Card 1: DOANH THU THỰC TẾ */}
-            <div className="bg-white rounded-lg border border-[#EAE6DF] p-4 shadow-sm">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold tracking-wider text-[#615C56] uppercase">DOANH THU THỰC TẾ</span>
-                <div className="border border-[#EAE6DF] p-0.5 bg-[#FAF8F5] rounded text-[#615C56]">
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-              </div>
-              <p className="font-display text-[22px] font-bold text-[#1A1A1A] mt-2 mb-2">
-                {formatPrice(s?.totalRevenue || 0)}
-              </p>
-              <div className="border-t border-[#EAE6DF] pt-2 mt-2 space-y-1">
-                <div className="flex justify-between text-[11px]">
-                  <span className="text-[#615C56]">Khuyến mãi đã giảm</span>
-                  <span className="font-bold text-[#DC2626]">-{formatPrice(s?.totalDiscount || 0)}</span>
-                </div>
-                <div className="flex justify-between text-[11px]">
-                  <span className="text-[#615C56]">Trung bình/Đơn (AOV)</span>
-                  <span className="font-semibold text-[#1A1A1A]">{formatPrice(s?.avgOrderValue || 0)}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Card 2: SỐ LƯỢNG ĐƠN ĐẶT */}
-            <div className="bg-white rounded-lg border border-[#EAE6DF] p-4 shadow-sm">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold tracking-wider text-[#615C56] uppercase">SỐ LƯỢNG ĐƠN ĐẶT</span>
-                <div className="border border-[#EAE6DF] p-0.5 bg-[#FAF8F5] rounded text-[#615C56]">
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                  </svg>
-                </div>
-              </div>
-              <p className="font-display text-[22px] font-bold text-[#1A1A1A] mt-2 mb-2">
-                {s?.totalOrders || 0} đơn
-              </p>
-              <div className="border-t border-[#EAE6DF] pt-2 mt-2 space-y-1">
-                <div className="flex justify-between text-[11px]">
-                  <span className="text-[#615C56]">Giao thành công</span>
-                  <span className="font-bold text-[#059669]">{s?.deliveredOrders || 0} đơn</span>
-                </div>
-                <div className="flex justify-between text-[11px]">
-                  <span className="text-[#615C56]">Hủy đơn (Tỷ lệ %)</span>
-                  <span className="font-bold text-[#DC2626]">
-                    {s?.cancelledOrders || 0} đơn ({s?.totalOrders > 0 ? Math.round((s.cancelledOrders / s.totalOrders) * 100) : 0}%)
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Card 3: THÀNH VIÊN */}
-            <div className="bg-white rounded-lg border border-[#EAE6DF] p-4 shadow-sm">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold tracking-wider text-[#615C56] uppercase">THÀNH VIÊN</span>
-                <div className="border border-[#EAE6DF] p-0.5 bg-[#FAF8F5] rounded text-[#615C56]">
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                </div>
-              </div>
-              <p className="font-display text-[22px] font-bold text-[#1A1A1A] mt-2 mb-2">
-                {s?.totalMembers || 0} người
-              </p>
-              <div className="border-t border-[#EAE6DF] pt-2 mt-2 space-y-1">
-                <div className="flex justify-between text-[10px]">
-                  <span className="text-[#615C56]">Quản trị viên (Admin)</span>
-                  <span className="font-semibold text-[#1A1A1A]">{s?.rolesCount?.admin || 0}</span>
-                </div>
-                <div className="flex justify-between text-[10px]">
-                  <span className="text-[#615C56]">Biên tập viên (Curator)</span>
-                  <span className="font-semibold text-[#1A1A1A]">{s?.rolesCount?.product_manager || 0}</span>
-                </div>
-                <div className="flex justify-between text-[10px]">
-                  <span className="text-[#615C56]">Khách hàng thành viên</span>
-                  <span className="font-semibold text-[#1A1A1A]">{s?.rolesCount?.customer || 0}</span>
-                </div>
-              </div>
-            </div>
+            <MetricCard
+              label="DOANH THU"
+              value={formatPrice(s?.totalRevenue || 0)}
+              pct={data?.comparison?.revenue?.pct}
+              icon={<svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
+              footer={<>
+                <div className="flex justify-between text-[11px]"><span className="text-[#615C56]">Khuyến mãi đã giảm</span><span className="font-bold text-[#DC2626]">-{formatPrice(s?.totalDiscount || 0)}</span></div>
+                <div className="flex justify-between text-[11px]"><span className="text-[#615C56]">Trung bình/Đơn (AOV)</span><span className="font-semibold text-[#1A1A1A]">{formatPrice(s?.avgOrderValue || 0)}</span></div>
+              </>}
+            />
+            <MetricCard
+              label="ĐƠN HÀNG"
+              value={`${s?.totalOrders || 0} đơn`}
+              pct={data?.comparison?.orders?.pct}
+              icon={<svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>}
+              footer={<>
+                <div className="flex justify-between text-[11px]"><span className="text-[#615C56]">Thành công (đã giao)</span><span className="font-bold text-[#059669]">{s?.deliveredOrders || 0} đơn</span></div>
+                <div className="flex justify-between text-[11px]"><span className="text-[#615C56]">Thất bại (đã hủy)</span><span className="font-bold text-[#DC2626]">{s?.cancelledOrders || 0} đơn</span></div>
+              </>}
+            />
+            <MetricCard
+              label="SẢN PHẨM BÁN RA"
+              value={`${s?.productsSold || 0} cuốn`}
+              pct={data?.comparison?.productsSold?.pct}
+              icon={<svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>}
+              footer={<div className="flex justify-between text-[11px]"><span className="text-[#615C56]">Tỷ lệ giao thành công</span><span className="font-semibold text-[#1A1A1A]">{s?.successRate || 0}%</span></div>}
+            />
+            <MetricCard
+              label="KHÁCH HÀNG MỚI"
+              value={`${s?.newCustomers || 0} người`}
+              pct={data?.comparison?.newCustomers?.pct}
+              icon={<svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>}
+              footer={<div className="flex justify-between text-[11px]"><span className="text-[#615C56]">Tổng khách hàng</span><span className="font-semibold text-[#1A1A1A]">{s?.totalCustomers || 0}</span></div>}
+            />
           </>
         )}
       </div>
 
-      {/* Row 2: Chart (Single full-width row, centered titles) */}
+      {/* Phân quyền tài khoản (toàn hệ thống) */}
+      {!loading && (
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-[11px] text-[#615C56] mb-5 px-1">
+          <span className="font-bold uppercase tracking-wider text-[#8E877F] text-[10px]">Phân quyền hệ thống:</span>
+          <span>Admin <b className="text-[#1A1A1A]">{s?.rolesCount?.admin || 0}</b></span>
+          <span>Quản lý SP <b className="text-[#1A1A1A]">{s?.rolesCount?.product_manager || 0}</b></span>
+          <span>Thủ kho <b className="text-[#1A1A1A]">{s?.rolesCount?.warehouse || 0}</b></span>
+          <span>Khách hàng <b className="text-[#1A1A1A]">{s?.rolesCount?.customer || 0}</b></span>
+          <span className="ml-auto text-[#8E877F]">Tổng <b className="text-[#1A1A1A]">{s?.totalMembers || 0}</b> tài khoản</span>
+        </div>
+      )}
+
+      {/* Row 2: Biểu đồ đa chỉ số theo ngày */}
       <div className="bg-white rounded-xl border border-[#EAE6DF] p-5 shadow-sm mb-6">
-        <div className="text-center mb-5">
-          <p className="font-display text-[13.5px] font-bold text-[#1A1A1A] uppercase tracking-wider">Doanh thu theo ngày</p>
-          <p className="text-[11px] text-[#9B9389] mt-0.5">Chỉ tính đơn hàng giao thành công</p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
+          <div>
+            <p className="font-display text-[13.5px] font-bold text-[#1A1A1A] uppercase tracking-wider">Biểu đồ theo ngày</p>
+            <p className="text-[11px] text-[#9B9389] mt-0.5">Di chuột vào biểu đồ để xem chi tiết từng ngày</p>
+          </div>
+          <div className="flex gap-1 p-0.5 bg-[#F2EFEA] rounded-lg self-start sm:self-auto">
+            {[
+              { value: 'revenue',      label: 'Doanh thu' },
+              { value: 'orders',       label: 'Đơn hàng'  },
+              { value: 'newCustomers', label: 'Khách mới' },
+            ].map(t => (
+              <button
+                key={t.value}
+                onClick={() => setChartMetric(t.value)}
+                className={`px-3 py-1 rounded-md text-[11px] font-semibold transition-all ${
+                  chartMetric === t.value ? 'bg-white text-[#1A1A1A] shadow-sm' : 'text-[#8E877F] hover:text-[#1A1A1A]'
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
         </div>
         {loading ? (
           <div className="h-64 bg-[#FAF8F5] border border-[#EAE6DF] rounded-xl animate-pulse" />
         ) : (
-          <LineChart data={data?.revenueByDay || []} />
+          <LineChart data={data?.daily || []} metric={chartMetric} />
         )}
       </div>
 
