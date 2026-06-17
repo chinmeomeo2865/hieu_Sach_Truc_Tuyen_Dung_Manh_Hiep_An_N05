@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { Link, useNavigate }            from 'react-router-dom'
 import { motion, AnimatePresence }      from 'framer-motion'
 import { api }                          from '../../services/api'
+import { useAutoRefresh }               from '../../hooks/useAutoRefresh'
 import { useAuthStore }                 from '../../store/authStore'
 import { useCartStore }                 from '../../store/cartStore'
 import { useToastStore }                from '../../store/toastStore'
@@ -803,6 +804,15 @@ export default function AccountPage() {
     }).catch(err => showToast({ message: err.message, type: 'error' }))
       .finally(() => setLoading(false))
   }, [])
+
+  /* Auto-refresh silent: khách thấy ngay khi thủ kho/admin đổi trạng thái đơn */
+  useAutoRefresh(() => {
+    if (!isAuth) return
+    api.get('/api/orders').then(r => {
+      setOrders(r.data)
+      setDetailOrder(prev => prev ? (r.data.find(o => o._id === prev._id) || prev) : prev)
+    }).catch(() => {})
+  }, 15000)
 
   const filteredOrders = useMemo(
     () => activeTab === 'all' ? orders : orders.filter(o => o.status === activeTab),
