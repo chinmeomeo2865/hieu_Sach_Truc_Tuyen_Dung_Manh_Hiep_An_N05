@@ -6,6 +6,7 @@ import { useWishlistStore }  from '../../store/wishlistStore'
 import { useUIStore }        from '../../store/uiStore'
 import { useAuthStore }      from '../../store/authStore'
 import { useNotificationStore } from '../../store/notificationStore'
+import { useAutoRefresh }     from '../../hooks/useAutoRefresh'
 import { MobileMenu }        from './MobileMenu'
 import { SearchIcon, HeartIcon, CartIcon, UserIcon, MenuIcon, ArrowUpIcon } from '../ui/icons'
 
@@ -57,6 +58,7 @@ export function Navbar({ links = [], categories = [] }) {
     if (!token) { setUnread(0); return }
     fetchUnread()
   }, [token])
+  useAutoRefresh(() => { if (token) fetchUnread() }, 30000)
 
   function handleLogout() {
     logout()

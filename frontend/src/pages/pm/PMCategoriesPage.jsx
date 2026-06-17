@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import PMLayout from '../../components/pm/PMLayout'
 import { api } from '../../services/api'
+import { useAutoRefresh } from '../../hooks/useAutoRefresh'
 import { useToastStore } from '../../store/toastStore'
 
 function slugify(str = '') {
@@ -198,14 +199,15 @@ export default function PMCategoriesPage() {
   const [search,  setSearch]  = useState('')
   const [sort,    setSort]    = useState('name-asc')
 
-  async function fetchCats() {
-    setLoading(true)
+  async function fetchCats(silent = false) {
+    if (!silent) setLoading(true)
     try { const r = await api.get('/api/pm/categories'); setCats(r.data) }
     catch (e) { showToast({ message: e.message, type: 'error' }) }
     finally { setLoading(false) }
   }
 
   useEffect(() => { fetchCats() }, [])
+  useAutoRefresh(() => fetchCats(true), 25000)
 
   // Hỗ trợ deep-link "Thêm danh mục" từ Quick Actions trên Dashboard
   useEffect(() => {

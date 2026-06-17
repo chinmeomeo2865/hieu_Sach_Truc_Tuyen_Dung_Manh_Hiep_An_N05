@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useMemo } from 'react'
 import WarehouseLayout from '../../components/warehouse/WarehouseLayout'
 import { api } from '../../services/api'
+import { useAutoRefresh } from '../../hooks/useAutoRefresh'
 import { useToastStore } from '../../store/toastStore'
 
 /* ─── Icons ──────────────────────────────────────────────── */
@@ -130,8 +131,8 @@ export default function WarehouseActivityPage() {
   const [customStartDate, setCustomStartDate] = useState('')
   const [customEndDate,   setCustomEndDate]   = useState('')
 
-  const fetchLogs = useCallback(async () => {
-    setLoading(true)
+  const fetchLogs = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true)
     try {
       const params = new URLSearchParams({ page: String(page), limit: '20' })
       if (actionFilter) params.set('action', actionFilter)
@@ -187,6 +188,7 @@ export default function WarehouseActivityPage() {
   }, [page, actionFilter, datePreset, customStartDate, customEndDate])
 
   useEffect(() => { fetchLogs() }, [fetchLogs])
+  useAutoRefresh(() => fetchLogs(true), 20000)
 
   function handleFilter(key) {
     setActionFilter(key)

@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import AdminLayout  from '../../components/admin/AdminLayout'
 import ConfirmModal from '../../components/admin/ui/ConfirmModal'
 import { api }      from '../../services/api'
+import { useAutoRefresh } from '../../hooks/useAutoRefresh'
 import { useToastStore }  from '../../store/toastStore'
 import { useAuthStore }   from '../../store/authStore'
 
@@ -125,8 +126,8 @@ export default function AdminArticlesPage() {
   const [modal,      setModal]      = useState(null) // null | 'new' | article
   const [deleteTarget, setDeleteTarget] = useState(null)
 
-  const load = useCallback(async () => {
-    setLoading(true)
+  const load = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true)
     try {
       const params = new URLSearchParams({ limit: 50 })
       if (filter !== 'all') params.set('status', filter)
@@ -141,6 +142,7 @@ export default function AdminArticlesPage() {
   }, [filter])
 
   useEffect(() => { load() }, [load])
+  useAutoRefresh(() => load(true), 25000)
 
   async function handleDelete() {
     try {

@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useMemo } from 'react'
 import PMLayout from '../../components/pm/PMLayout'
 import { api } from '../../services/api'
+import { useAutoRefresh } from '../../hooks/useAutoRefresh'
 import { useToastStore } from '../../store/toastStore'
 
 /* ─── Icons ──────────────────────────────────────────────── */
@@ -138,8 +139,8 @@ export default function PMActivityPage() {
   const [customStartDate, setCustomStartDate] = useState('')
   const [customEndDate,   setCustomEndDate]   = useState('')
 
-  const fetchLogs = useCallback(async () => {
-    setLoading(true)
+  const fetchLogs = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true)
     try {
       const params = new URLSearchParams({ page: String(page), limit: '20' })
       if (entityFilter) params.set('entity', entityFilter)
@@ -195,6 +196,7 @@ export default function PMActivityPage() {
   }, [page, entityFilter, datePreset, customStartDate, customEndDate])
 
   useEffect(() => { fetchLogs() }, [fetchLogs])
+  useAutoRefresh(() => fetchLogs(true), 20000)
 
   function handleFilter(key) {
     setEntityFilter(key)

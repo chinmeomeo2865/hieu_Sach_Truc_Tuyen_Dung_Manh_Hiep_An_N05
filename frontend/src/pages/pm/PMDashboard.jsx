@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import PMLayout from '../../components/pm/PMLayout'
 import { api } from '../../services/api'
+import { useAutoRefresh } from '../../hooks/useAutoRefresh'
 
 /* ─── Icons ──────────────────────────────────────────────── */
 const ICON_PATHS = {
@@ -100,6 +101,7 @@ export default function PMDashboard() {
   useEffect(() => {
     api.get('/api/pm/stats').then(r => setStats(r.data)).catch(() => {}).finally(() => setLoading(false))
   }, [])
+  useAutoRefresh(() => { api.get('/api/pm/stats').then(r => setStats(r.data)).catch(() => {}) }, 30000)
 
   const total = stats?.total || 0
   const totalCats = stats?.totalCats || 0
@@ -245,6 +247,7 @@ function PMRecentActivity() {
   useEffect(() => {
     api.get('/api/pm/activity?limit=6').then(r => setLogs(r.data)).catch(() => {}).finally(() => setLoading(false))
   }, [])
+  useAutoRefresh(() => { api.get('/api/pm/activity?limit=6').then(r => setLogs(r.data)).catch(() => {}) }, 30000)
 
   return (
     <div className="bg-white rounded-xl border border-[#EAE6DF] shadow-sm overflow-hidden">

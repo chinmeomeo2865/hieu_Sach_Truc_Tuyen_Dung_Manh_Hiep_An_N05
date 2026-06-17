@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import WarehouseLayout from '../../components/warehouse/WarehouseLayout'
 import { api }         from '../../services/api'
+import { useAutoRefresh } from '../../hooks/useAutoRefresh'
 import { useToastStore } from '../../store/toastStore'
 import { formatPrice }   from '../../utils/format'
 
@@ -261,8 +262,8 @@ export default function WarehouseInventoryPage() {
   const activeFilter = searchParams.get('filter') || ''
   const timerRef = useRef(null)
 
-  const fetchProducts = useCallback(async (q = search) => {
-    setLoading(true)
+  const fetchProducts = useCallback(async (q = search, silent = false) => {
+    if (!silent) setLoading(true)
     try {
       const params = new URLSearchParams({ page, limit: 30 })
       if (q) params.set('search', q)
@@ -276,6 +277,7 @@ export default function WarehouseInventoryPage() {
   }, [page, activeFilter])
 
   useEffect(() => { fetchProducts() }, [fetchProducts])
+  useAutoRefresh(() => fetchProducts(search, true), 20000)
   useEffect(() => { setPage(1) }, [activeFilter])
 
   function handleSearch(e) {

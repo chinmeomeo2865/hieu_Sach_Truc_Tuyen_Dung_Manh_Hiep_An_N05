@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import WarehouseLayout from '../../components/warehouse/WarehouseLayout'
 import { api }         from '../../services/api'
+import { useAutoRefresh } from '../../hooks/useAutoRefresh'
 import { useToastStore } from '../../store/toastStore'
 import { formatPrice }   from '../../utils/format'
 
@@ -284,8 +285,8 @@ export default function WarehouseReturnsPage() {
   const [dateFilter, setDateFilter] = useState('')
   const timerRef = useRef(null)
 
-  const fetchReturns = useCallback(async (q = search) => {
-    setLoading(true)
+  const fetchReturns = useCallback(async (q = search, silent = false) => {
+    if (!silent) setLoading(true)
     try {
       const params = new URLSearchParams({ page, limit: 20 })
       if (tab) params.set('status', tab)
@@ -300,6 +301,7 @@ export default function WarehouseReturnsPage() {
   }, [page, tab, dateFilter])
 
   useEffect(() => { fetchReturns() }, [fetchReturns])
+  useAutoRefresh(() => fetchReturns(search, true), 20000)
   useEffect(() => { setPage(1) }, [tab, dateFilter])
 
   function handleSearch(e) {

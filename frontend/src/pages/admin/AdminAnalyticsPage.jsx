@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import AdminLayout from '../../components/admin/AdminLayout'
 import { api }     from '../../services/api'
+import { useAutoRefresh } from '../../hooks/useAutoRefresh'
 import { useToastStore } from '../../store/toastStore'
 import { formatPrice }   from '../../utils/format'
 import {
@@ -265,6 +266,14 @@ export default function AdminAnalyticsPage() {
       .catch(err => showToast({ message: err.message, type: 'error' }))
       .finally(() => setLoading(false))
   }, [period, startDate, endDate, showToast])
+
+  /* Auto-refresh silent (không nháy skeleton) */
+  useAutoRefresh(() => {
+    if (period === 'custom' && (!startDate || !endDate)) return
+    let url = `/api/analytics?period=${period}`
+    if (period === 'custom') url = `/api/analytics?startDate=${startDate}&endDate=${endDate}`
+    api.get(url).then(r => setData(r.data)).catch(() => {})
+  }, 30000)
 
   const exportToCSV = () => {
     if (!data?.recentOrders?.length) return

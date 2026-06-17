@@ -3,6 +3,7 @@ import { motion, AnimatePresence }           from 'framer-motion'
 import AdminLayout    from '../../components/admin/AdminLayout'
 import ConfirmModal   from '../../components/admin/ui/ConfirmModal'
 import { api }        from '../../services/api'
+import { useAutoRefresh } from '../../hooks/useAutoRefresh'
 import { useToastStore } from '../../store/toastStore'
 
 /* ─── Constants ─────────────────────────────────────────── */
@@ -156,8 +157,8 @@ export default function AdminAccountsPage() {
   const [modal, setModal]       = useState(null) // { type:'create'|'edit'|'delete'|'toggle', data? }
   const [actionLoading, setActionLoading] = useState(false)
 
-  const fetchUsers = useCallback(async () => {
-    setLoading(true)
+  const fetchUsers = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true)
     try {
       const params = new URLSearchParams({ page, limit: 20 })
       if (search)     params.set('search', search)
@@ -170,6 +171,7 @@ export default function AdminAccountsPage() {
   }, [page, search, roleFilter])
 
   useEffect(() => { fetchUsers() }, [fetchUsers])
+  useAutoRefresh(() => fetchUsers(true), 25000)
 
   async function handleToggle() {
     setActionLoading(true)

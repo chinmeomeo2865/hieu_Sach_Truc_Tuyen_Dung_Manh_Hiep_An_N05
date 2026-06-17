@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts'
 import WarehouseLayout from '../../components/warehouse/WarehouseLayout'
 import { api } from '../../services/api'
+import { useAutoRefresh } from '../../hooks/useAutoRefresh'
 import { formatPrice } from '../../utils/format'
 
 const PERIODS = [
@@ -207,6 +208,22 @@ export default function WarehouseDashboard() {
       .catch(() => {})
       .finally(() => setLoadingAna(false))
   }, [period, startDate, endDate])
+
+  /* Auto-refresh silent toàn bộ dashboard */
+  useAutoRefresh(() => {
+    api.get('/api/warehouse/stats').then(r => setStats(r.data)).catch(() => {})
+    Promise.all([
+      api.get('/api/warehouse/low-stock'),
+      api.get('/api/warehouse/orders?status=CONFIRMED&limit=5'),
+    ]).then(([low, orders]) => {
+      setLowStockProducts(low.data || [])
+      setPendingOrders(orders.data || [])
+    }).catch(() => {})
+    if (period === 'custom' && (!startDate || !endDate)) return
+    let url = `/api/warehouse/analytics?period=${period}`
+    if (period === 'custom') url = `/api/warehouse/analytics?startDate=${startDate}&endDate=${endDate}`
+    api.get(url).then(r => setAnalytics(r.data)).catch(() => {})
+  }, 30000)
 
   const a = analytics?.summary
   const ac = analytics?.comparison

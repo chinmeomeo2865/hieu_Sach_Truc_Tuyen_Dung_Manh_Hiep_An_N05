@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import AdminLayout from '../../components/admin/AdminLayout'
 import { api } from '../../services/api'
+import { useAutoRefresh } from '../../hooks/useAutoRefresh'
 import { useToastStore } from '../../store/toastStore'
 import { formatPrice } from '../../utils/format'
 
@@ -259,14 +260,15 @@ export default function AdminCouponsPage() {
   const [delItem, setDelItem] = useState(null)
   const [busyId,  setBusyId]  = useState(null)
 
-  const fetchCoupons = useCallback(async () => {
-    setLoading(true)
+  const fetchCoupons = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true)
     try { const r = await api.get('/api/coupons'); setCoupons(r.data) }
     catch (e) { showToast({ message: e.message, type: 'error' }) }
     finally { setLoading(false) }
   }, [])
 
   useEffect(() => { fetchCoupons() }, [fetchCoupons])
+  useAutoRefresh(() => fetchCoupons(true), 25000)
 
   const stats = useMemo(() => {
     const now = new Date()

@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import PMLayout from '../../components/pm/PMLayout'
 import { api } from '../../services/api'
+import { useAutoRefresh } from '../../hooks/useAutoRefresh'
 import { useToastStore } from '../../store/toastStore'
 import { formatPrice } from '../../utils/format'
 
@@ -62,8 +63,8 @@ export default function PMVisibilityPage() {
 
   const activeFilter = searchParams.get('filter') || ''
 
-  const fetchProducts = useCallback(async (q = search) => {
-    setLoading(true)
+  const fetchProducts = useCallback(async (q = search, silent = false) => {
+    if (!silent) setLoading(true)
     try {
       const params = new URLSearchParams({ page, limit: 30 })
       if (q) params.set('search', q)
@@ -82,6 +83,7 @@ export default function PMVisibilityPage() {
 
   useEffect(() => { fetchProducts() }, [fetchProducts])
   useEffect(() => { fetchStats() }, [fetchStats])
+  useAutoRefresh(() => { fetchProducts(search, true); fetchStats() }, 20000)
   useEffect(() => { setPage(1) }, [activeFilter])
 
   function handleSearch(e) {

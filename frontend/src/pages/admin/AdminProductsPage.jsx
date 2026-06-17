@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { api }           from '../../services/api'
+import { useAutoRefresh } from '../../hooks/useAutoRefresh'
 import { useToastStore } from '../../store/toastStore'
 import { formatPrice }   from '../../utils/format'
 import AdminLayout       from '../../components/admin/AdminLayout'
@@ -315,8 +316,8 @@ export default function AdminProductsPage() {
   const [modal, setModal]               = useState(null) // null | { book?: {...} }
   const [togglingId, setTogglingId]     = useState(null)
 
-  const fetchProducts = useCallback(async (pg, q, fv, fb) => {
-    setLoading(true)
+  const fetchProducts = useCallback(async (pg, q, fv, fb, silent = false) => {
+    if (!silent) setLoading(true)
     try {
       const qs = new URLSearchParams({ page: pg, limit: LIMIT })
       if (q)  qs.set('search', q)
@@ -349,6 +350,7 @@ export default function AdminProductsPage() {
   useEffect(() => {
     fetchProducts(page, search, filterVisible, filterBadge)
   }, [page, search, filterVisible, filterBadge, fetchProducts])
+  useAutoRefresh(() => fetchProducts(page, search, filterVisible, filterBadge, true), 25000)
 
   function handleSearch(e) {
     e.preventDefault()

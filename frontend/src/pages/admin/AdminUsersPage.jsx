@@ -3,6 +3,7 @@ import { motion, AnimatePresence }                   from 'framer-motion'
 import AdminLayout  from '../../components/admin/AdminLayout'
 import ConfirmModal from '../../components/admin/ui/ConfirmModal'
 import { api }      from '../../services/api'
+import { useAutoRefresh } from '../../hooks/useAutoRefresh'
 import { useToastStore } from '../../store/toastStore'
 import { formatPrice }   from '../../utils/format'
 
@@ -220,8 +221,8 @@ export default function AdminUsersPage() {
   const searchRef = useRef(null)
 
   /* fetch main table */
-  const fetchUsers = useCallback(async () => {
-    setLoading(true)
+  const fetchUsers = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true)
     try {
       const params = new URLSearchParams({ page, limit: 20 })
       if (activeQuery) params.set('search', activeQuery)
@@ -233,6 +234,7 @@ export default function AdminUsersPage() {
   }, [page, activeQuery])
 
   useEffect(() => { fetchUsers() }, [fetchUsers])
+  useAutoRefresh(() => fetchUsers(true), 25000)
 
   /* debounce suggestions */
   useEffect(() => {

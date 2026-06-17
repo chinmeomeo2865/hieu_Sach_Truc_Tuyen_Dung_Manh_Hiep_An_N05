@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 import AdminLayout  from '../../components/admin/AdminLayout'
 import ConfirmModal from '../../components/admin/ui/ConfirmModal'
 import { api }      from '../../services/api'
+import { useAutoRefresh } from '../../hooks/useAutoRefresh'
 import { useToastStore } from '../../store/toastStore'
 
 const STAR_FILTERS = [
@@ -35,8 +36,8 @@ export default function AdminReviewsPage() {
   const [ratingFilter, setRatingFilter] = useState('')
   const [deleteTarget, setDeleteTarget] = useState(null)
 
-  const load = useCallback(async () => {
-    setLoading(true)
+  const load = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true)
     try {
       const params = new URLSearchParams({ page, limit: 20 })
       if (ratingFilter) params.set('rating', ratingFilter)
@@ -51,6 +52,7 @@ export default function AdminReviewsPage() {
   }, [page, ratingFilter])
 
   useEffect(() => { load() }, [load])
+  useAutoRefresh(() => load(true), 25000)
 
   async function handleDelete() {
     try {

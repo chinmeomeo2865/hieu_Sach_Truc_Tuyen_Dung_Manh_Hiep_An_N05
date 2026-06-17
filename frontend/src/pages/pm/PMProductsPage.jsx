@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import PMLayout from '../../components/pm/PMLayout'
 import { api } from '../../services/api'
+import { useAutoRefresh } from '../../hooks/useAutoRefresh'
 import { useToastStore } from '../../store/toastStore'
 import { formatPrice } from '../../utils/format'
 
@@ -288,8 +289,8 @@ export default function PMProductsPage() {
   const [pagination, setPagination] = useState({})
   const timerRef = useRef(null)
 
-  const fetchProducts = useCallback(async (q = search) => {
-    setLoading(true)
+  const fetchProducts = useCallback(async (q = search, silent = false) => {
+    if (!silent) setLoading(true)
     try {
       const params = new URLSearchParams({ page, limit: 20 })
       if (q) params.set('search', q)
@@ -304,6 +305,7 @@ export default function PMProductsPage() {
 
   useEffect(() => { fetchProducts() }, [fetchProducts])
   useEffect(() => { fetchStats() }, [fetchStats])
+  useAutoRefresh(() => { fetchProducts(search, true); fetchStats() }, 20000)
   useEffect(() => { api.get('/api/pm/categories').then(r => setCats(r.data)).catch(() => {}) }, [])
 
   function handleSearch(e) {
